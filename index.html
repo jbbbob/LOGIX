@@ -29,13 +29,15 @@
 
       /* ---------- 1. Jetons ---------------------------------------------------- */
       :root {
-        /* Fond sombre légèrement bleuté (encre) */
-        --bg-1: #0a0e15;
+        /* Fond sombre légèrement bleuté (encre).
+           Trois niveaux seulement : page → carte → contrôle. */
+        --bg-1: #090d14;          /* fond général */
         --bg-2: #0d1220;
-        --surface: #111826;
-        --surface-strong: #141c2b;
-        --surface-raised: #18212f;
-        --surface-input: #0d131e;
+        --surface: #101825;       /* les CARTES */
+        --surface-strong: #101825; /* cartes résultat (même niveau) */
+        --surface-raised: #19212f; /* boutons et champs DANS une carte */
+        --surface-hover: #202a3a;  /* survol d'un contrôle */
+        --surface-input: #0c1220;
 
         --ink: #dbe5f2;
         --muted: #7f93ad;
@@ -49,15 +51,18 @@
         --accent-wash: rgba(34, 211, 238, 0.09);
         --accent-wash-2: rgba(34, 211, 238, 0.16);
 
-        --border: rgba(126, 178, 214, 0.13);
-        --border-strong: rgba(34, 211, 238, 0.32);
-        /* Filet de séparation : la structure passe par des traits fins et des
-           espacements, pas par des cadres autour de chaque élément. */
-        --hairline: rgba(126, 178, 214, 0.10);
-        --hairline-soft: rgba(126, 178, 214, 0.06);
-        /* Aplats très légers, utilisés à la place des bordures */
-        --wash: rgba(255, 255, 255, 0.022);
-        --wash-hover: rgba(255, 255, 255, 0.05);
+        /* Bordure des cartes et des contrôles : fine, 1px, discrète. */
+        --border: rgba(138, 182, 222, 0.15);
+        --border-strong: rgba(34, 211, 238, 0.4);
+        /* Filet interne : sépare les lignes À L'INTÉRIEUR d'une carte,
+           pour ne pas empiler une carte dans une carte. */
+        --hairline: rgba(138, 182, 222, 0.09);
+        --hairline-soft: rgba(138, 182, 222, 0.06);
+        /* Aplats très légers */
+        --wash: rgba(255, 255, 255, 0.025);
+        --wash-hover: rgba(255, 255, 255, 0.055);
+        /* Ombre de carte : quasi imperceptible, juste un décollement. */
+        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
 
         --ok: #34d399;
         --ok-ink: #04241a;
@@ -212,12 +217,19 @@
         display: none !important;
       }
 
-      /* Les sections du parcours s'enchaînent sans écart : ce sont les filets
-         des card-row qui assurent la séparation, pas des gouttières. */
+      /* À l'intérieur d'une carte, les lignes s'enchaînent sans écart : c'est
+         le filet des card-row qui sépare. Entre les CARTES, on remet une
+         gouttière (voir #mainPanel plus bas). */
       .stack {
         display: flex;
         flex-direction: column;
         gap: 0;
+      }
+
+      /* #mainPanel n'est pas une carte : c'est l'empilement des cartes du
+         parcours (TOGGLES, CASCADE, QUESTIONS). Il lui faut donc une gouttière. */
+      #mainPanel {
+        gap: 10px;
       }
 
       .text-muted {
@@ -276,63 +288,87 @@
         z-index: 50;
       }
 
-      /* ---------- 4. Coque de page -------------------------------------------- */
+      /* ---------- 4. Coque de page + système de CARTES ------------------------- */
+      /* Hiérarchie visuelle à 3 niveaux, jamais plus :
+         1. le fond de page         (--bg-1)
+         2. la CARTE de section     (--surface + bordure 1px + radius 8px)
+         3. les contrôles dedans    (--surface-raised + bordure 1px + radius 6px)
+         Les lignes à l'intérieur d'une carte ne sont pas des cartes : elles sont
+         séparées par un filet. C'est ce qui évite l'effet « boîte dans boîte »
+         tout en gardant des rectangles nets et lisibles. */
+
       .app {
         max-width: 1680px;
         margin: 0 auto;
-        padding: 0 26px 40px;
+        padding: 0 0 36px;
       }
 
+      /* --- Header : barre pleine largeur, fond distinct, bordure fine --------- */
+      /* Pleine largeur volontairement : le header est collant (sticky), et une
+         carte en retrait laisserait le contenu défiler dans les marges latérales.
+         Ici rien ne peut passer à côté ni dépasser. */
       .app-header {
         position: sticky;
         top: 0;
         z-index: 40;
         display: flex;
         align-items: center;
-        gap: 18px;
-        height: 62px;
-        margin-bottom: 22px;
-        background: var(--bg-1);
-        border-bottom: 1px solid var(--hairline);
+        gap: 14px;
+        width: 100%;
+        height: 58px;
+        padding: 0 22px;
+        margin-bottom: 18px;
+        background: var(--surface);
+        border: 0;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
       }
 
-      /* Court accent cyan sous la marque : un trait, pas un halo. */
+      /* Touche cyan : un trait court sous la marque, rien de plus. */
       .app-header::after {
         content: "";
         position: absolute;
-        left: 0;
+        left: 22px;
         bottom: -1px;
-        width: 132px;
+        width: 104px;
         height: 1px;
         background: var(--accent);
-        opacity: 0.7;
       }
 
       .brand {
         display: inline-flex;
         align-items: center;
         gap: 10px;
+        flex: 0 0 auto;
         font-size: var(--fs-brand);
         font-weight: 700;
-        letter-spacing: 0.3em;
+        letter-spacing: 0.26em;
         color: var(--muted-strong);
         user-select: none;
       }
 
       .brand-mark {
-        width: 9px;
-        height: 9px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         background: var(--accent);
-        box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.16);
+        flex: 0 0 auto;
       }
 
+      /* Nettement plus discret que LOGIX : plus petit, gris, et il se tronque
+         plutôt que de pousser les boutons hors du header. */
       .brand-sub {
+        flex: 0 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
         font-size: var(--fs-micro);
         letter-spacing: var(--ls-wide);
         color: var(--muted);
         font-weight: 600;
-        padding-left: 12px;
+        opacity: 0.75;
+        padding-left: 14px;
         border-left: 1px solid var(--border);
       }
 
@@ -341,60 +377,58 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        flex: 0 0 auto;
       }
 
-      /* Boutons du header : sans cadre, ils s'allument au survol. */
       .hdr-btn {
-        height: 2.2rem;
-        padding: 0 0.8rem;
+        flex: 0 0 auto;
+        height: 2.1rem;
+        padding: 0 0.85rem;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        font-size: var(--fs-label);
-        letter-spacing: 0.12em;
-        border-radius: var(--r-sm);
-        border: 0;
-        background: none;
-        color: var(--muted);
+        white-space: nowrap;
+        font-size: var(--fs-micro);
+        letter-spacing: 0.13em;
+        border-radius: var(--r-md);
+        border: 1px solid var(--border);
+        background: var(--surface-raised);
+        color: var(--ink);
       }
 
       .hdr-btn:hover:not(:disabled) {
-        background: var(--wash-hover);
+        border-color: var(--border-strong);
+        background: var(--surface-hover);
         color: var(--muted-strong);
       }
 
       .hdr-btn:disabled {
-        opacity: 0.28;
+        opacity: 0.32;
       }
 
       .hdr-btn-strong:hover:not(:disabled) {
-        background: rgba(251, 113, 133, 0.12);
+        border-color: rgba(251, 113, 133, 0.45);
+        background: rgba(251, 113, 133, 0.1);
         color: #ffd8de;
       }
 
-      .hdr-key {
-        font-size: var(--fs-micro);
-        opacity: 0.75;
-      }
-
+      /* --- Corps : sidebar + colonne principale ------------------------------ */
       .app-body {
         display: flex;
         align-items: flex-start;
-        gap: 0;
+        gap: 14px;
+        padding: 0 22px;
       }
 
-      /* La sidebar n'est pas une boîte : elle est séparée de la colonne
-         principale par un simple filet vertical. */
       .sidebar {
-        width: 300px;
-        flex: 0 0 300px;
+        width: 320px;
+        flex: 0 0 320px;
+        min-width: 0;
         position: sticky;
-        top: 84px;
+        top: 74px;
         display: flex;
         flex-direction: column;
-        gap: 26px;
-        padding-right: 26px;
-        border-right: 1px solid var(--hairline);
+        gap: 10px;
       }
 
       .main-col {
@@ -402,16 +436,33 @@
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 0;
-        padding-left: 26px;
+        gap: 10px;
       }
 
-      /* Plus de cadre ni de fond : un titre, puis le contenu. */
+      /* --- LA CARTE ---------------------------------------------------------- */
+      /* Toutes les grandes sections partagent exactement le même rectangle. */
+      .panel,
+      #categoryTabs,
+      #togglesContainer,
+      #cascadeFlow,
+      #leafQuestionsContainer,
+      .result-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow-card);
+      }
+
+      /* Une section vide ne doit pas laisser une carte fantôme à l'écran.
+         (Le contenu généré par ::before ne compte pas pour :empty.) */
+      #togglesContainer:empty,
+      #cascadeFlow:empty,
+      #leafQuestionsContainer:empty {
+        display: none;
+      }
+
       .panel {
-        background: none;
-        border: 0;
-        border-radius: 0;
-        padding: 0;
+        padding: 11px 13px 12px;
       }
 
       .panel-title {
@@ -422,8 +473,8 @@
         font-weight: 700;
         letter-spacing: var(--ls-wide);
         color: var(--muted);
-        margin-bottom: 12px;
-        padding-bottom: 7px;
+        margin-bottom: 9px;
+        padding-bottom: 8px;
         border-bottom: 1px solid var(--hairline);
       }
 
@@ -431,7 +482,9 @@
         content: "";
         width: 2px;
         height: 10px;
+        border-radius: 1px;
         background: var(--accent);
+        flex: 0 0 auto;
       }
 
       .panel-title .panel-count {
@@ -439,13 +492,12 @@
         letter-spacing: 0.05em;
         color: var(--muted);
         opacity: 0.7;
+        font-variant-numeric: tabular-nums;
       }
 
       .crumbs {
-        padding: 6px 0;
+        padding: 7px 13px;
         font-size: var(--fs-label);
-        background: none;
-        border: 0;
       }
 
       #breadcrumbs {
@@ -455,26 +507,37 @@
       }
 
       /* ---------- 5. Panneau CHEMIN / TODO ------------------------------------ */
+      /* Timeline compacte : une colonne de marqueurs reliés par un filet. */
       .path-list {
         display: flex;
         flex-direction: column;
-        gap: 2px;
       }
 
-      /* Une étape = pastille d'état + libellé + valeur choisie. */
       .path-step {
+        position: relative;
         display: grid;
         grid-template-columns: 16px 1fr;
         grid-template-rows: auto auto;
-        column-gap: 9px;
-        row-gap: 1px;
+        column-gap: 10px;
+        row-gap: 0;
         width: 100%;
         text-align: left;
-        padding: 5px 7px;
+        padding: 4px 6px 5px;
         border-radius: var(--r-sm);
-        border: 1px solid transparent;
+        border: 0;
         background: none;
         font-weight: 600;
+      }
+
+      /* Le fil qui relie les étapes entre elles. */
+      .path-step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        left: 13px;
+        top: 21px;
+        bottom: -1px;
+        width: 1px;
+        background: var(--hairline);
       }
 
       .path-mark {
@@ -490,63 +553,63 @@
         font-weight: 700;
         border-radius: 50%;
         border: 1px solid var(--border);
+        background: var(--surface-raised);
         color: var(--muted);
         line-height: 1;
+        flex: 0 0 auto;
       }
 
       .path-label {
         font-size: var(--fs-micro);
         letter-spacing: var(--ls-wide);
         color: var(--muted);
+        line-height: 1.4;
       }
 
       .path-value {
         font-size: var(--fs-label);
         color: var(--ink);
         overflow-wrap: anywhere;
+        line-height: 1.3;
       }
 
       /* Étape franchie */
       .path-step.is-done .path-mark {
-        border-color: transparent;
-        background: none;
+        border-color: rgba(52, 211, 153, 0.4);
+        background: rgba(52, 211, 153, 0.12);
         color: var(--ok);
       }
       .path-step.is-done .path-value {
         color: var(--muted-strong);
       }
 
-      /* Étape en cours : un simple trait cyan à gauche, pas de cadre. */
+      /* Étape en cours */
       .path-step.is-current {
-        background: none;
-        border-color: transparent;
-        border-left: 2px solid var(--accent);
-        margin-left: -2px;
+        background: var(--accent-wash);
       }
       .path-step.is-current .path-mark {
-        border-color: transparent;
-        background: none;
-        color: var(--accent);
+        border-color: var(--accent);
+        background: var(--accent);
+        color: var(--accent-ink);
       }
-      .path-step.is-current .path-label {
-        color: var(--accent-strong);
-      }
+      .path-step.is-current .path-label,
       .path-step.is-current .path-value {
         color: var(--accent-strong);
       }
 
-      /* Étape restante (TODO) */
+      /* Étape restante */
       .path-step.is-todo .path-mark {
-        border-color: transparent;
+        border-style: dashed;
+        border-color: rgba(240, 169, 46, 0.42);
+        background: none;
         color: var(--todo);
-        opacity: 0.8;
       }
       .path-step.is-todo .path-label,
       .path-step.is-todo .path-value {
         color: var(--muted);
       }
       .path-step.is-todo .path-value {
-        opacity: 0.75;
+        opacity: 0.8;
       }
 
       /* Étape cliquable = on peut y revenir directement */
@@ -554,96 +617,67 @@
         cursor: pointer;
       }
       button.path-step:hover {
-        background: var(--wash-hover);
+        background: var(--surface-hover);
       }
       button.path-step:hover .path-value {
         color: var(--accent-strong);
       }
 
       .path-empty {
-        padding: 6px 7px;
+        padding: 6px;
         font-size: var(--fs-label);
         color: var(--muted);
         font-weight: 600;
       }
 
       .path-copy-btn {
-        margin-top: 14px;
+        margin-top: 10px;
         width: 100%;
-        height: 2.1rem;
-        border-radius: var(--r-sm);
-        border: 0;
-        background: var(--wash);
+        height: 2.05rem;
+        border-radius: var(--r-md);
+        border: 1px solid var(--border);
+        background: var(--surface-raised);
         color: var(--muted);
         font-size: var(--fs-micro);
         letter-spacing: var(--ls-wide);
       }
 
       .path-copy-btn:hover {
-        background: var(--wash-hover);
+        border-color: var(--border-strong);
+        background: var(--surface-hover);
         color: var(--accent-strong);
       }
 
       /* ---------- 6. Composants du parcours ----------------------------------- */
-      .context-dock {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-      }
-
-      /* Dans la sidebar étroite : libellé au-dessus, options en dessous. */
-      .context-dock .card-row {
-        flex-direction: column;
-        align-items: stretch;
-        min-height: 0;
-        gap: 6px;
-        padding: 10px 0;
-      }
-
-      .context-dock .card-row:last-child {
-        border-bottom: 0;
-      }
-
-      .context-dock .card-row-label {
-        flex: none;
-        width: 100%;
-        white-space: normal;
-      }
-
-      .context-dock .pill-btn {
-        flex: 1 1 0;
-        min-width: 0;
-        padding: 0 0.5rem;
-        height: 2.1rem;
-      }
-
-      /* Chaque étape du parcours = une LIGNE, pas une carte : libellé discret à
-         gauche, options à droite, et un simple filet pour séparer. Aucun cadre,
-         aucun fond : la structure vient de l'espacement et de la typographie. */
+      /* Une ligne DANS une carte : libellé à gauche, contrôles à droite,
+         séparée de la suivante par un filet. Jamais de cadre par ligne. */
       .card-row {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 16px;
         width: 100%;
         background: none;
         border: 0;
-        border-bottom: 1px solid var(--hairline-soft);
+        border-bottom: 1px solid var(--hairline);
         border-radius: 0;
-        padding: 13px 0;
+        padding: 9px 13px;
         min-height: 0;
       }
 
+      .card-row:last-child {
+        border-bottom: 0;
+      }
+
       .card-row-label {
-        flex: 0 0 176px;
-        width: 176px;
+        flex: 0 0 164px;
+        width: 164px;
+        min-width: 0;
         font-size: var(--fs-micro);
         font-weight: 700;
         letter-spacing: var(--ls-wide);
         color: var(--muted);
-        line-height: 1.3;
-        padding-top: 1px;
-        align-self: center;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
       }
 
       .card-row-content {
@@ -651,22 +685,53 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 10px;
+        gap: 7px;
         min-width: 0;
       }
 
       .card-row-inline {
-        gap: 22px;
+        gap: 18px;
       }
 
-      /* Bouton de choix (COMPTE, STATUT, MOTIF, SOUS-MOTIF, catégories, OUI/NON…).
-         Au repos : pas de cadre du tout, juste du texte espacé.
-         Sélectionné : aplat cyan discret + texte accentué + un trait sous
-         l'élément. L'écart entre les deux états est net sans être criard. */
+      /* Sidebar : colonne étroite, on empile libellé puis options. */
+      .context-dock {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .context-dock .card-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        padding: 8px 0;
+      }
+
+      .context-dock .card-row:first-child {
+        padding-top: 0;
+      }
+
+      .context-dock .card-row-label {
+        flex: none;
+        width: 100%;
+      }
+
+      .context-dock .pill-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 0 0.5rem;
+        height: 2.05rem;
+      }
+
+      /* --- Boutons de choix -------------------------------------------------- */
+      /* Normal : fond légèrement plus clair que la carte + bordure subtile.
+         Survol : bordure cyan un peu plus visible, fond éclairci.
+         Sélectionné : fond cyan très légèrement teinté + bordure cyan nette. */
       .pill-btn {
         height: var(--ctrl-h);
-        padding: 0 0.85rem;
-        border-radius: var(--r-sm);
+        max-width: 100%;
+        padding: 0 0.8rem;
+        border-radius: var(--r-md);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -678,52 +743,54 @@
       }
 
       .context-option {
-        border: 0;
-        background: none;
-        color: var(--muted);
-        box-shadow: inset 0 -1px 0 var(--hairline);
+        border: 1px solid var(--border);
+        background: var(--surface-raised);
+        color: var(--ink);
       }
 
       .context-option:hover {
-        background: var(--wash-hover);
+        border-color: var(--border-strong);
+        background: var(--surface-hover);
         color: var(--muted-strong);
-        box-shadow: inset 0 -1px 0 var(--border-strong);
       }
 
       .context-option.is-selected,
       .context-option.is-selected:hover {
+        border-color: var(--accent);
         background: var(--accent-wash-2);
         color: var(--accent-strong);
         font-weight: 700;
-        box-shadow: inset 0 -2px 0 var(--accent);
+        /* Épaissit la bordure sans décaler la mise en page. */
+        box-shadow: inset 0 0 0 1px var(--accent);
       }
 
       .context-option.is-selected .motif-code {
-        color: var(--accent);
-        opacity: 1;
+        background: rgba(34, 211, 238, 0.18);
+        color: var(--accent-strong);
       }
 
       .pill-btn.empty-choice {
-        opacity: 0.3;
+        opacity: 0.4;
         cursor: not-allowed;
+        border-style: dashed;
       }
 
       .pill-btn .empty-tag {
         font-size: var(--fs-micro);
         letter-spacing: 0.1em;
-        padding: 0;
-        border: 0;
-        background: none;
-        border-radius: 0;
+        padding: 0.1rem 0.35rem;
+        border-radius: var(--r-sm);
         color: var(--todo);
-        opacity: 0.9;
+        background: rgba(240, 169, 46, 0.1);
+        border: 1px solid rgba(240, 169, 46, 0.28);
       }
 
-      /* MOTIF : code discret puis intitulé, sur la même ligne. */
+      /* MOTIF : code discret dans une pastille sobre, puis intitulé. */
       .motif-label {
         display: inline-flex;
-        align-items: baseline;
+        align-items: center;
         gap: 0.5rem;
+        min-width: 0;
         text-align: left;
         font-weight: inherit;
         width: auto;
@@ -731,46 +798,47 @@
 
       .motif-code {
         display: inline-flex;
-        align-items: baseline;
-        height: auto;
-        padding: 0;
-        border-radius: 0;
-        background: none;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.45rem;
+        height: 1.35rem;
+        padding: 0 0.3rem;
+        border-radius: var(--r-sm);
+        background: rgba(255, 255, 255, 0.05);
         color: var(--muted);
-        opacity: 0.65;
         font-size: var(--fs-micro);
-        font-weight: 600;
+        font-weight: 700;
         font-variant-numeric: tabular-nums;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.04em;
         flex: 0 0 auto;
       }
 
       .motif-text {
         display: inline-flex;
-        align-items: baseline;
+        align-items: center;
+        min-width: 0;
         line-height: 1;
         font-weight: inherit;
         flex: 0 1 auto;
       }
 
-      /* Champs de saisie : aplat très léger + un seul trait sous le champ,
-         qui devient cyan au focus. Pas de cadre, pas d'anneau lumineux. */
+      /* --- Champs de saisie -------------------------------------------------- */
       .card-input {
         height: var(--ctrl-h);
+        max-width: 100%;
         padding: 0 0.7rem;
-        border-radius: var(--r-sm) var(--r-sm) 0 0;
-        background: var(--wash);
-        border: 0;
-        border-bottom: 1px solid var(--border);
+        border-radius: var(--r-md);
+        background: var(--surface-input);
+        border: 1px solid var(--border);
         color: var(--muted-strong);
         outline: none;
-        min-width: 12rem;
+        min-width: 11rem;
       }
 
       .card-input::placeholder,
       .card-textarea::placeholder {
         color: var(--muted);
-        opacity: 0.5;
+        opacity: 0.55;
         text-transform: none;
         letter-spacing: normal;
         font-weight: 600;
@@ -778,25 +846,25 @@
 
       .card-input:hover,
       .card-textarea:hover {
-        background: var(--wash-hover);
+        border-color: var(--border-strong);
       }
 
       .card-input:focus,
       .card-textarea:focus {
-        background: var(--wash-hover);
-        border-bottom-color: var(--accent);
+        border-color: var(--accent);
+        background: #0e1724;
       }
 
       .card-textarea {
-        min-height: 6.5rem;
+        min-height: 6.2rem;
         padding: 0.55rem 0.7rem;
-        border-radius: var(--r-sm) var(--r-sm) 0 0;
-        background: var(--wash);
-        border: 0;
-        border-bottom: 1px solid var(--border);
+        border-radius: var(--r-md);
+        background: var(--surface-input);
+        border: 1px solid var(--border);
         color: var(--muted-strong);
         outline: none;
         width: 100%;
+        max-width: 100%;
         flex: 1 1 100%;
         resize: vertical;
         line-height: 1.45;
@@ -805,11 +873,12 @@
       /* Zone de collage d'image (Ctrl+V) */
       .image-paste-zone {
         width: 100%;
-        min-height: 5.5rem;
+        max-width: 100%;
+        min-height: 5.2rem;
         padding: 0.55rem;
-        border-radius: var(--r-sm);
-        border: 1px dashed var(--border);
-        background: var(--wash);
+        border-radius: var(--r-md);
+        border: 1px dashed var(--border-strong);
+        background: var(--surface-input);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -819,14 +888,14 @@
       }
 
       .image-paste-zone:hover {
-        border-color: var(--border-strong);
-        background: var(--wash-hover);
+        border-color: var(--accent);
+        background: #0e1724;
       }
 
       .image-paste-zone:focus {
         border-color: var(--accent);
         border-style: solid;
-        background: var(--wash-hover);
+        background: #0e1724;
       }
 
       .image-paste-zone .image-placeholder {
@@ -835,6 +904,7 @@
         text-transform: none;
         letter-spacing: normal;
         font-weight: 600;
+        text-align: center;
       }
 
       .image-paste-zone img {
@@ -851,8 +921,8 @@
         width: 1.6rem;
         height: 1.6rem;
         border-radius: var(--r-sm);
-        border: 0;
-        background: rgba(6, 10, 16, 0.8);
+        border: 1px solid var(--border);
+        background: rgba(8, 12, 20, 0.85);
         color: var(--ink);
         font-size: var(--fs-label);
         font-weight: 700;
@@ -863,32 +933,36 @@
       }
 
       .image-clear-btn:hover {
-        background: rgba(251, 113, 133, 0.22);
+        border-color: rgba(251, 113, 133, 0.5);
+        background: rgba(251, 113, 133, 0.18);
         color: #ffd8de;
       }
 
       .back-arrow-btn {
+        flex: 0 0 auto;
         height: var(--ctrl-h);
-        width: 2.1rem;
-        border-radius: var(--r-sm);
+        width: var(--ctrl-h);
+        border-radius: var(--r-md);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         color: var(--muted);
-        background: none;
-        border: 0;
+        background: var(--surface-raised);
+        border: 1px solid var(--border);
       }
 
       .back-arrow-btn:hover {
-        background: var(--wash-hover);
+        border-color: var(--border-strong);
+        background: var(--surface-hover);
         color: var(--accent-strong);
       }
 
       .leaf-input-wrap {
         display: inline-flex;
         align-items: center;
-        gap: 0.55rem;
-        margin-left: 0;
+        gap: 0.5rem;
+        min-width: 0;
+        margin-left: 0.25rem;
       }
 
       .leaf-input-label {
@@ -896,32 +970,29 @@
         font-weight: 700;
         letter-spacing: var(--ls-wide);
         color: var(--muted);
+        white-space: nowrap;
       }
 
       /* ---------- 7. Blocs résultat ------------------------------------------- */
       .results-stack {
-        gap: 22px;
-        margin-top: 30px;
+        gap: 12px;
+        margin-top: 4px;
       }
 
-      /* Un résultat n'est plus une carte encadrée : un fin rail cyan à gauche,
-         une surface à peine plus claire, aucune bordure. Chaque bloc reste
-         nettement séparé du suivant par l'espacement et le rail. */
+      /* Un résultat = une carte, comme les autres sections, mais avec un
+         bandeau titre légèrement teinté cyan pour l'identifier comme le
+         livrable final. */
       .result-card {
-        background: var(--surface);
-        border: 0;
-        border-left: 2px solid var(--accent);
-        border-radius: 0 var(--r-md) var(--r-md) 0;
         overflow: hidden;
       }
 
       .result-header {
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 11px 14px 10px 16px;
-        background: none;
-        border-bottom: 1px solid var(--hairline);
+        gap: 12px;
+        padding: 8px 12px;
+        background: rgba(34, 211, 238, 0.055);
+        border-bottom: 1px solid var(--border);
       }
 
       .result-title {
@@ -935,20 +1006,21 @@
       }
 
       .result-body {
-        padding: 14px 16px 16px;
+        padding: 12px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
       }
 
       .result-sub {
         display: flex;
         align-items: flex-start;
-        gap: 14px;
+        gap: 12px;
+        min-width: 0;
       }
 
       .result-sub + .result-sub {
-        padding-top: 14px;
+        padding-top: 12px;
         border-top: 1px solid var(--hairline);
       }
 
@@ -956,31 +1028,33 @@
         flex: 1 1 auto;
         min-width: 0;
         color: var(--muted-strong);
-        line-height: 1.55;
+        line-height: 1.5;
       }
 
-      /* Bouton COPIER : en haut à droite du bandeau (bloc unique) ou du
-         sous-bloc (bloc multi). Aplat plein, sans dégradé ni halo. */
+      /* Bouton COPIER : action principale, aplat cyan plein, sans halo. */
       .copy-btn {
         flex: 0 0 auto;
         height: 1.95rem;
-        padding: 0 0.9rem;
+        padding: 0 0.85rem;
         font-size: var(--fs-micro);
         letter-spacing: var(--ls-wide);
         font-weight: 700;
-        border-radius: var(--r-sm);
-        border: 0;
+        white-space: nowrap;
+        border-radius: var(--r-md);
+        border: 1px solid var(--accent);
         background: var(--accent);
         color: var(--accent-ink);
       }
 
       .copy-btn:hover {
         background: var(--accent-strong);
+        border-color: var(--accent-strong);
       }
 
       .copy-success,
       .copy-success:hover {
         background: var(--ok) !important;
+        border-color: var(--ok) !important;
         color: var(--ok-ink) !important;
       }
 
@@ -1047,42 +1121,60 @@
         position: fixed;
         left: 50%;
         bottom: 22px;
-        margin-left: -160px;
-        width: 320px;
+        margin-left: -170px;
+        width: 340px;
+        max-width: calc(100vw - 32px);
         text-align: center;
         z-index: 60;
         padding: 11px 14px;
-        border-radius: var(--r-md);
+        border-radius: var(--r-lg);
         background: var(--surface-raised);
-        border: 0;
-        border-left: 2px solid var(--accent);
+        border: 1px solid var(--border-strong);
         color: var(--muted-strong);
         font-size: var(--fs-label);
         font-weight: 700;
         letter-spacing: 0.12em;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
       }
 
       /* ---------- 9. Responsive ------------------------------------------------ */
-      @media (max-width: 1180px) {
+      @media (max-width: 1400px) {
+        .sidebar {
+          width: 290px;
+          flex-basis: 290px;
+        }
         .card-row-label {
-          flex: 0 0 140px;
-          width: 140px;
+          flex-basis: 148px;
+          width: 148px;
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .app-header,
+        .app-body {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+        .app-header::after {
+          left: 16px;
         }
         .sidebar {
           width: 260px;
           flex-basis: 260px;
-          padding-right: 20px;
         }
-        .main-col {
-          padding-left: 20px;
+        .card-row-label {
+          flex-basis: 132px;
+          width: 132px;
+        }
+        .pill-btn {
+          padding: 0 0.65rem;
         }
       }
 
-      @media (max-width: 960px) {
+      @media (max-width: 980px) {
         .app-body {
           flex-direction: column;
-          gap: 24px;
+          gap: 10px;
         }
         .sidebar {
           position: static;
@@ -1091,11 +1183,6 @@
           flex-direction: row;
           flex-wrap: wrap;
           align-items: flex-start;
-          gap: 32px;
-          padding-right: 0;
-          padding-bottom: 20px;
-          border-right: 0;
-          border-bottom: 1px solid var(--hairline);
         }
         .sidebar .panel {
           flex: 1 1 260px;
@@ -1103,19 +1190,21 @@
         }
         .main-col {
           width: 100%;
-          padding-left: 0;
         }
       }
 
       @media (max-width: 680px) {
-        .app {
-          padding: 0 14px 26px;
-        }
         .app-header {
           height: auto;
           flex-wrap: wrap;
           gap: 8px;
-          padding: 8px 2px;
+          padding: 10px 12px;
+        }
+        .app-header::after {
+          display: none;
+        }
+        .brand-sub {
+          display: none;
         }
         .header-actions {
           width: 100%;
@@ -1124,17 +1213,23 @@
         .hdr-btn {
           flex: 1 1 0;
           justify-content: center;
+          min-width: 0;
         }
-        .brand-sub {
-          display: none;
+        .app-body {
+          padding-left: 12px;
+          padding-right: 12px;
         }
         .card-row {
           flex-direction: column;
           align-items: stretch;
-          gap: 8px;
+          gap: 7px;
         }
         .card-row-label {
           flex: none;
+          width: 100%;
+        }
+        .card-input {
+          min-width: 0;
           width: 100%;
         }
         .result-sub {
