@@ -541,37 +541,50 @@
         flex-direction: column;
       }
 
+      /* Une étape = une ligne « LIBELLÉ : VALEUR », exactement le format copié. */
       .path-step {
         position: relative;
-        display: grid;
-        grid-template-columns: 16px 1fr;
-        grid-template-rows: auto auto;
-        column-gap: 10px;
-        row-gap: 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
         width: 100%;
         text-align: left;
-        padding: 4px 6px 5px;
+        padding: 3px 6px;
         border-radius: var(--r-sm);
         border: 0;
         background: none;
         font-weight: 600;
       }
 
-      /* Le fil qui relie les étapes entre elles. */
-      .path-step:not(:last-child)::after {
-        content: "";
-        position: absolute;
-        left: 13px;
-        top: 21px;
-        bottom: -1px;
-        width: 1px;
-        background: var(--hairline);
+      .path-text {
+        flex: 1 1 auto;
+        min-width: 0;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+
+      .path-sep {
+        font-size: var(--fs-micro);
+        color: var(--muted);
+        opacity: 0.55;
+      }
+
+      /* Flèche de progression entre deux étapes : discrète, alignée sur la
+         colonne des pastilles. */
+      .path-arrow {
+        font-size: var(--fs-micro);
+        line-height: 1;
+        color: var(--muted);
+        opacity: 0.4;
+        margin-left: 11px;
+        padding: 1px 0;
+        user-select: none;
       }
 
       .path-mark {
-        grid-row: 1 / span 2;
-        align-self: start;
-        margin-top: 1px;
+        flex: 0 0 auto;
+        align-self: flex-start;
+        margin-top: 2px;
         width: 16px;
         height: 16px;
         display: inline-flex;
@@ -599,7 +612,6 @@
         letter-spacing: var(--ls-mid);
         color: var(--ink);
         overflow-wrap: anywhere;
-        line-height: 1.3;
       }
 
       /* Étape franchie */
@@ -1376,6 +1388,11 @@
         const backBtn = document.getElementById("backBtn");
         const resetBtn = document.getElementById("resetBtn");
         const globalContextOptions = window.globalContextOptions || [];
+
+        // Libellé de la rangée CATÉGORIE. Défini UNE seule fois et partagé par la
+        // cascade et le panneau CHEMIN, pour qu'ils ne puissent jamais diverger.
+        // Si treeData reçoit un jour un choicesTitle à la racine, il fait autorité.
+        const CATEGORY_LABEL = (window.treeData && window.treeData.choicesTitle) || "CATÉGORIE";
 
         // trail = historique de navigation
         // Chaque entree: { label: "Texte du choix", node: objet suite }
@@ -2335,7 +2352,7 @@
 
           const labelEl = document.createElement("div");
           labelEl.className = "card-row-label";
-          labelEl.textContent = "CATÉGORIE";
+          labelEl.textContent = CATEGORY_LABEL;
           card.appendChild(labelEl);
 
           const content = document.createElement("div");
@@ -2744,10 +2761,14 @@
           typeof window.treeData.choix[0].suite === "object"
         );
 
+        // Le libellé affiché est TOUJOURS celui des données (label du groupe de
+        // contexte, choicesTitle du niveau, label de la question ou de l'input).
+        // Rien n'est écrit en dur : si data.js évolue, le CHEMIN suit.
+        // Le « ? » final est conservé tel quel (ex : « COMPTE EN LIGNE OU MAIL ? »).
         function pushQuestionStep(steps, q, answers) {
           const ans = answers[q.id];
           steps.push({
-            label: (q.label || q.id || "").replace(/\s*\?\s*$/, "").trim(),
+            label: (q.label || q.id || "").trim(),
             value: ans ? String(ans).toUpperCase() : "",
             state: ans ? "done" : "todo",
           });
@@ -2757,31 +2778,50 @@
           const vars = buildTemplateVars();
           const steps = [];
 
-          // 1. Catégorie active
+          // 1. Contexte global : COMPTE puis STATUT. Toujours atteints (ils sont
+          //    visibles dès l'ouverture), donc toujours listés — avec « / » tant
+          //    qu'ils ne sont pas renseignés.
+          (globalContextOptions || []).forEach((group) => {
+            const v = globalSelections[group.id];
+            steps.push({
+              label: group.label || group.id || "",
+              value: v || "",
+              state: v ? "done" : "todo",
+            });
+          });
+
+          // 2. Catégorie active
           const categoryNode = activeToggleStack.length > 0
             ? activeToggleStack[0].savedRootNode
             : inlineRootNode;
 
           if (!categoryNode) {
-            steps.push({ label: "CATÉGORIE", value: "", state: "todo" });
+            steps.push({ label: CATEGORY_LABEL, value: "", state: "todo" });
             return steps;
           }
 
           const cat = (window.treeData.choix || []).find((c) => c.suite === categoryNode);
           steps.push({
-            label: "CATÉGORIE",
+            label: CATEGORY_LABEL,
             value: cat && cat.label ? cat.label : "",
             state: "done",
             goTo: { type: "category" },
           });
 
-          // 2. Toggles activés (AMIABLE RELDET, DETTE NON EXIGIBLE…)
+          // 3. Toggles activés (AMIABLE RELDET, DETTE NON EXIGIBLE…).
+          //    Un toggle REMPLACE les choix de son nœud hôte : on l'affiche donc
+          //    comme le choix qu'il remplace, « <titre du niveau hôte> : <toggle> ».
+          //    Ex. AMIABLE RELDET est posé sur le nœud dont choicesTitle vaut
+          //    « MOTIF » → « MOTIF : AMIABLE RELDET ». Tout vient des données.
           activeToggleStack.forEach((entry) => {
-            steps.push({
-              label: "OPTION",
-              value: (entry.toggle && entry.toggle.label) || "",
-              state: "done",
-            });
+            const host = entry.savedRootNode;
+            const hostTitle = host && host.choicesTitle ? host.choicesTitle : "";
+            const toggleLabel = (entry.toggle && entry.toggle.label) || "";
+            steps.push(
+              hostTitle
+                ? { label: hostTitle, value: toggleLabel, state: "done" }
+                : { label: toggleLabel, value: "OUI", state: "done" }
+            );
           });
 
           // 3. topQuestions rattachées aux toggles : elles s'affichent dans la
@@ -2876,21 +2916,16 @@
           render();
         }
 
-        function renderPathPanel() {
-          pathPanel.innerHTML = "";
+        // Valeur affichée pour une étape. « / » signifie : étape atteinte, mais
+        // pas encore renseignée. Attention : NON est une vraie valeur, elle ne
+        // doit jamais devenir « / ».
+        const PATH_EMPTY = "/";
+        function pathStepValue(step) {
+          return step.value === "" || step.value == null ? PATH_EMPTY : String(step.value);
+        }
 
-          const steps = buildPathSteps();
-
-          // Étape finale : les blocs à copier. renderPathPanel est appelé après
-          // renderResults, donc le conteneur est déjà rempli.
-          const blocCount = resultsContainer.childElementCount;
-          steps.push({
-            label: "RÉSULTAT",
-            value: blocCount > 0 ? blocCount + (blocCount > 1 ? " BLOCS À COPIER" : " BLOC À COPIER") : "",
-            state: blocCount > 0 ? "done" : "todo",
-          });
-
-          // La 1ère étape non franchie devient l'étape "en cours".
+        // Marque les étapes : la 1ère non franchie devient l'étape en cours.
+        function markPathSteps(steps) {
           let currentFound = false;
           steps.forEach((step) => {
             if (!currentFound && step.state !== "done") {
@@ -2898,11 +2933,27 @@
               currentFound = true;
             }
           });
+          return steps;
+        }
+
+        function renderPathPanel() {
+          pathPanel.innerHTML = "";
+
+          const steps = markPathSteps(buildPathSteps());
 
           const doneCount = steps.filter((s) => s.state === "done").length;
           pathCount.textContent = doneCount + "/" + steps.length;
 
-          steps.forEach((step) => {
+          steps.forEach((step, idx) => {
+            // Flèche de progression entre deux étapes, discrète.
+            if (idx > 0) {
+              const arrow = document.createElement("div");
+              arrow.className = "path-arrow";
+              arrow.setAttribute("aria-hidden", "true");
+              arrow.textContent = "↓";
+              pathPanel.appendChild(arrow);
+            }
+
             const clickable = !!step.goTo;
             const el = document.createElement(clickable ? "button" : "div");
             if (clickable) {
@@ -2916,16 +2967,27 @@
             mark.textContent = step.state === "done" ? "✓" : step.state === "current" ? "›" : "○";
             el.appendChild(mark);
 
+            // Format « LIBELLÉ : VALEUR », identique à celui de la copie.
+            const text = document.createElement("span");
+            text.className = "path-text";
+
             const label = document.createElement("span");
             label.className = "path-label";
             label.textContent = step.label;
-            el.appendChild(label);
+            text.appendChild(label);
+
+            const sep = document.createElement("span");
+            sep.className = "path-sep";
+            sep.textContent = " : ";
+            text.appendChild(sep);
 
             const value = document.createElement("span");
             value.className = "path-value";
             // textContent : jamais d'innerHTML ici, donc rien à échapper.
-            value.textContent = step.value || "À RENSEIGNER";
-            el.appendChild(value);
+            value.textContent = pathStepValue(step);
+            text.appendChild(value);
+
+            el.appendChild(text);
 
             if (clickable) {
               el.addEventListener("click", () => applyPathGoTo(step.goTo));
@@ -3051,85 +3113,26 @@
         // réutilisée par RECOMMENCER.)
         applyInitialInlineRoot();
 
-        // Construit une chaîne décrivant tous les choix actuels (utile pour
-        // copier-coller le chemin dans une conversation Claude).
-        // Format : "ACTIF + A/C + DÉLAI + REFUS - PAS DE PJ + MOIS=37 + DCA NON + PLUS50K OUI"
+        // Chaîne texte du CHEMIN, destinée au presse-papier (pour la donner
+        // telle quelle à une IA, ou pour décrire son état).
+        //
+        // Elle est construite à partir des MÊMES étapes que le panneau CHEMIN
+        // (buildPathSteps) : il est donc impossible que l'affichage et la copie
+        // divergent. Il n'existe plus aucune logique de navigation parallèle ici.
+        //
+        // Format, une étape par ligne, séparées par une flèche :
+        //   COMPTE : ACTIF
+        //   ↓
+        //   STATUT : A/C
+        //   ↓
+        //   MOTIF : AMIABLE RELDET
+        // « / » = étape atteinte mais pas encore renseignée.
         function getCurrentPathString() {
-          const parts = [];
-
-          // 1. Contexte global (COMPTE / STATUT)
-          (globalContextOptions || []).forEach((opt) => {
-            const v = globalSelections[opt.id];
-            if (v) parts.push(v);
-          });
-
-          // 2. Catégorie active : on retrouve son label en cherchant dans treeData
-          //    le choix dont la suite correspond au savedRootNode du 1er toggle ou
-          //    au inlineRootNode courant.
-          const categoryNode = activeToggleStack.length > 0
-            ? activeToggleStack[0].savedRootNode
-            : inlineRootNode;
-          if (categoryNode) {
-            const cat = (window.treeData.choix || []).find((c) => c.suite === categoryNode);
-            if (cat && cat.label) parts.push(cat.label);
-          }
-
-          // 3. Toggles activés (ex: AMIABLE RELDET, DETTE NON EXIGIBLE)
-          activeToggleStack.forEach((entry) => {
-            if (entry.toggle && entry.toggle.label) parts.push(entry.toggle.label);
-          });
-
-          // 4. Cascade (inlineChain : choix de MOTIF, SOUS-MOTIF, RAISON, etc.)
-          inlineChain.forEach((step) => {
-            if (step.label) parts.push(step.label);
-          });
-
-          // Helper : récupère les leafQuestions et inputs accessibles à tous les
-          // niveaux de l'arbre courant pour mapper id → label.
-          const idToLabel = {};
-          const collectLabels = (node) => {
-            if (!node) return;
-            if (Array.isArray(node.leafQuestions)) {
-              node.leafQuestions.forEach((q) => { idToLabel[q.id] = q.label || q.id; });
-            }
-            if (Array.isArray(node.inputs)) {
-              node.inputs.forEach((i) => { idToLabel[i.id] = i.label || i.id; });
-            }
-            if (Array.isArray(node.topQuestions)) {
-              node.topQuestions.forEach((q) => { idToLabel[q.id] = q.label || q.id; });
-            }
-          };
-          activeToggleStack.forEach((entry) => collectLabels(entry.toggle.whenOn));
-          if (inlineRootNode) collectLabels(inlineRootNode);
-          inlineChain.forEach((step) => collectLabels(step.node));
-
-          // Helper : ajoute "LABEL VAL" si val est oui/non/ae/ti, sinon "LABEL=VAL"
-          const fmt = (id, val) => {
-            const label = (idToLabel[id] || id).replace(/\s*\?\s*$/, "").trim();
-            const v = String(val).toUpperCase();
-            const isFlag = ["OUI", "NON", "AE", "TI"].includes(v);
-            return isFlag ? `${label} ${v}` : `${label}=${val}`;
-          };
-
-          // 5. Inputs remplis (DATE, MOIS, etc.)
-          Object.entries(nodeInputs).forEach(([id, val]) => {
-            if (val !== undefined && val !== "") parts.push(fmt(id, val));
-          });
-
-          // 6. LeafAnswers (DCA, plus50k, ae-ti, dretaf, suspen, ficoba, etc.)
-          Object.entries(leafAnswers).forEach(([id, val]) => {
-            if (val) parts.push(fmt(id, val));
-          });
-          Object.entries(leafInputs).forEach(([id, val]) => {
-            if (val) parts.push(fmt(id, val));
-          });
-
-          // 7. TopAnswers (compte-en-ligne, ficoba…)
-          Object.entries(topAnswers).forEach(([id, val]) => {
-            if (val) parts.push(fmt(id, val));
-          });
-
-          return parts.join(" + ") || "(aucun choix)";
+          const steps = buildPathSteps();
+          if (steps.length === 0) return "(aucun choix)";
+          return steps
+            .map((step) => step.label + " : " + pathStepValue(step))
+            .join("\n\u2193\n");
         }
 
         // Trouve l'id du 1er input de type "image" présent dans la cascade courante.
