@@ -1116,6 +1116,10 @@
             title="Revenir d'un seul niveau en arrière (conserve COMPTE et STATUT)">
             ↩ RETOUR
           </button>
+          <button type="button" id="repeatBtn" class="hdr-btn"
+            title="Dossier suivant du même type : garde le chemin (catégorie, motif, toggles, réponses) et vide seulement les saisies du dossier précédent">
+            » RÉPÉTER
+          </button>
           <button type="button" id="resetBtn" class="hdr-btn hdr-btn-strong"
             title="Nouveau dossier : remet le parcours à zéro mais conserve COMPTE et STATUT">
             ⟳ RECOMMENCER
@@ -1196,6 +1200,7 @@
         const pathCount = document.getElementById("pathCount");
         const backBtn = document.getElementById("backBtn");
         const resetBtn = document.getElementById("resetBtn");
+        const repeatBtn = document.getElementById("repeatBtn");
         const globalContextOptions = window.globalContextOptions || [];
 
         // trail = historique de navigation
@@ -1865,6 +1870,33 @@
           return card;
         }
 
+        // Si l'option a defaultInputs, on pré-remplit (uniquement si vide).
+        // Ex: motif 13 → DATE auto-remplie avec la date du jour.
+        // defaultInputsConditions permet de limiter le pré-remplissage à un contexte
+        // (ex: motif 14, on ne pré-remplit qu'en A/C, pas en PL où la date est BODACC).
+        //
+        // Extrait du gestionnaire de clic pour que RÉPÉTER rejoue EXACTEMENT le
+        // même pré-remplissage qu'un clic sur le choix (source unique).
+        function applyDefaultInputs(option) {
+          if (!option || !option.defaultInputs || typeof option.defaultInputs !== "object") return;
+          const conditionsOk =
+            !option.defaultInputsConditions ||
+            contextMatches(option.defaultInputsConditions, buildTemplateVars());
+          if (!conditionsOk) return;
+          Object.entries(option.defaultInputs).forEach(([inputId, val]) => {
+            if (nodeInputs[inputId]) return; // ne pas écraser une saisie existante
+            if (val === "today") {
+              const _now = new Date();
+              nodeInputs[inputId] =
+                String(_now.getDate()).padStart(2, "0") + "/" +
+                String(_now.getMonth() + 1).padStart(2, "0") + "/" +
+                String(_now.getFullYear()).slice(-2);
+            } else {
+              nodeInputs[inputId] = val;
+            }
+          });
+        }
+
         // Crée une card-row pour les choix d'un niveau de cascade.
         function createChoiceCard(levelNode, visibleChoix, levelIdx, isInline, vars) {
           const isMotifLayout = !!(levelNode.choicesTitle && levelNode.choicesTitle.toUpperCase().includes("MOTIF"));
@@ -1924,29 +1956,7 @@
                 return;
               }
 
-              // Si l'option a defaultInputs, on pré-remplit (uniquement si vide).
-              // Ex: motif 13 → DATE auto-remplie avec la date du jour.
-              // defaultInputsConditions permet de limiter le pré-remplissage à un contexte
-              // (ex: motif 14, on ne pré-remplit qu'en A/C, pas en PL où la date est BODACC).
-              if (option.defaultInputs && typeof option.defaultInputs === "object") {
-                const conditionsOk =
-                  !option.defaultInputsConditions ||
-                  contextMatches(option.defaultInputsConditions, buildTemplateVars());
-                if (conditionsOk) {
-                  Object.entries(option.defaultInputs).forEach(([inputId, val]) => {
-                    if (nodeInputs[inputId]) return; // ne pas écraser une saisie existante
-                    if (val === "today") {
-                      const _now = new Date();
-                      nodeInputs[inputId] =
-                        String(_now.getDate()).padStart(2, "0") + "/" +
-                        String(_now.getMonth() + 1).padStart(2, "0") + "/" +
-                        String(_now.getFullYear()).slice(-2);
-                    } else {
-                      nodeInputs[inputId] = val;
-                    }
-                  });
-                }
-              }
+              applyDefaultInputs(option);
 
               if (isInline) {
                 const nextNode = option.suite && typeof option.suite === "object" ? option.suite : null;
@@ -2827,8 +2837,76 @@
           showToast("NOUVEAU DOSSIER — COMPTE ET STATUT CONSERVÉS");
         }
 
+        // RÉPÉTER n'a de sens que si un parcours est en cours (une catégorie est
+        // ouverte). Sinon il n'y a aucun chemin à conserver.
+        function canRepeat() {
+          return !!inlineRootNode;
+        }
+
+        // RÉPÉTER = dossier suivant DU MÊME TYPE. « Même chemin, nouveau dossier ».
+        //
+        // CONSERVÉ (= le chemin métier) :
+        //   globalSelections .... COMPTE / STATUT
+        //   inlineRootNode ...... catégorie (ou whenOn du toggle actif)
+        //   inlineChain ......... les choix de la cascade (MOTIF, SOUS-MOTIF, RAISON…)
+        //   activeToggleStack ... toggles activés (AMIABLE RELDET, DETTE NON EXIGIBLE…)
+        //   leafAnswers ......... DRETAF, SUSPEN, DCA, +50K, AE/TI, INSTRUCTIONS CJ…
+        //   topAnswers .......... FICOBA, COMPTE EN LIGNE
+        //   trail, nodeSelections  (état de navigation, non lié au dossier)
+        //
+        // VIDÉ (= les données du dossier précédent) :
+        //   nodeInputs .......... DATE, MOIS, ÉCRITURES, ADRESSE, CJ, et les IMAGES
+        //                         collées (stockées en data URL dans nodeInputs)
+        //   leafInputs .......... N° CO
+        //   lastScrollTargetId .. repère de scroll propre au dossier
+        //
+        // leafAnswers et topAnswers sont conservés parce qu'ils s'affichent comme
+        // des étapes du CHEMIN au même titre que les choix : les garder, c'est
+        // respecter « les choix précédents restent sélectionnés ». Ils restent
+        // modifiables en un clic si le nouveau dossier diffère.
+        //
+        // Aucun état de copie n'est à réinitialiser : la classe `copy-success` est
+        // portée par des boutons que render() recrée entièrement à chaque rendu.
+        function repeatDossier() {
+          if (!canRepeat()) return;
+
+          nodeInputs = {};
+          leafInputs = {};
+          lastScrollTargetId = null;
+
+          // Garde-fou : si un choix du chemin dépendait d'une saisie qu'on vient
+          // de vider, on tronque plutôt que de garder un chemin incohérent.
+          // (Aujourd'hui aucun `conditions` de data.js ne porte sur une saisie —
+          // seulement statut / compte / dca / motif-id — donc c'est un no-op ;
+          // c'est une protection pour l'avenir.)
+          pruneInlineChain();
+
+          // On rejoue le pré-remplissage des choix du chemin, dans l'ordre où ils
+          // ont été cliqués. Sans ça, répéter un motif 13 / 14 A/C / 16 laisserait
+          // DATE vide alors que refaire le chemin à la main la remplirait.
+          inlineChain.forEach((step) => applyDefaultInputs(step.option));
+
+          window.scrollTo(0, 0);
+          render();
+
+          // Les blocs du dossier précédent ne doivent plus être ni visibles ni
+          // copiables. Attention : ils ne disparaissent PAS tout seuls, parce
+          // qu'ils sont reconstruits à partir du chemin (qu'on conserve) — ils
+          // se réafficheraient simplement avec les champs vides, donc copiables
+          // alors qu'incomplets. On les retire donc explicitement.
+          // Ils réapparaîtront dès la première action sur le nouveau dossier :
+          // toute saisie et tout clic déclenchent un nouveau rendu.
+          // renderResults() n'est pas modifiée : la génération des résultats est
+          // strictement inchangée.
+          resultsContainer.innerHTML = "";
+          renderPathPanel(); // recompte les blocs : RÉSULTAT repasse en « à faire »
+
+          showToast("DOSSIER SUIVANT — MÊME CHEMIN CONSERVÉ");
+        }
+
         if (backBtn) backBtn.addEventListener("click", goBackOneStep);
         if (resetBtn) resetBtn.addEventListener("click", resetDossier);
+        if (repeatBtn) repeatBtn.addEventListener("click", repeatDossier);
 
         function render() {
           // On capture la position de scroll avant le re-rendu pour la restaurer.
@@ -2850,6 +2928,7 @@
           // renderPathPanel en dernier : il compte les blocs résultat déjà rendus.
           renderPathPanel();
           if (backBtn) backBtn.disabled = !canGoBack();
+          if (repeatBtn) repeatBtn.disabled = !canRepeat();
           // Plus de scroll auto ni de focus auto : l'utilisateur navigue à son rythme.
 
           // Restauration de la position : on force avant ET après le reflow
