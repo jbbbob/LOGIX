@@ -64,6 +64,18 @@
         /* Ombre de carte : quasi imperceptible, juste un décollement. */
         --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
 
+        /* Fond de page, défini UNE seule fois.
+           Le header réutilise exactement la même valeur (avec
+           background-attachment: fixed) : comme un fond « fixed » se
+           positionne par rapport à la fenêtre et non par rapport à
+           l'élément, le header peint rigoureusement les mêmes pixels que la
+           page derrière lui. Résultat : aucune démarcation visible, tout en
+           restant opaque — le contenu ne transparaît pas quand on défile. */
+        --page-bg:
+          radial-gradient(1100px 620px at 22% -12%, #14243a 0%, rgba(20, 36, 58, 0) 62%),
+          radial-gradient(900px 520px at 108% 4%, #0f2b34 0%, rgba(15, 43, 52, 0) 58%),
+          var(--bg-1);
+
         --ok: #34d399;
         --ok-ink: #04241a;
         --todo: #f0a92e;
@@ -124,10 +136,7 @@
         letter-spacing: var(--ls-ui);
         line-height: 1.25;
         color: var(--ink);
-        background:
-          radial-gradient(1100px 620px at 22% -12%, #14243a 0%, rgba(20, 36, 58, 0) 62%),
-          radial-gradient(900px 520px at 108% 4%, #0f2b34 0%, rgba(15, 43, 52, 0) 58%),
-          var(--bg-1);
+        background: var(--page-bg);
         background-attachment: fixed;
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
@@ -303,10 +312,13 @@
         padding: 0 0 36px;
       }
 
-      /* --- Header : barre pleine largeur, fond distinct, bordure fine --------- */
-      /* Pleine largeur volontairement : le header est collant (sticky), et une
-         carte en retrait laisserait le contenu défiler dans les marges latérales.
-         Ici rien ne peut passer à côté ni dépasser. */
+      /* --- Header : PAS de carte, fondu dans le décor ------------------------- */
+      /* Volontairement sans fond propre, sans cadre et sans ombre : c'est une
+         barre d'application posée directement sur le fond de la page.
+         Le `background: var(--page-bg)` + `fixed` reproduit exactement le fond
+         général (voir le commentaire du jeton --page-bg) : invisible à l'œil,
+         mais opaque, ce qui évite que le contenu transparaisse au défilement.
+         Seul un filet horizontal très léger marque la limite. */
       .app-header {
         position: sticky;
         top: 0;
@@ -317,11 +329,12 @@
         width: 100%;
         height: 58px;
         padding: 0 22px;
-        margin-bottom: 18px;
-        background: var(--surface);
+        margin-bottom: 14px;
+        background: var(--page-bg);
+        background-attachment: fixed;
         border: 0;
-        border-bottom: 1px solid var(--border);
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+        border-bottom: 1px solid var(--hairline-soft);
+        box-shadow: none;
       }
 
       /* Touche cyan : un trait court sous la marque, rien de plus. */
@@ -330,9 +343,10 @@
         position: absolute;
         left: 22px;
         bottom: -1px;
-        width: 104px;
+        width: 86px;
         height: 1px;
         background: var(--accent);
+        opacity: 0.6;
       }
 
       .brand {
@@ -343,7 +357,9 @@
         font-size: var(--fs-brand);
         font-weight: 700;
         letter-spacing: 0.26em;
-        color: var(--muted-strong);
+        /* Élément le plus lumineux de la page : posé à même le fond, il doit
+           porter seul, sans cadre pour le soutenir. */
+        color: #f2f7ff;
         user-select: none;
       }
 
