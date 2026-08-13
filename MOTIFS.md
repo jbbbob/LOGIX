@@ -192,13 +192,16 @@
         - *RAISON* :
           - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - Plusieurs versements récents :<br>{{ecritures}}<br><br>Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour fair … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une ré … »
           - `raison-insolvable` — **INSOLVABLE**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - Plusieurs versements récents :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite aux versements  … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite {{versements-suite}} -  … »
           - `raison-psa` — **PSA**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - Plusieurs versements récents :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée - Pas … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée - Pas d'ANV s … »
+          - `raison-md-psa` — **MD PSA**
+            - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative  … »
       - `verse-non` — **NON**
         - *RAISON* :
           - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
@@ -298,8 +301,8 @@
 ## Stats
 
 - Catégories : 3
-- Choix totaux (tous niveaux) : 31
+- Choix totaux (tous niveaux) : 32
 - Inputs : 8
 - Toggles : 2
 - TopQuestions : 2
-- Résultats (blocs texte) : 89
+- Résultats (blocs texte) : 90

@@ -1615,6 +1615,33 @@
             ? "-> RELDET fait en v2 car pas de compte en ligne ni de mail pour envoyer par SCRIBE"
             : "-> RELDET + formulaire de demande délai envoyé par SCRIBE";
 
+          // ACCORD SINGULIER / PLURIEL DES VERSEMENTS (AMIABLE RELDET).
+          // Le nombre de versements n'est pas une question posée à l'utilisateur :
+          // il se lit dans le textarea ÉCRITURES, où chaque ligne correspond à
+          // une écriture de compte (cleanEcritures supprime déjà les lignes vides).
+          //   2 lignes ou plus  → pluriel
+          //   0 ou 1 ligne      → singulier
+          // On expose 3 formes pour couvrir les tournures existantes, plutôt que
+          // de faire un remplacement de mots sur le texte final, qui produirait
+          // des phrases fausses ailleurs. Source unique : ici, et nulle part ailleurs.
+          const _nbEcritures = String(nodeInputs.ecritures || "")
+            .split("\n")
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0).length;
+          const _versementsPluriel = _nbEcritures >= 2;
+          // Début de segment, avec majuscule : "Plusieurs versements récents :"
+          vars["versements-intro"] = _versementsPluriel
+            ? "Plusieurs versements récents"
+            : "Versement récent";
+          // Après "suite" : "suite aux versements récents" / "suite au versement récent"
+          vars["versements-suite"] = _versementsPluriel
+            ? "aux versements récents"
+            : "au versement récent";
+          // Groupe nominal nu : "et versements récents" / "et versement récent"
+          vars["versements-nom"] = _versementsPluriel
+            ? "versements récents"
+            : "versement récent";
+
           // Phrase "ET RECH EOPPS [+ FICOBA] RECENTE" centralisée : sans le "+ FICOBA"
           // si la topQuestion FICOBA est répondue NON (motif 12 A/C). Source unique.
           vars["phrase-eopps"] = topAnswers["ficoba"] === "non"

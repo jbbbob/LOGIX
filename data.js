@@ -245,7 +245,7 @@ const anv12LeafConfig = {
 
 // ============================================================================
 // Configurations pour les cas SPÉCIAUX (pas d'ANV) :
-// - 3 cas avec versements récents (frais frustratoires / insolvable / PSA)
+// - 4 cas avec versements récents (frais frustratoires / insolvable / PSA / MD PSA)
 // - 1 cas rare (frustratoires sans versements)
 // Tous produisent un seul bloc COMMENTAIRE AFFAIRE WATT.
 // ============================================================================
@@ -261,7 +261,11 @@ function makeVersementsLeaf(phraseFin) {
         label: "COMMENTAIRE AFFAIRE WATT",
         type: "simple",
         texte:
-          "Compte {{compte-display}} - Pas de risque de prescription - Plusieurs versements récents :<br>" +
+          // {{versements-intro}} s'accorde tout seul : "Plusieurs versements
+          // récents" s'il y a 2 écritures ou plus, "Versement récent" sinon.
+          // Le nombre est déduit des lignes du textarea ÉCRITURES (cf. le calcul
+          // dans buildTemplateVars, dans index.html).
+          "Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>" +
           "{{ecritures}}<br><br>" +
           phraseFin,
       },
@@ -752,15 +756,24 @@ const anvBranch = {
 // Si VERSEMENT = OUI → textarea ÉCRITURES sur la feuille.
 // ============================================================================
 
-// Sous-niveau RAISON quand VERSEMENT = OUI : 3 raisons → feuille avec textarea
+// Sous-niveau RAISON quand VERSEMENT = OUI : 4 raisons → feuille avec textarea
 // ÉCRITURES + COMMENTAIRE WATT.
+//
+// ACCORD SINGULIER / PLURIEL : ces textes ne codent plus "versements récents"
+// en dur. Ils utilisent des variables qui s'accordent selon le nombre de lignes
+// saisies dans ÉCRITURES (calcul unique dans buildTemplateVars, index.html) :
+//   {{versements-intro}} → "Plusieurs versements récents" / "Versement récent"
+//   {{versements-suite}} → "aux versements récents"       / "au versement récent"
+//   {{versements-nom}}   → "versements récents"           / "versement récent"
+// Ne jamais réécrire ces formes en dur : la phrase deviendrait fausse dès qu'il
+// n'y a qu'un seul versement.
 const raisonChoixAvecVersements = [
   {
     id: "raison-frustratoires",
     label: "FRAIS FRUSTRATOIRES",
     description: "",
     suite: makeVersementsLeaf(
-      "Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car aucun justificatif et versements récents - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
+      "Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car aucun justificatif et {{versements-nom}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
     ),
   },
   {
@@ -768,7 +781,7 @@ const raisonChoixAvecVersements = [
     label: "INSOLVABLE",
     description: "",
     suite: makeVersementsLeaf(
-      "Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite aux versements récents - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
+      "Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite {{versements-suite}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
     ),
   },
   {
@@ -776,7 +789,15 @@ const raisonChoixAvecVersements = [
     label: "PSA",
     description: "",
     suite: makeVersementsLeaf(
-      "Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite aux versements récents - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
+      "Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
+    ),
+  },
+  {
+    id: "raison-md-psa",
+    label: "MD PSA",
+    description: "",
+    suite: makeVersementsLeaf(
+      "MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
     ),
   },
 ];
