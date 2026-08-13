@@ -91,12 +91,24 @@
            pour les blocs résultat, pour ne rien changer à ta lecture. */
         --fs-micro: 9.5pt;
         --fs-label: 10.5pt;
-        --fs-choice: 12pt;
+        --fs-choice: 11pt;
         --fs-body: 13pt;
         --fs-title: 14pt;
         --fs-brand: 17pt;
 
+        /* Échelle d'interlettrage — RÉFÉRENCE TYPOGRAPHIQUE DE L'INTERFACE.
+           Le style de « CATÉGORIE » et « OUTIL RECOUVREMENT » (petites
+           capitales largement espacées) est la langue commune de toute l'UI.
+           L'espacement suit la taille, comme en typographie soignée : plus le
+           texte est petit, plus il respire. C'est ce qui donne une identité
+           unique et évite l'effet « texte de bouton banal ».
+             --ls-wide   : 9.5pt  → titres de section, titres de blocs, boutons
+             --ls-mid    : 10.5pt → valeurs affichées (CHEMIN)
+             --ls-choice : 11pt   → les choix de la cascade
+             --ls-ui     : base, et données saisies (dates, montants) */
         --ls-wide: 0.18em;
+        --ls-mid: 0.13em;
+        --ls-choice: 0.12em;
         --ls-ui: 0.08em;
 
         --r-sm: 4px;
@@ -405,7 +417,7 @@
         gap: 0.5rem;
         white-space: nowrap;
         font-size: var(--fs-micro);
-        letter-spacing: 0.13em;
+        letter-spacing: var(--ls-wide);
         border-radius: var(--r-md);
         border: 1px solid var(--border);
         background: var(--surface-raised);
@@ -584,6 +596,7 @@
 
       .path-value {
         font-size: var(--fs-label);
+        letter-spacing: var(--ls-mid);
         color: var(--ink);
         overflow-wrap: anywhere;
         line-height: 1.3;
@@ -754,6 +767,8 @@
         gap: 0.5rem;
         white-space: nowrap;
         font-size: var(--fs-choice);
+        /* Même langage que « CATÉGORIE » : capitales espacées, graisse sobre. */
+        letter-spacing: var(--ls-choice);
         font-weight: 600;
         line-height: 1;
       }
@@ -775,7 +790,9 @@
         border-color: var(--accent);
         background: var(--accent-wash-2);
         color: var(--accent-strong);
-        font-weight: 700;
+        /* Graisse volontairement inchangée : la sélection se lit déjà à la
+           couleur, au fond et à la bordure. Passer en gras alourdirait le texte
+           et ferait légèrement bouger la mise en page à chaque clic. */
         /* Épaissit la bordure sans décaler la mise en page. */
         box-shadow: inset 0 0 0 1px var(--accent);
       }
@@ -793,7 +810,7 @@
 
       .pill-btn .empty-tag {
         font-size: var(--fs-micro);
-        letter-spacing: 0.1em;
+        letter-spacing: var(--ls-wide);
         padding: 0.1rem 0.35rem;
         border-radius: var(--r-sm);
         color: var(--todo);
@@ -825,7 +842,7 @@
         font-size: var(--fs-micro);
         font-weight: 700;
         font-variant-numeric: tabular-nums;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.08em;
         flex: 0 0 auto;
       }
 
@@ -849,6 +866,15 @@
         color: var(--muted-strong);
         outline: none;
         min-width: 11rem;
+      }
+
+      /* Les champs contiennent des DONNÉES (dates, montants, adresses) :
+         graisse allégée et interlettrage de base, la lisibilité prime sur le
+         style. C'est la hiérarchie voulue : chrome espacé, données sobres. */
+      .card-input,
+      .card-textarea {
+        font-weight: 600;
+        letter-spacing: var(--ls-ui);
       }
 
       .card-input::placeholder,
@@ -1149,7 +1175,7 @@
         color: var(--muted-strong);
         font-size: var(--fs-label);
         font-weight: 700;
-        letter-spacing: 0.12em;
+        letter-spacing: var(--ls-mid);
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
       }
 
