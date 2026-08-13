@@ -8,7 +8,7 @@ Je suis **contrôleur de recouvrement**. Je construis ce projet **seul**, pour *
 - Je suis **amateur**, je ne code pas bien. Je t'utilise dans Claude Code comme pair programmer.
 - **Au boulot, je n'ai le droit d'installer aucune application.** Donc : site web 100 % statique, hébergé en public sur **GitHub / GitHub Pages**, ouvrable dans n'importe quel navigateur.
 - **Aucune donnée client dans le repo.** Jamais de noms, numéros de dossier, IBAN, montants réels, captures d'écran internes, ou quoi que ce soit de confidentiel — le repo est public.
-- Tout doit fonctionner **offline** une fois la page chargée (le seul accès réseau autorisé aujourd'hui est le CDN Tailwind — on pourra l'inliner plus tard si besoin).
+- Tout doit fonctionner **100 % offline**. Depuis la refonte UI, il n'y a **plus aucun appel réseau du tout** (Tailwind CDN a été supprimé, le CSS est natif et le favicon est un data URI). Ne réintroduis jamais de dépendance externe.
 
 **Comment me parler** :
 - En **français simple**. Quand tu utilises un terme technique (event listener, closure, refactor, XSS, IIFE…), explique-le en une phrase la première fois avec un exemple tiré de MON code.
@@ -26,10 +26,10 @@ Je suis **contrôleur de recouvrement**. Je construis ce projet **seul**, pour *
 
 Concrètement :
 - Pas de confirmations modales sauf danger réel
-- Pas d'animations qui font attendre (d'où le `animation: none !important`)
+- Pas d'animations qui font attendre (voir la règle stricte dans « Stack et contraintes visuelles »)
 - Chemins fréquents = les plus courts (le motif le plus utilisé doit être à 1 clic, pas 3)
-- Raccourcis clavier bienvenus (touches numériques pour les choix, Esc pour revenir)
-- L'état se restaure automatiquement quand c'est utile (ex : le contexte global COMPTE/STATUT est déjà persisté, c'est le bon pattern)
+- Raccourcis clavier bienvenus (touches numériques pour les choix, Esc pour revenir) — **pas encore implémentés**
+- L'état se restaure automatiquement quand c'est utile (ex : **RECOMMENCER conserve COMPTE/STATUT** d'un dossier à l'autre, c'est le bon pattern)
 
 Si tu vois une occasion d'économiser un clic ou une seconde, signale-la.
 
@@ -60,20 +60,33 @@ Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dos
 
 ## Stack et contraintes visuelles
 
-- **Tailwind** via `https://cdn.tailwindcss.com` (pas de config, pas de purge).
-- **Police imposée** : Aptos → Calibri → Arial, forcée via `!important`, 11pt, `text-transform: uppercase`, `letter-spacing: 0.08em`. Tout le texte s'affiche en MAJUSCULES par CSS.
-- **Thème sombre** via variables CSS : `--bg-1`, `--ink`, `--accent` (doré `#c7a66b`), `--surface`, `--surface-strong`, `--muted`, `--muted-strong`.
-- **Animations désactivées globalement** (`animation: none !important; transition: none !important`). Choix délibéré pour la vitesse. Ne pas réactiver.
+- **Aucune dépendance, aucun CDN, aucun build.** Tout le CSS est natif, écrit à la main dans le `<style>` de `index.html`, organisé en 9 sections commentées.
+- **Police imposée** : Aptos → Calibri → Arial, forcée via `body, body * { font-family: … !important }`. `text-transform: uppercase` + `letter-spacing` sur toute l'UI.
+- **La taille n'est PLUS imposée globalement.** L'ancienne règle `body, body * { font-size: 13pt !important }` a été supprimée : elle rendait toute hiérarchie typographique impossible. Elle est remplacée par une échelle en variables CSS :
+  - `--fs-micro: 9.5pt` (labels du panneau CHEMIN, badges, pastilles)
+  - `--fs-label: 10.5pt` (libellés des card-rows, titres de résultat)
+  - `--fs-choice: 12pt` (boutons de choix, taille de base du `body`)
+  - `--fs-body: 13pt` → **taille historique, appliquée aux `.result-content`. Ne pas y toucher.**
+  - `--fs-title: 14pt`, `--fs-brand: 17pt`
+- **Thème sombre, identité LOGIX** : fond encre légèrement bleuté, accent cyan / bleu électrique. Variables principales : `--bg-1: #0a0e15`, `--surface`, `--surface-strong`, `--surface-raised`, `--surface-input`, `--ink`, `--muted`, `--muted-strong`, `--accent: #22d3ee`, `--accent-strong`, `--accent-deep`, `--accent-ink`, `--accent-wash`, `--border`, `--border-strong`, `--ok`, `--todo`, `--danger`.
+- **Animations — règle stricte, à respecter à la lettre** :
+  - `animation: none !important` reste global (aucun keyframe, jamais).
+  - Seules `background-color`, `border-color`, `box-shadow` et `color` peuvent transitionner, en **110 ms** (`--t`), sans aucun délai.
+  - **Interdit** : toute transition/animation de `transform`, `width`, `height`, `opacity`, ou toute apparition/disparition progressive. L'action de l'utilisateur doit toujours être instantanée.
+  - `prefers-reduced-motion: reduce` coupe tout.
 
 ## Règles dures (ne JAMAIS casser)
 
 1. `window.treeData` et `window.globalContextOptions` sont exposés à la fin de `data.js`. Ne pas renommer ni supprimer l'exposition.
-2. Pas de framework (React, Vue…), pas de bundler, pas de npm, pas de nouvelle dépendance externe hors le Tailwind CDN déjà là.
+2. Pas de framework (React, Vue…), pas de bundler, pas de npm, **aucune dépendance externe ni aucun appel réseau** (Tailwind a été retiré, ne pas le réintroduire).
 3. **Aucune donnée confidentielle dans le repo.** Tous les exemples de textes de courrier sont génériques (`Madame, Monsieur, …`), jamais de noms réels, jamais de numéros de dossier réels, jamais de montants réels. Si tu vois passer une vraie donnée, alerte-moi.
 4. **Tout contenu dynamique venant de `data.js` passe par `escapeHtml()` avant injection.** **Seule exception intentionnelle** : `resultats[].texte` est injecté en HTML riche via `innerHTML` (nécessaire pour que le bouton "Copier" colle du rich text via `ClipboardItem` `text/html`). Tout nouveau champ doit être échappé par défaut.
+   - Complément : les **valeurs saisies par l'utilisateur** (inputs, textareas) sont échappées par `escapeValue()` au moment de la substitution `{{var}}` dans `substituteTemplate()`. Le template reste du HTML riche, la valeur injectée dedans n'en est jamais. `escapeValue` n'échappe pas l'apostrophe (fréquente en français, sans danger dans un attribut délimité par des guillemets).
 5. Conserver les commentaires pédagogiques en tête de `data.js` — ils me servent si j'édite l'arbre sans passer par Claude.
-6. Ne pas renommer ces **IDs DOM** : `questionZone`, `inlineTitleContainer`, `choicesContainer`, `choicesHeader`, `inputsContainer`, `togglesContainer`, `cascadeFlow`, `contextPanel`, `entryLayout`, `mainPanel`, `breadcrumbs`, `breadcrumbsSection`, `resultsContainer`, `inlineBackArrow`, `copyPathBtn`. Note : `inputsContainer`, `choicesHeader`, `choicesContainer` sont conservés pour compat mais cachés (le rendu réel passe par `cascadeFlow`).
-7. Ne pas renommer ces **classes CSS custom** : `surface-shell`, `surface-card`, `text-muted`, `text-strong`, `brand-button`, `context-option`, `is-selected`, `motif-label`, `motif-code`, `motif-text`, `page-shell`, `context-dock`, `choice-grid-root`, `copy-success`, `fade-in`, `pop-in`, `floating-reset`, `card-row`, `card-row-label`, `card-row-content`, `card-row-inline`, `pill-btn`, `card-input`, `card-textarea`, `back-arrow-btn`, `leaf-input-wrap`, `leaf-input-label`, `result-card`, `result-header`, `result-body`, `result-sub`, `result-content`, `empty-tag`, `empty-choice`, `image-paste-zone`, `image-placeholder`.
+6. Ne pas renommer ces **IDs DOM** : `questionZone`, `inlineTitleContainer`, `choicesContainer`, `choicesHeader`, `inputsContainer`, `togglesContainer`, `cascadeFlow`, `contextPanel`, `entryLayout`, `mainPanel`, `breadcrumbs`, `breadcrumbsSection`, `resultsContainer`, `inlineBackArrow`, `copyPathBtn`. Note : `inputsContainer`, `choicesHeader`, `choicesContainer` sont conservés pour compat mais cachés (le rendu réel passe par `cascadeFlow`). **Nouveaux IDs** (également à ne pas renommer) : `categoryTabs`, `leafQuestionsContainer`, `pathPanel`, `pathCount`, `backBtn`, `resetBtn`.
+7. Ne pas renommer ces **classes CSS custom** : `surface-shell`, `surface-card`, `text-muted`, `text-strong`, `brand-button`, `context-option`, `is-selected`, `motif-label`, `motif-code`, `motif-text`, `page-shell`, `context-dock`, `choice-grid-root`, `copy-success`, `fade-in`, `pop-in`, `floating-reset`, `card-row`, `card-row-label`, `card-row-content`, `card-row-inline`, `pill-btn`, `card-input`, `card-textarea`, `back-arrow-btn`, `leaf-input-wrap`, `leaf-input-label`, `result-card`, `result-header`, `result-body`, `result-sub`, `result-content`, `empty-tag`, `empty-choice`, `image-paste-zone`, `image-placeholder`. **Nouvelles classes** : `app`, `app-header`, `app-body`, `brand`, `brand-mark`, `brand-sub`, `header-actions`, `hdr-btn`, `hdr-btn-strong`, `sidebar`, `main-col`, `panel`, `panel-title`, `panel-count`, `stack`, `hidden`, `crumbs`, `path-list`, `path-step`, `path-mark`, `path-label`, `path-value`, `path-copy-btn`, `path-empty`, `is-done`, `is-current`, `is-todo`, `result-title`, `copy-btn`, `image-clear-btn`, `results-stack`, `toast`.
+   - ⚠️ `.hidden` venait de Tailwind et est manipulée par le JS (`classList.toggle("hidden", …)`). Elle est **définie à la main** maintenant : ne jamais la supprimer du CSS.
+   - `.floating-reset`, `.fade-in`, `.pop-in`, `.choice-grid-root`, `.brand-button` sont conservées mais **plus utilisées** — gardées pour ne rien casser.
 
 ## Schéma de `data.js`
 
@@ -230,6 +243,7 @@ Calculées dans `buildTemplateVars()` à chaque rendu :
 
 Appliqué à TOUT le résultat HTML après substitution :
 1. **Date 4 chiffres → 2 chiffres** : `JJ/MM/AAAA` → `JJ/MM/AA`. Marche pour les inputs DATE et pour les écritures collées. **Skip dans la catégorie RÉEXÉCUTION** (où on veut au contraire 4 chiffres pour la date de prescription, via `{{date-prescription-full}}`).
+   - ⚠️ Avant ce remplacement, les **data URL d'images** (`data:image/...;base64,...`) sont mises de côté puis restaurées telles quelles. Sans ça, le base64 (qui contient des `/` et des chiffres) pouvait contenir par hasard une suite du type `12/34/5678` et se faire mutiler → image cassée. Ne pas retirer cette protection.
 
 *Note : les bascules conditionnelles (V2 du RELDET, FICOBA absent) ne passent plus par un post-traitement regex mais par des variables de template (`{{phrase-reldet}}`, `{{phrase-eopps}}`) calculées dans `buildTemplateVars()`. Source unique = un seul endroit pour modifier ces phrases.*
 
@@ -237,11 +251,36 @@ Appliqué à TOUT le résultat HTML après substitution :
 
 ### Layout général
 
-- **Layout 2 colonnes** : sidebar gauche (400px) avec COMPTE/STATUT toujours visibles ; colonne droite (flex-1) avec catégorie + parcours + résultats. Conteneur global `max-w-[1600px]`.
-- **Police** : 13pt globale (forcée via `body, body *`), uppercase + letter-spacing. Aptos > Calibri > Arial.
-- **Thème** : sombre, accent violet améthyste (`--accent: #8b5cf6`, `--accent-strong: #c4b5fd`). Le résultat copié reste lisible parce qu'on garde la casse réelle en JS (le CSS force juste l'affichage en majuscules).
-- **Animations désactivées** globalement (`animation: none !important; transition: none !important`). Choix délibéré pour la vitesse.
+- **Header collant** : marque LOGIX + boutons `RETOUR` et `RECOMMENCER`.
+- **Layout 2 colonnes** : sidebar gauche collante (340px) contenant le panneau **CONTEXTE** (COMPTE/STATUT) et le panneau **CHEMIN / TODO** ; colonne droite (flex-1) avec catégorie + toggles + cascade + leafQuestions + résultats. Conteneur global `max-w: 1680px`.
+- **Police** : Aptos > Calibri > Arial, imposée. Taille selon l'échelle `--fs-*` (voir plus haut), uppercase + letter-spacing sur l'UI.
+- **Thème** : sombre bleuté, accent cyan (`--accent: #22d3ee`). Le résultat copié reste lisible parce qu'on garde la casse réelle en JS (le CSS force juste l'affichage en majuscules pour l'UI, et remet `text-transform: none` sur `.result-header` / `.result-content`).
+- **Animations** : voir la règle stricte plus haut (couleurs uniquement, 110 ms).
 - **`overflow-anchor: none`** sur tout le DOM + sauvegarde/restauration de `window.scrollY` dans `render()` → la position de scroll reste stable même quand le DOM change (ex: cliquer DRETAF=NON ne fait pas remonter la page).
+- **Responsive** : à ≤ 960px la sidebar passe au-dessus en 2 blocs côte à côte ; à ≤ 680px les card-rows passent en colonne.
+
+### Panneau CHEMIN / TODO (sidebar)
+
+Construit par `buildPathSteps()` + `renderPathPanel()` **uniquement à partir de l'état existant** (`inlineRootNode`, `inlineChain`, `activeToggleStack`, `nodeInputs`, `leafAnswers`, `leafInputs`, `topAnswers`). **Aucune donnée n'est ajoutée dans `data.js` pour l'alimenter.**
+
+Ordre des étapes = ordre visuel réel : CATÉGORIE → toggles actifs → topQuestions des toggles → pour chaque niveau de cascade (inputs → choix → topQuestions) → leafQuestions du nœud le plus profond → RÉSULTAT.
+
+Trois états :
+- `is-done` ✓ — étape franchie
+- `is-current` › — première étape non franchie
+- `is-todo` ○ — étapes restantes (affichées « À RENSEIGNER »)
+
+Les étapes **CATÉGORIE** et les **niveaux de choix déjà faits** sont des `<button>` cliquables → `applyPathGoTo()` tronque `inlineChain` pour revenir directement à ce niveau. **`globalSelections` (COMPTE/STATUT) n'est jamais touché.**
+
+`renderPathPanel()` est appelé **en dernier** dans `render()` (il compte les blocs réellement rendus dans `resultsContainer`), et aussi directement depuis les handlers `input` pour que le panneau se mette à jour pendant la frappe.
+
+`getVisibleInputs(levelNode, vars)` est partagé entre `renderCascade()` et `buildPathSteps()` : c'est ce qui garantit que le panneau affiche exactement les mêmes champs que la cascade (filtrage par `conditions` + dédup par `id`).
+
+### RETOUR et RECOMMENCER
+
+- **RETOUR** (`goBackOneStep`) recule d'**un seul niveau**, dans cet ordre : (1) dernier choix de `inlineChain`, (2) sinon dernier toggle de `activeToggleStack`, (3) sinon sortie de la catégorie. Le bouton est désactivé (`canGoBack()`) quand il n'y a rien derrière. **COMPTE/STATUT intacts.**
+- **RECOMMENCER** (`resetDossier`) = dossier suivant. Remet à zéro `trail`, `inlineRootNode`, `inlineChain`, `nodeInputs`, `nodeSelections`, `leafAnswers`, `leafInputs`, `topAnswers`, `activeToggleStack`, puis `applyInitialInlineRoot()` + scroll en haut. **`globalSelections` est volontairement CONSERVÉ** : le contexte ne change pas d'un dossier à l'autre, ça économise 2 clics par dossier.
+- La flèche `←` historique dans la rangée CATÉGORIE (`inlineBackArrow`) existe toujours et garde son comportement d'origine : **quitter la catégorie** (≠ RETOUR qui recule d'un cran).
 
 ### Rendu de la cascade
 
@@ -265,19 +304,26 @@ Appliqué à TOUT le résultat HTML après substitution :
 
 ### État et persistance
 
-- `globalSelections` (COMPTE / STATUT), `nodeSelections`, `nodeInputs`, `leafAnswers`, `leafInputs`, `topAnswers`, `activeToggleStack` : tous en mémoire JS uniquement. Persistent pendant la navigation, **se réinitialisent à chaque F5** (F5 = "nouveau dossier" dans le workflow).
+- `globalSelections` (COMPTE / STATUT), `nodeSelections`, `nodeInputs`, `leafAnswers`, `leafInputs`, `topAnswers`, `activeToggleStack` : tous en mémoire JS uniquement. Persistent pendant la navigation, **se réinitialisent à chaque F5**.
+- Pour enchaîner les dossiers, utiliser **RECOMMENCER** plutôt que F5 : c'est plus rapide et ça garde COMPTE/STATUT.
+- **Optimisation à ne pas casser** : taper dans un champ n'appelle **jamais** `render()` (cela recréerait le champ et ferait perdre le focus à chaque caractère). Les handlers `input` appellent uniquement `renderResults()` + `renderPathPanel()`.
 - Désactivation d'un toggle ne reset pas `topAnswers` (pour conserver la réponse si l'user re-active le toggle).
 - Pas de scroll auto ni de focus auto : l'utilisateur navigue à son rythme.
 
 ### Copier rich text
 
-- **Bouton Copier** utilise `navigator.clipboard.write([new ClipboardItem({...})])` avec fallback `writeText()`. Ne pas régresser le fallback (certains navigateurs corporate sont vieux).
+- **Bouton COPIER** : placé **en haut à droite du bandeau** quand le bloc n'a qu'un seul sous-bloc, et **un par sous-bloc** quand le bloc est de type `multi`. Retour visuel `COPIÉ ✓` (classe `copy-success`) pendant 1,2 s.
+- Chaîne de repli à 3 niveaux, **ne pas la régresser** (les navigateurs corporate sont parfois vieux) :
+  1. `navigator.clipboard.write([new ClipboardItem({ "text/html", "text/plain" })])`
+  2. sinon `navigator.clipboard.writeText()` (texte brut)
+  3. sinon `legacyCopyHtml()` : sélection d'un `<div contenteditable>` invisible + `document.execCommand("copy")` — préserve le format riche —, puis en tout dernier recours un `<textarea>` + `execCommand` pour le texte brut.
+- `copyPlainText()` applique la même chaîne de repli au bouton **COPIER LE CHEMIN**.
 - `stripHtmlToText` convertit explicitement `<br>` → `\n`, `<li>` → `\n- `, `</p><p>` → `\n\n` (sans passer par `innerText` qui pose problème dans certains environnements). Permet aux apps qui collent en text/plain (Word config minimum) de garder les sauts de ligne, paragraphes et puces.
 - **Limitation Word 2024 connue** : la couleur (ex: `style="color:#EE0000"`, `<font color>`) **n'est pas préservée** au copier-coller depuis le navigateur (Word 2024 force son thème de document). Solution : n'utiliser que `<strong>`/`<u>`/`<em>` qui passent fiablement, et laisser l'utilisateur appliquer la couleur à la main si vraiment besoin.
 
-### Bouton "📋 chemin" (en bas à droite)
+### Bouton "📋 COPIER LE CHEMIN" (dans le panneau CHEMIN de la sidebar)
 
-Bouton flottant et discret (opacité 55%) qui copie dans le presse-papier une chaîne récap de tous les choix actuels. Utile pour décrire son état à Claude en collant cette ligne. Format :
+Copie dans le presse-papier une chaîne récap de tous les choix actuels. Utile pour décrire son état à Claude en collant cette ligne. **Le format n'a pas changé** avec la refonte. Format :
 
 ```
 ACTIF + A/C + DÉLAI + REFUS - PAS DE PJ + DATE=15/03/26 + MOIS=37 + DCA NON + + DE 50 000€ OUI + AE OU TI AE
@@ -311,7 +357,13 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - [ ] Commentaires pédagogiques de `data.js` intacts
 - [ ] `window.treeData` et `window.globalContextOptions` toujours exposés
 - [ ] Aucun nouveau `innerHTML` avec du contenu `data.js` sans `escapeHtml()` (sauf `bloc.texte`)
-- [ ] IDs DOM et classes CSS custom préservés
+- [ ] IDs DOM et classes CSS custom préservés (y compris `.hidden`)
+- [ ] Aucune URL externe réintroduite (l'appli doit marcher Wi-Fi coupé)
+- [ ] Aucune animation de déplacement / taille / apparition ajoutée
+- [ ] Les blocs résultat sont toujours en 13pt et gardent leur casse d'origine
+- [ ] Taper dans un champ ne fait pas perdre le focus
+- [ ] Le panneau CHEMIN reflète bien les étapes réelles
+- [ ] RETOUR recule d'un seul niveau, RECOMMENCER garde COMPTE/STATUT
 - [ ] Parcours complet testé + bouton Copier testé dans Word
 
 ## Ne jamais
@@ -359,10 +411,21 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - Type d'input `image` avec listener paste global, bouton ✕ pour suppr.
 - LeafQuestions étendues à n choix via `choices: ["ae", "ti"]`.
 - Auto-conversion `JJ/MM/AAAA → JJ/MM/AA` dans tous les résultats (sauf RÉEXÉCUTION).
-- Bouton "📋 chemin" pour partager l'état du parcours avec Claude.
+- Bouton "📋 COPIER LE CHEMIN" pour partager l'état du parcours avec Claude.
 - Couleur rouge non préservée au copier-coller (limitation Word 2024).
 - Bouton Copier rich text vers Word/Outlook (avec préservation des sauts de ligne, paragraphes, puces).
 - Contexte global (COMPTE / STATUT) avec défaut "ACTIF" implicite.
+
+*Refonte UI (identité LOGIX)* :
+- Suppression de Tailwind CDN → **100 % offline, zéro appel réseau**. CSS natif écrit à la main.
+- Identité LOGIX : fond encre bleuté, accent cyan électrique, favicon SVG inline.
+- Échelle typographique réelle (suppression du `font-size: 13pt !important` global), taille des résultats inchangée.
+- Header LOGIX + **RETOUR** (un niveau) + **RECOMMENCER** (garde COMPTE/STATUT).
+- **Panneau CHEMIN / TODO** dans la sidebar : étapes ✓ / › / ○, étapes précédentes cliquables.
+- Bouton COPIER en haut à droite, retour visuel `COPIÉ ✓`.
+- Animations limitées aux couleurs, 110 ms, `prefers-reduced-motion` respecté.
+- Corrections : vrai repli presse-papier (`execCommand`), protection des data URL contre le raccourcissement de date, échappement des valeurs saisies (`escapeValue`), `aria-pressed`, focus visible.
+- Dépôt Git local initialisé (commit « état initial » avant refonte) + `index.html.bak`.
 
 **🎯 Court terme (priorité)**
 - Sous-catégorie DÉLAI : `REFUS DCA MANQUANTES` (squelette sans suite).
@@ -376,16 +439,21 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - Refactoriser anvLeafConfig + anv12LeafConfig + anv16LeafConfig si plus de duplication apparaît.
 
 **🧭 Pistes à envisager quand ce sera le moment**
-- Faire en sorte que le contexte global (COMPTE/STATUT) **filtre** les choix affichés (ex : si COMPTE = RADIÉ, masquer les motifs qui ne s'appliquent qu'aux comptes actifs). Nécessite d'ajouter un champ `conditions` au schéma — à designer ensemble.
-- Inliner Tailwind pour tout faire marcher sans aucun accès réseau
+- Faire en sorte que le contexte global (COMPTE/STATUT) **filtre** les choix affichés (ex : si COMPTE = RADIÉ, masquer les motifs qui ne s'appliquent qu'aux comptes actifs). Nécessite d'ajouter un champ `conditions` au schéma — à designer ensemble. *(Le moteur sait déjà le faire : `choix[].conditions` est appliqué par `renderCascade` et repris par le panneau CHEMIN.)*
+- ~~Inliner Tailwind~~ ✅ fait : Tailwind supprimé, tout est natif et offline.
 - Déployer via GitHub Pages avec un lien court en marque-page navigateur
+- Raccourcis clavier (touches numériques pour choisir, Échap = RETOUR) : volontairement **non implémentés** pour l'instant (usage principalement souris), mais c'est le plus gros gain de vitesse restant.
 
 ## Commandes utiles
 
-- **Lancer en local** : double-clic sur `index.html`, aucun serveur requis
-- **Publier** : `git push` sur la branche `main` + activer GitHub Pages dans Settings → Pages
+- **Lancer en local** : double-clic sur `index.html`, aucun serveur requis, aucune connexion requise
+- **Sauvegarde** : dépôt Git local initialisé (`git log` pour l'historique, `git diff` avant chaque commit). Copie de secours de l'ancienne UI dans `index.html.bak` (ignorée par Git).
+- **Publier** : `git remote add origin …` puis `git push` sur `main` + activer GitHub Pages dans Settings → Pages *(aucun remote configuré pour l'instant)*
+- **Régénérer la doc de l'arbre** : `node scripts/generate-motifs.js`
+- **Vérifier le français des textes** : `node scripts/lint-fr.js`
 - **Debug console** (F12) :
   - `window.treeData` → inspecter l'arbre
+  - Le reste de l'état est enfermé dans l'IIFE (non accessible depuis la console) — utiliser le bouton **COPIER LE CHEMIN** pour décrire ton état.
 
 ---
 *Bloqué sur une question métier sans réponse de ma part ? Mets `// TODO: à valider` au bon endroit et continue, on y reviendra.*
