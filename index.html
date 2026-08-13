@@ -51,6 +51,13 @@
 
         --border: rgba(126, 178, 214, 0.13);
         --border-strong: rgba(34, 211, 238, 0.32);
+        /* Filet de séparation : la structure passe par des traits fins et des
+           espacements, pas par des cadres autour de chaque élément. */
+        --hairline: rgba(126, 178, 214, 0.10);
+        --hairline-soft: rgba(126, 178, 214, 0.06);
+        /* Aplats très légers, utilisés à la place des bordures */
+        --wash: rgba(255, 255, 255, 0.022);
+        --wash-hover: rgba(255, 255, 255, 0.05);
 
         --ok: #34d399;
         --ok-ink: #04241a;
@@ -205,10 +212,12 @@
         display: none !important;
       }
 
+      /* Les sections du parcours s'enchaînent sans écart : ce sont les filets
+         des card-row qui assurent la séparation, pas des gouttières. */
       .stack {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 0;
       }
 
       .text-muted {
@@ -271,7 +280,7 @@
       .app {
         max-width: 1680px;
         margin: 0 auto;
-        padding: 0 18px 28px;
+        padding: 0 26px 40px;
       }
 
       .app-header {
@@ -281,22 +290,22 @@
         display: flex;
         align-items: center;
         gap: 18px;
-        height: 58px;
-        margin-bottom: 14px;
-        padding: 0 4px;
-        background: linear-gradient(180deg, rgba(10, 14, 21, 0.97) 0%, rgba(10, 14, 21, 0.86) 100%);
-        border-bottom: 1px solid var(--border);
+        height: 62px;
+        margin-bottom: 22px;
+        background: var(--bg-1);
+        border-bottom: 1px solid var(--hairline);
       }
 
-      /* Filet lumineux sous le header : signature visuelle, purement statique. */
+      /* Court accent cyan sous la marque : un trait, pas un halo. */
       .app-header::after {
         content: "";
         position: absolute;
         left: 0;
-        right: 0;
         bottom: -1px;
+        width: 132px;
         height: 1px;
-        background: linear-gradient(90deg, var(--accent) 0%, rgba(34, 211, 238, 0.25) 26%, rgba(34, 211, 238, 0) 62%);
+        background: var(--accent);
+        opacity: 0.7;
       }
 
       .brand {
@@ -334,33 +343,32 @@
         gap: 8px;
       }
 
+      /* Boutons du header : sans cadre, ils s'allument au survol. */
       .hdr-btn {
-        height: 2.25rem;
-        padding: 0 0.95rem;
+        height: 2.2rem;
+        padding: 0 0.8rem;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
         font-size: var(--fs-label);
         letter-spacing: 0.12em;
-        border-radius: var(--r-md);
-        border: 1px solid var(--border);
-        background: var(--surface-raised);
-        color: var(--ink);
+        border-radius: var(--r-sm);
+        border: 0;
+        background: none;
+        color: var(--muted);
       }
 
       .hdr-btn:hover:not(:disabled) {
-        border-color: var(--border-strong);
-        background: var(--accent-wash);
+        background: var(--wash-hover);
         color: var(--muted-strong);
       }
 
       .hdr-btn:disabled {
-        opacity: 0.35;
+        opacity: 0.28;
       }
 
       .hdr-btn-strong:hover:not(:disabled) {
-        border-color: rgba(251, 113, 133, 0.5);
-        background: rgba(251, 113, 133, 0.1);
+        background: rgba(251, 113, 133, 0.12);
         color: #ffd8de;
       }
 
@@ -372,17 +380,21 @@
       .app-body {
         display: flex;
         align-items: flex-start;
-        gap: 14px;
+        gap: 0;
       }
 
+      /* La sidebar n'est pas une boîte : elle est séparée de la colonne
+         principale par un simple filet vertical. */
       .sidebar {
-        width: 340px;
-        flex: 0 0 340px;
+        width: 300px;
+        flex: 0 0 300px;
         position: sticky;
-        top: 72px;
+        top: 84px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 26px;
+        padding-right: 26px;
+        border-right: 1px solid var(--hairline);
       }
 
       .main-col {
@@ -390,14 +402,16 @@
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 0;
+        padding-left: 26px;
       }
 
+      /* Plus de cadre ni de fond : un titre, puis le contenu. */
       .panel {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r-lg);
-        padding: 10px 11px 11px;
+        background: none;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
       }
 
       .panel-title {
@@ -408,14 +422,15 @@
         font-weight: 700;
         letter-spacing: var(--ls-wide);
         color: var(--muted);
-        margin-bottom: 9px;
+        margin-bottom: 12px;
+        padding-bottom: 7px;
+        border-bottom: 1px solid var(--hairline);
       }
 
       .panel-title::before {
         content: "";
-        width: 3px;
-        height: 11px;
-        border-radius: 2px;
+        width: 2px;
+        height: 10px;
         background: var(--accent);
       }
 
@@ -423,12 +438,14 @@
         margin-left: auto;
         letter-spacing: 0.05em;
         color: var(--muted);
-        opacity: 0.8;
+        opacity: 0.7;
       }
 
       .crumbs {
-        padding: 6px 10px;
+        padding: 6px 0;
         font-size: var(--fs-label);
+        background: none;
+        border: 0;
       }
 
       #breadcrumbs {
@@ -491,23 +508,25 @@
 
       /* Étape franchie */
       .path-step.is-done .path-mark {
-        border-color: rgba(52, 211, 153, 0.55);
-        background: rgba(52, 211, 153, 0.14);
+        border-color: transparent;
+        background: none;
         color: var(--ok);
       }
       .path-step.is-done .path-value {
         color: var(--muted-strong);
       }
 
-      /* Étape en cours */
+      /* Étape en cours : un simple trait cyan à gauche, pas de cadre. */
       .path-step.is-current {
-        background: var(--accent-wash);
-        border-color: var(--border-strong);
+        background: none;
+        border-color: transparent;
+        border-left: 2px solid var(--accent);
+        margin-left: -2px;
       }
       .path-step.is-current .path-mark {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: var(--accent-ink);
+        border-color: transparent;
+        background: none;
+        color: var(--accent);
       }
       .path-step.is-current .path-label {
         color: var(--accent-strong);
@@ -518,16 +537,16 @@
 
       /* Étape restante (TODO) */
       .path-step.is-todo .path-mark {
-        border-style: dashed;
-        border-color: rgba(240, 169, 46, 0.5);
+        border-color: transparent;
         color: var(--todo);
+        opacity: 0.8;
       }
       .path-step.is-todo .path-label,
       .path-step.is-todo .path-value {
         color: var(--muted);
       }
       .path-step.is-todo .path-value {
-        opacity: 0.85;
+        opacity: 0.75;
       }
 
       /* Étape cliquable = on peut y revenir directement */
@@ -535,8 +554,7 @@
         cursor: pointer;
       }
       button.path-step:hover {
-        background: var(--accent-wash-2);
-        border-color: var(--border-strong);
+        background: var(--wash-hover);
       }
       button.path-step:hover .path-value {
         color: var(--accent-strong);
@@ -550,20 +568,19 @@
       }
 
       .path-copy-btn {
-        margin-top: 9px;
+        margin-top: 14px;
         width: 100%;
-        height: 2.15rem;
-        border-radius: var(--r-md);
-        border: 1px solid var(--border);
-        background: var(--surface-raised);
+        height: 2.1rem;
+        border-radius: var(--r-sm);
+        border: 0;
+        background: var(--wash);
         color: var(--muted);
         font-size: var(--fs-micro);
         letter-spacing: var(--ls-wide);
       }
 
       .path-copy-btn:hover {
-        border-color: var(--border-strong);
-        background: var(--accent-wash);
+        background: var(--wash-hover);
         color: var(--accent-strong);
       }
 
@@ -572,21 +589,25 @@
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 0;
       }
 
-      /* Dans la sidebar étroite : labels courts, cartes allégées. */
+      /* Dans la sidebar étroite : libellé au-dessus, options en dessous. */
       .context-dock .card-row {
+        flex-direction: column;
+        align-items: stretch;
         min-height: 0;
-        padding: 7px 9px;
-        gap: 10px;
-        border-radius: var(--r-md);
-        background: var(--surface-strong);
+        gap: 6px;
+        padding: 10px 0;
+      }
+
+      .context-dock .card-row:last-child {
+        border-bottom: 0;
       }
 
       .context-dock .card-row-label {
-        flex: 0 0 62px;
-        width: 62px;
+        flex: none;
+        width: 100%;
         white-space: normal;
       }
 
@@ -594,32 +615,35 @@
         flex: 1 1 0;
         min-width: 0;
         padding: 0 0.5rem;
-        height: 2.15rem;
+        height: 2.1rem;
       }
 
-      /* Chaque étape du parcours = une ligne-carte : libellé fixe à gauche,
-         options à droite. Rail d'accent à gauche pour l'ancrage visuel. */
+      /* Chaque étape du parcours = une LIGNE, pas une carte : libellé discret à
+         gauche, options à droite, et un simple filet pour séparer. Aucun cadre,
+         aucun fond : la structure vient de l'espacement et de la typographie. */
       .card-row {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 20px;
         width: 100%;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-left: 2px solid var(--accent-deep);
-        border-radius: var(--r-lg);
-        padding: 9px 12px;
-        min-height: 3.4rem;
+        background: none;
+        border: 0;
+        border-bottom: 1px solid var(--hairline-soft);
+        border-radius: 0;
+        padding: 13px 0;
+        min-height: 0;
       }
 
       .card-row-label {
-        flex: 0 0 190px;
-        width: 190px;
-        font-size: var(--fs-label);
+        flex: 0 0 176px;
+        width: 176px;
+        font-size: var(--fs-micro);
         font-weight: 700;
-        letter-spacing: 0.13em;
-        color: var(--accent-strong);
-        line-height: 1.15;
+        letter-spacing: var(--ls-wide);
+        color: var(--muted);
+        line-height: 1.3;
+        padding-top: 1px;
+        align-self: center;
       }
 
       .card-row-content {
@@ -627,111 +651,117 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 7px;
+        gap: 10px;
         min-width: 0;
       }
 
       .card-row-inline {
-        gap: 16px;
+        gap: 22px;
       }
 
-      /* Bouton de choix (COMPTE, STATUT, MOTIF, SOUS-MOTIF, catégories, OUI/NON…). */
+      /* Bouton de choix (COMPTE, STATUT, MOTIF, SOUS-MOTIF, catégories, OUI/NON…).
+         Au repos : pas de cadre du tout, juste du texte espacé.
+         Sélectionné : aplat cyan discret + texte accentué + un trait sous
+         l'élément. L'écart entre les deux états est net sans être criard. */
       .pill-btn {
         height: var(--ctrl-h);
-        padding: 0 0.95rem;
-        border-radius: var(--r-md);
+        padding: 0 0.85rem;
+        border-radius: var(--r-sm);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.55rem;
+        gap: 0.5rem;
         white-space: nowrap;
         font-size: var(--fs-choice);
-        font-weight: 700;
+        font-weight: 600;
         line-height: 1;
       }
 
       .context-option {
-        border: 1px solid var(--border);
-        background: var(--surface-raised);
-        color: var(--ink);
+        border: 0;
+        background: none;
+        color: var(--muted);
+        box-shadow: inset 0 -1px 0 var(--hairline);
       }
 
       .context-option:hover {
-        border-color: var(--border-strong);
-        background: var(--accent-wash);
+        background: var(--wash-hover);
         color: var(--muted-strong);
+        box-shadow: inset 0 -1px 0 var(--border-strong);
       }
 
       .context-option.is-selected,
       .context-option.is-selected:hover {
-        border-color: var(--accent);
-        background: linear-gradient(180deg, var(--accent-strong) 0%, var(--accent) 100%);
-        color: var(--accent-ink);
-        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.28), 0 0 14px rgba(34, 211, 238, 0.18);
+        background: var(--accent-wash-2);
+        color: var(--accent-strong);
+        font-weight: 700;
+        box-shadow: inset 0 -2px 0 var(--accent);
       }
 
       .context-option.is-selected .motif-code {
-        background: rgba(4, 22, 28, 0.28);
-        color: var(--accent-ink);
+        color: var(--accent);
+        opacity: 1;
       }
 
       .pill-btn.empty-choice {
-        opacity: 0.42;
+        opacity: 0.3;
         cursor: not-allowed;
-        border-style: dashed;
       }
 
       .pill-btn .empty-tag {
         font-size: var(--fs-micro);
         letter-spacing: 0.1em;
-        padding: 0.12rem 0.4rem;
-        border-radius: var(--r-sm);
+        padding: 0;
+        border: 0;
+        background: none;
+        border-radius: 0;
         color: var(--todo);
-        background: rgba(240, 169, 46, 0.1);
-        border: 1px solid rgba(240, 169, 46, 0.35);
+        opacity: 0.9;
       }
 
-      /* MOTIF : pastille de code + intitulé sur la même ligne. */
+      /* MOTIF : code discret puis intitulé, sur la même ligne. */
       .motif-label {
         display: inline-flex;
-        align-items: center;
-        gap: 0.55rem;
+        align-items: baseline;
+        gap: 0.5rem;
         text-align: left;
-        font-weight: 700;
+        font-weight: inherit;
         width: auto;
       }
 
       .motif-code {
         display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 1.6rem;
-        padding: 0 0.45rem;
-        border-radius: var(--r-sm);
-        background: var(--accent-wash-2);
-        color: var(--accent-strong);
-        font-size: var(--fs-label);
-        font-weight: 700;
+        align-items: baseline;
+        height: auto;
+        padding: 0;
+        border-radius: 0;
+        background: none;
+        color: var(--muted);
+        opacity: 0.65;
+        font-size: var(--fs-micro);
+        font-weight: 600;
         font-variant-numeric: tabular-nums;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.08em;
         flex: 0 0 auto;
       }
 
       .motif-text {
         display: inline-flex;
-        align-items: center;
+        align-items: baseline;
         line-height: 1;
-        font-weight: 700;
+        font-weight: inherit;
         flex: 0 1 auto;
       }
 
-      /* Champs de saisie */
+      /* Champs de saisie : aplat très léger + un seul trait sous le champ,
+         qui devient cyan au focus. Pas de cadre, pas d'anneau lumineux. */
       .card-input {
         height: var(--ctrl-h);
-        padding: 0 0.75rem;
-        border-radius: var(--r-md);
-        background: var(--surface-input);
-        border: 1px solid var(--border);
+        padding: 0 0.7rem;
+        border-radius: var(--r-sm) var(--r-sm) 0 0;
+        background: var(--wash);
+        border: 0;
+        border-bottom: 1px solid var(--border);
         color: var(--muted-strong);
         outline: none;
         min-width: 12rem;
@@ -740,7 +770,7 @@
       .card-input::placeholder,
       .card-textarea::placeholder {
         color: var(--muted);
-        opacity: 0.6;
+        opacity: 0.5;
         text-transform: none;
         letter-spacing: normal;
         font-weight: 600;
@@ -748,22 +778,22 @@
 
       .card-input:hover,
       .card-textarea:hover {
-        border-color: rgba(34, 211, 238, 0.28);
+        background: var(--wash-hover);
       }
 
       .card-input:focus,
       .card-textarea:focus {
-        border-color: var(--accent);
-        background: #0b1620;
-        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.35);
+        background: var(--wash-hover);
+        border-bottom-color: var(--accent);
       }
 
       .card-textarea {
         min-height: 6.5rem;
-        padding: 0.55rem 0.75rem;
-        border-radius: var(--r-md);
-        background: var(--surface-input);
-        border: 1px solid var(--border);
+        padding: 0.55rem 0.7rem;
+        border-radius: var(--r-sm) var(--r-sm) 0 0;
+        background: var(--wash);
+        border: 0;
+        border-bottom: 1px solid var(--border);
         color: var(--muted-strong);
         outline: none;
         width: 100%;
@@ -777,9 +807,9 @@
         width: 100%;
         min-height: 5.5rem;
         padding: 0.55rem;
-        border-radius: var(--r-md);
-        border: 1px dashed rgba(34, 211, 238, 0.38);
-        background: var(--surface-input);
+        border-radius: var(--r-sm);
+        border: 1px dashed var(--border);
+        background: var(--wash);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -789,15 +819,14 @@
       }
 
       .image-paste-zone:hover {
-        border-color: var(--accent);
-        background: #0b1620;
+        border-color: var(--border-strong);
+        background: var(--wash-hover);
       }
 
       .image-paste-zone:focus {
         border-color: var(--accent);
         border-style: solid;
-        background: #0b1620;
-        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.35);
+        background: var(--wash-hover);
       }
 
       .image-paste-zone .image-placeholder {
@@ -822,8 +851,8 @@
         width: 1.6rem;
         height: 1.6rem;
         border-radius: var(--r-sm);
-        border: 1px solid var(--border);
-        background: rgba(6, 10, 16, 0.82);
+        border: 0;
+        background: rgba(6, 10, 16, 0.8);
         color: var(--ink);
         font-size: var(--fs-label);
         font-weight: 700;
@@ -834,124 +863,125 @@
       }
 
       .image-clear-btn:hover {
-        border-color: rgba(251, 113, 133, 0.6);
-        background: rgba(251, 113, 133, 0.18);
+        background: rgba(251, 113, 133, 0.22);
         color: #ffd8de;
       }
 
       .back-arrow-btn {
         height: var(--ctrl-h);
-        width: var(--ctrl-h);
-        border-radius: var(--r-md);
+        width: 2.1rem;
+        border-radius: var(--r-sm);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         color: var(--muted);
-        background: var(--surface-raised);
-        border: 1px solid var(--border);
+        background: none;
+        border: 0;
       }
 
       .back-arrow-btn:hover {
-        border-color: var(--border-strong);
-        background: var(--accent-wash);
+        background: var(--wash-hover);
         color: var(--accent-strong);
       }
 
       .leaf-input-wrap {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-left: 0.25rem;
+        gap: 0.55rem;
+        margin-left: 0;
       }
 
       .leaf-input-label {
-        font-size: var(--fs-label);
+        font-size: var(--fs-micro);
         font-weight: 700;
-        letter-spacing: 0.13em;
-        color: var(--accent-strong);
+        letter-spacing: var(--ls-wide);
+        color: var(--muted);
       }
 
       /* ---------- 7. Blocs résultat ------------------------------------------- */
       .results-stack {
-        gap: 10px;
+        gap: 22px;
+        margin-top: 30px;
       }
 
+      /* Un résultat n'est plus une carte encadrée : un fin rail cyan à gauche,
+         une surface à peine plus claire, aucune bordure. Chaque bloc reste
+         nettement séparé du suivant par l'espacement et le rail. */
       .result-card {
-        background: var(--surface-strong);
-        border: 1px solid var(--border);
-        border-top: 2px solid var(--accent);
-        border-radius: var(--r-lg);
+        background: var(--surface);
+        border: 0;
+        border-left: 2px solid var(--accent);
+        border-radius: 0 var(--r-md) var(--r-md) 0;
         overflow: hidden;
       }
 
       .result-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 8px 10px 8px 13px;
-        background: linear-gradient(180deg, rgba(34, 211, 238, 0.13) 0%, rgba(34, 211, 238, 0.04) 100%);
-        border-bottom: 1px solid var(--border);
+        gap: 14px;
+        padding: 11px 14px 10px 16px;
+        background: none;
+        border-bottom: 1px solid var(--hairline);
       }
 
       .result-title {
         flex: 1 1 auto;
         min-width: 0;
-        font-size: var(--fs-label);
+        font-size: var(--fs-micro);
         font-weight: 700;
+        letter-spacing: var(--ls-wide);
         color: var(--accent-strong);
         overflow-wrap: anywhere;
       }
 
       .result-body {
-        padding: 11px 13px;
+        padding: 14px 16px 16px;
         display: flex;
         flex-direction: column;
-        gap: 11px;
+        gap: 14px;
       }
 
       .result-sub {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
+        gap: 14px;
       }
 
       .result-sub + .result-sub {
-        padding-top: 11px;
-        border-top: 1px solid var(--border);
+        padding-top: 14px;
+        border-top: 1px solid var(--hairline);
       }
 
       .result-content {
         flex: 1 1 auto;
         min-width: 0;
         color: var(--muted-strong);
-        line-height: 1.5;
+        line-height: 1.55;
       }
 
       /* Bouton COPIER : en haut à droite du bandeau (bloc unique) ou du
-         sous-bloc (bloc multi). */
+         sous-bloc (bloc multi). Aplat plein, sans dégradé ni halo. */
       .copy-btn {
         flex: 0 0 auto;
-        height: 2.05rem;
-        padding: 0 0.85rem;
-        font-size: var(--fs-label);
-        letter-spacing: 0.13em;
-        border-radius: var(--r-md);
-        border: 1px solid var(--accent);
-        background: linear-gradient(180deg, var(--accent-strong) 0%, var(--accent) 100%);
+        height: 1.95rem;
+        padding: 0 0.9rem;
+        font-size: var(--fs-micro);
+        letter-spacing: var(--ls-wide);
+        font-weight: 700;
+        border-radius: var(--r-sm);
+        border: 0;
+        background: var(--accent);
         color: var(--accent-ink);
       }
 
       .copy-btn:hover {
-        border-color: var(--accent-strong);
-        box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+        background: var(--accent-strong);
       }
 
       .copy-success,
       .copy-success:hover {
         background: var(--ok) !important;
-        border-color: var(--ok) !important;
         color: var(--ok-ink) !important;
-        box-shadow: 0 0 12px rgba(52, 211, 153, 0.35) !important;
       }
 
       /* Les textes du bloc résultat gardent leur casse d'origine (= ce qui sera
@@ -1022,31 +1052,37 @@
         text-align: center;
         z-index: 60;
         padding: 11px 14px;
-        border-radius: var(--r-lg);
+        border-radius: var(--r-md);
         background: var(--surface-raised);
-        border: 1px solid var(--border-strong);
+        border: 0;
+        border-left: 2px solid var(--accent);
         color: var(--muted-strong);
         font-size: var(--fs-label);
         font-weight: 700;
         letter-spacing: 0.12em;
-        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
       }
 
       /* ---------- 9. Responsive ------------------------------------------------ */
       @media (max-width: 1180px) {
         .card-row-label {
-          flex: 0 0 150px;
-          width: 150px;
+          flex: 0 0 140px;
+          width: 140px;
         }
         .sidebar {
-          width: 300px;
-          flex-basis: 300px;
+          width: 260px;
+          flex-basis: 260px;
+          padding-right: 20px;
+        }
+        .main-col {
+          padding-left: 20px;
         }
       }
 
       @media (max-width: 960px) {
         .app-body {
           flex-direction: column;
+          gap: 24px;
         }
         .sidebar {
           position: static;
@@ -1055,6 +1091,11 @@
           flex-direction: row;
           flex-wrap: wrap;
           align-items: flex-start;
+          gap: 32px;
+          padding-right: 0;
+          padding-bottom: 20px;
+          border-right: 0;
+          border-bottom: 1px solid var(--hairline);
         }
         .sidebar .panel {
           flex: 1 1 260px;
@@ -1062,12 +1103,13 @@
         }
         .main-col {
           width: 100%;
+          padding-left: 0;
         }
       }
 
       @media (max-width: 680px) {
         .app {
-          padding: 0 10px 22px;
+          padding: 0 14px 26px;
         }
         .app-header {
           height: auto;
@@ -1115,10 +1157,6 @@
           <button type="button" id="backBtn" class="hdr-btn"
             title="Revenir d'un seul niveau en arrière (conserve COMPTE et STATUT)">
             ↩ RETOUR
-          </button>
-          <button type="button" id="repeatBtn" class="hdr-btn"
-            title="Dossier suivant du même type : garde le chemin (catégorie, motif, toggles, réponses) et vide seulement les saisies du dossier précédent">
-            » RÉPÉTER
           </button>
           <button type="button" id="resetBtn" class="hdr-btn hdr-btn-strong"
             title="Nouveau dossier : remet le parcours à zéro mais conserve COMPTE et STATUT">
@@ -1200,7 +1238,6 @@
         const pathCount = document.getElementById("pathCount");
         const backBtn = document.getElementById("backBtn");
         const resetBtn = document.getElementById("resetBtn");
-        const repeatBtn = document.getElementById("repeatBtn");
         const globalContextOptions = window.globalContextOptions || [];
 
         // trail = historique de navigation
@@ -1874,9 +1911,7 @@
         // Ex: motif 13 → DATE auto-remplie avec la date du jour.
         // defaultInputsConditions permet de limiter le pré-remplissage à un contexte
         // (ex: motif 14, on ne pré-remplit qu'en A/C, pas en PL où la date est BODACC).
-        //
-        // Extrait du gestionnaire de clic pour que RÉPÉTER rejoue EXACTEMENT le
-        // même pré-remplissage qu'un clic sur le choix (source unique).
+        // Appelée au clic sur un choix, depuis createChoiceCard.
         function applyDefaultInputs(option) {
           if (!option || !option.defaultInputs || typeof option.defaultInputs !== "object") return;
           const conditionsOk =
@@ -2837,76 +2872,8 @@
           showToast("NOUVEAU DOSSIER — COMPTE ET STATUT CONSERVÉS");
         }
 
-        // RÉPÉTER n'a de sens que si un parcours est en cours (une catégorie est
-        // ouverte). Sinon il n'y a aucun chemin à conserver.
-        function canRepeat() {
-          return !!inlineRootNode;
-        }
-
-        // RÉPÉTER = dossier suivant DU MÊME TYPE. « Même chemin, nouveau dossier ».
-        //
-        // CONSERVÉ (= le chemin métier) :
-        //   globalSelections .... COMPTE / STATUT
-        //   inlineRootNode ...... catégorie (ou whenOn du toggle actif)
-        //   inlineChain ......... les choix de la cascade (MOTIF, SOUS-MOTIF, RAISON…)
-        //   activeToggleStack ... toggles activés (AMIABLE RELDET, DETTE NON EXIGIBLE…)
-        //   leafAnswers ......... DRETAF, SUSPEN, DCA, +50K, AE/TI, INSTRUCTIONS CJ…
-        //   topAnswers .......... FICOBA, COMPTE EN LIGNE
-        //   trail, nodeSelections  (état de navigation, non lié au dossier)
-        //
-        // VIDÉ (= les données du dossier précédent) :
-        //   nodeInputs .......... DATE, MOIS, ÉCRITURES, ADRESSE, CJ, et les IMAGES
-        //                         collées (stockées en data URL dans nodeInputs)
-        //   leafInputs .......... N° CO
-        //   lastScrollTargetId .. repère de scroll propre au dossier
-        //
-        // leafAnswers et topAnswers sont conservés parce qu'ils s'affichent comme
-        // des étapes du CHEMIN au même titre que les choix : les garder, c'est
-        // respecter « les choix précédents restent sélectionnés ». Ils restent
-        // modifiables en un clic si le nouveau dossier diffère.
-        //
-        // Aucun état de copie n'est à réinitialiser : la classe `copy-success` est
-        // portée par des boutons que render() recrée entièrement à chaque rendu.
-        function repeatDossier() {
-          if (!canRepeat()) return;
-
-          nodeInputs = {};
-          leafInputs = {};
-          lastScrollTargetId = null;
-
-          // Garde-fou : si un choix du chemin dépendait d'une saisie qu'on vient
-          // de vider, on tronque plutôt que de garder un chemin incohérent.
-          // (Aujourd'hui aucun `conditions` de data.js ne porte sur une saisie —
-          // seulement statut / compte / dca / motif-id — donc c'est un no-op ;
-          // c'est une protection pour l'avenir.)
-          pruneInlineChain();
-
-          // On rejoue le pré-remplissage des choix du chemin, dans l'ordre où ils
-          // ont été cliqués. Sans ça, répéter un motif 13 / 14 A/C / 16 laisserait
-          // DATE vide alors que refaire le chemin à la main la remplirait.
-          inlineChain.forEach((step) => applyDefaultInputs(step.option));
-
-          window.scrollTo(0, 0);
-          render();
-
-          // Les blocs du dossier précédent ne doivent plus être ni visibles ni
-          // copiables. Attention : ils ne disparaissent PAS tout seuls, parce
-          // qu'ils sont reconstruits à partir du chemin (qu'on conserve) — ils
-          // se réafficheraient simplement avec les champs vides, donc copiables
-          // alors qu'incomplets. On les retire donc explicitement.
-          // Ils réapparaîtront dès la première action sur le nouveau dossier :
-          // toute saisie et tout clic déclenchent un nouveau rendu.
-          // renderResults() n'est pas modifiée : la génération des résultats est
-          // strictement inchangée.
-          resultsContainer.innerHTML = "";
-          renderPathPanel(); // recompte les blocs : RÉSULTAT repasse en « à faire »
-
-          showToast("DOSSIER SUIVANT — MÊME CHEMIN CONSERVÉ");
-        }
-
         if (backBtn) backBtn.addEventListener("click", goBackOneStep);
         if (resetBtn) resetBtn.addEventListener("click", resetDossier);
-        if (repeatBtn) repeatBtn.addEventListener("click", repeatDossier);
 
         function render() {
           // On capture la position de scroll avant le re-rendu pour la restaurer.
@@ -2928,7 +2895,6 @@
           // renderPathPanel en dernier : il compte les blocs résultat déjà rendus.
           renderPathPanel();
           if (backBtn) backBtn.disabled = !canGoBack();
-          if (repeatBtn) repeatBtn.disabled = !canRepeat();
           // Plus de scroll auto ni de focus auto : l'utilisateur navigue à son rythme.
 
           // Restauration de la position : on force avant ET après le reflow
