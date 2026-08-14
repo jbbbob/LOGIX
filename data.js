@@ -1065,16 +1065,19 @@ const delaiRefusPasPjLeafConfig = {
       label: "AFFAIRE WATT",
       type: "simple",
       if: { dca: ["oui"], plus50k: ["oui", "non"], statut: ["A/C"] },
+      // Le motif du refus est composé par {{phrase-refus-delai}} selon la dette
+      // (+ DE 50 000€) et la durée (MOIS > 18). La variable porte son point final.
       texte:
-        "SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€. Une demande de pièces complémentaires a été transmise via SCRIBE.",
+        "SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}} Une demande de pièces complémentaires a été transmise via SCRIBE.",
     },
     {
       id: "delai-watt-pl",
       label: "AFFAIRE WATT",
       type: "simple",
       if: { dca: ["oui"], plus50k: ["oui", "non"], statut: ["PL"] },
+      // Même motif composé que la version A/C : seul le code de refus diffère.
       texte:
-        "SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€. Une demande de pièces complémentaires a été transmise via SCRIBE.",
+        "SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}} Une demande de pièces complémentaires a été transmise via SCRIBE.",
     },
 
     // ===== TEXTE DU COURRIER : DCA = NON + MOIS ≤ 36 + 50K = OUI =====
@@ -1165,13 +1168,16 @@ const delaiRefusPasPjLeafConfig = {
       id: "watt-dca-non-bloc1-ac",
       type: "fragment",
       if: { dca: ["non"], plus50k: ["oui", "non"], statut: ["A/C"] },
-      texte: "SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€.",
+      // Même motif composé que la branche DCA=OUI : {{phrase-refus-delai}} porte
+      // son point final, la phrase s'arrête donc proprement ici.
+      texte: "SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}}",
     },
     {
       id: "watt-dca-non-bloc1-pl",
       type: "fragment",
       if: { dca: ["non"], plus50k: ["oui", "non"], statut: ["PL"] },
-      texte: "SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€.",
+      // Idem en PL : seul le code de refus change.
+      texte: "SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}}",
     },
     {
       id: "watt-dca-non-bloc2-ae-ac",

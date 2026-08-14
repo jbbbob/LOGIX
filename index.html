@@ -1608,6 +1608,33 @@
           const _moisNum = parseFloat(nodeInputs.mois);
           vars["mois-gt-36"] = !Number.isNaN(_moisNum) && _moisNum > 36 ? "oui" : "non";
 
+          // Deuxième seuil pour DÉLAI, à ne pas confondre avec les 36 mois ci-dessus :
+          //   36 mois → pilote quelle version du TEXTE DU COURRIER s'affiche
+          //   18 mois → pilote le motif de refus écrit dans l'AFFAIRE WATT
+          // Même règle de défaut : MOIS vide → "non", donc aucune mention de seuil.
+          vars["mois-gt-18"] = !Number.isNaN(_moisNum) && _moisNum > 18 ? "oui" : "non";
+
+          // Motif du refus dans l'AFFAIRE WATT de DÉLAI / REFUS - PAS DE PJ
+          // (PO REFUS 06 en A/C, 65 en PL — seul le code change, pas le motif).
+          // Deux critères INDÉPENDANTS peuvent justifier le refus : une dette
+          // supérieure à 50 000€, et/ou une durée supérieure à 18 mois. D'où les
+          // 4 combinaisons ci-dessous, dont le cas où aucun des deux n'est rempli :
+          // on n'invente alors aucun seuil, la phrase s'arrête après "de délai".
+          // La variable porte l'espace qui la précède ET le point final, sinon le
+          // cas "aucun critère" laisserait une espace en trop avant le point.
+          // Source unique : si tu changes ces formulations, c'est ici et nulle part
+          // ailleurs — les 4 blocs WATT de DÉLAI utilisent tous cette variable.
+          const _delai50k = vars.plus50k === "oui";
+          const _delai18m = vars["mois-gt-18"] === "oui";
+          vars["phrase-refus-delai"] =
+            _delai50k && _delai18m
+              ? " avec une dette supérieure à 50 000€ et supérieur à 18 mois."
+              : _delai50k
+              ? " avec une dette supérieure à 50 000€."
+              : _delai18m
+              ? " supérieur à 18 mois."
+              : ".";
+
           // Phrase finale "-> RELDET..." centralisée : version V2 si la topQuestion
           // "COMPTE EN LIGNE OU MAIL ?" est répondue NON, version standard sinon.
           // Source unique : si tu changes la phrase, tu la changes ici, point.

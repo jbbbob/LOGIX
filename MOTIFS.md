@@ -256,9 +256,9 @@
     - [simple] `delai-courrier-le36-50k-non` — **TEXTE DU COURRIER** *[si dca=oui, plus50k=non, mois-gt-36=non]*
       - « Vous sollicitez un délai de paiement sur {{mois}} mois pour le règlement de vos cotisations sociales auprès de notre organisme.<br><br>Afin d'étudier votre dossier, nous vous remercions de nous transm … »
     - [simple] `delai-watt-ac` — **AFFAIRE WATT** *[si dca=oui, plus50k=oui|non, statut=A/C]*
-      - « SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€. Une demande de pièces complémentaires a été transmise via SCRIBE. »
+      - « SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}} Une demande de pièces complémentaires a été transmise via SCRIBE. »
     - [simple] `delai-watt-pl` — **AFFAIRE WATT** *[si dca=oui, plus50k=oui|non, statut=PL]*
-      - « SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€. Une demande de pièces complémentaires a été transmise via SCRIBE. »
+      - « SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}} Une demande de pièces complémentaires a été transmise via SCRIBE. »
     - [simple] `delai-courrier-dca-non-le36-50k-oui` — **TEXTE DU COURRIER** *[si dca=non, plus50k=oui, mois-gt-36=non]*
       - « Vous sollicitez un délai de paiement sur {{mois}} mois pour le règlement de vos cotisations sociales auprès de notre organisme.<br><br>Compte tenu du montant de votre dette, l'étude de votre dossier n … »
     - [simple] `delai-courrier-dca-non-gt36-50k-oui` — **TEXTE DU COURRIER** *[si dca=non, plus50k=oui, mois-gt-36=oui]*
@@ -268,9 +268,9 @@
     - [simple] `delai-courrier-dca-non-gt36-50k-non` — **TEXTE DU COURRIER** *[si dca=non, plus50k=non, mois-gt-36=oui]*
       - « Vous sollicitez un délai de paiement sur {{mois}} mois pour le règlement de vos cotisations sociales auprès de notre organisme.<br><br>Nous ne pouvons pas donner une suite favorable à votre demande, e … »
     - [fragment] `watt-dca-non-bloc1-ac` — **** *[si dca=non, plus50k=oui|non, statut=A/C]*
-      - fragment : « SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€. »
+      - fragment : « SUR PO REFUS 06 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}} »
     - [fragment] `watt-dca-non-bloc1-pl` — **** *[si dca=non, plus50k=oui|non, statut=PL]*
-      - fragment : « SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai avec une dette supérieure à 50 000€. »
+      - fragment : « SUR PO REFUS 65 en raison de l'absence de justificatifs concernant la demande de délai{{phrase-refus-delai}} »
     - [fragment] `watt-dca-non-bloc2-ae-ac` — **** *[si dca=non, ae-ti=ae, statut=A/C]*
       - fragment : « SUR PO REFUS 12 car DCA manquantes. »
     - [fragment] `watt-dca-non-bloc2-ae-pl` — **** *[si dca=non, ae-ti=ae, statut=PL]*
