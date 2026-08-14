@@ -88,6 +88,23 @@
           - appendFragments: ficoba-line-12
         - [fragment] `ficoba-line-12` — **** *[si ficoba=non]*
           - fragment : « (Pas de FICOBA car site KO) »
+      - `sous-motif-12-22-2-rar-pnd-psa` — **22 - 2 RAR PND PSA** *[si statut=A/C]*
+        - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
+          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
+          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
+        - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
+          - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
+          - appendFragments: ficoba-line-12
+        - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
+          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
+        - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
+          - combine: carence-pl-12 + suspen-line-pl-12 + dretaf-line-pl-12
+          - appendFragments: ficoba-line-12
+        - [fragment] `ficoba-line-12` — **** *[si ficoba=non]*
+          - fragment : « (Pas de FICOBA car site KO) »
       - `sous-motif-12-25-enq-psa` — **25 - ENQ PSA/ETRANG** *[si statut=A/C]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
@@ -301,8 +318,8 @@
 ## Stats
 
 - Catégories : 3
-- Choix totaux (tous niveaux) : 32
+- Choix totaux (tous niveaux) : 33
 - Inputs : 8
 - Toggles : 2
 - TopQuestions : 2
-- Résultats (blocs texte) : 90
+- Résultats (blocs texte) : 95

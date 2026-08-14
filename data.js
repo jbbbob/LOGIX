@@ -649,6 +649,25 @@ const anvBranch = {
               suite: anv12LeafConfig,
             },
             {
+              id: "sous-motif-12-22-2-rar-pnd-psa",
+              label: "22 - 2 RAR PND PSA",
+              description: "",
+              conditions: { statut: ["A/C"] },
+              // Attention aux tirets : le gabarit A/C accole {{sous-motif-code}}
+              // et {{sous-motif-abbrev}} avec une simple espace, ce qui donne
+              // "SS MOTIF 25 ENQ PSA/ETRANG" pour le 25. Ici l'intitulé commence
+              // lui-même par un chiffre : sans tiret on lirait "SS MOTIF 22 2 RAR
+              // PND PSA", avec deux nombres collés. Le tiret est donc porté par
+              // l'abréviation A/C, et par elle seule — aucun autre sous-motif
+              // n'est touché.
+              abbrevAC: "- 2 RAR PND PSA",
+              // En PL au contraire, le gabarit fournit déjà son propre tiret
+              // ("... - CONSTAT DU {{date}} - {{sous-motif-abbrev}}") : en remettre
+              // un ici produirait "- - 2 RAR PND PSA". D'où l'abréviation nue.
+              abbrevPL: "2 RAR PND PSA",
+              suite: anv12LeafConfig,
+            },
+            {
               id: "sous-motif-12-25-enq-psa",
               label: "25 - ENQ PSA/ETRANG",
               description: "",
