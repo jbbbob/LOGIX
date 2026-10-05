@@ -143,76 +143,64 @@
         --t: 110ms;
       }
 
-      /* ---------- 1 bis. Mode NUIT : « NOIR SANS BORDURES » ------------------ */
-      /* Fond noir pur, cartes et boutons en gris très sombres, presque pas de
-         bordures : les blocs se distinguent par leur nuance de gris. Textes
-         blanc cassé. Les boutons choisis et les cases cochées gardent
-         EXACTEMENT le vert du mode jour (voir juste en dessous).
+      /* ---------- 1 bis. Mode NUIT : thème LOGIX d'origine ------------------ */
+      /* Le premier thème de LOGIX : fond encre légèrement bleuté, accent cyan.
+         Mêmes valeurs qu'avant la refonte « papier crème » (y compris les
+         couleurs qui étaient alors écrites en dur, devenues des jetons).
          Activé par le bouton ☾ NUIT / ☀ JOUR de l'en-tête. */
       :root[data-theme="nuit"] {
         color-scheme: dark;
 
-        --bg-1: #000000;
-        --bg-2: #000000;
-        --surface: #0f0f0f;
-        --surface-strong: #0f0f0f;
-        --surface-raised: #1d1d1d;
-        --surface-hover: #282828;
-        --surface-input: #070707;
-        --surface-input-focus: #070707;
+        --bg-1: #090d14;
+        --bg-2: #0d1220;
+        --surface: #101825;
+        --surface-strong: #101825;
+        --surface-raised: #19212f;
+        --surface-hover: #202a3a;
+        --surface-input: #0c1220;
+        --surface-input-focus: #0e1724;
 
-        --ink: #ececec;
-        --muted: #a6a6a6;
-        --muted-strong: #f7f7f7;
-        --brand-ink: #f7f7f7;
-        --brand-sub-ink: #a6a6a6;
-        --header-line: rgba(236, 236, 236, 0.22);
+        --ink: #dbe5f2;
+        --muted: #7f93ad;
+        --muted-strong: #eef4fb;
+        --brand-ink: #f2f7ff;
+        --brand-sub-ink: #7f93ad;
+        --header-line: rgba(138, 182, 222, 0.15);
 
-        --accent: #2bb3a3;
-        --accent-strong: #7fd8cd;
-        --accent-deep: #0f766e;
-        --accent-ink: #021a17;
-        --accent-tint: rgba(43, 179, 163, 0.08);
-        --accent-wash: rgba(43, 179, 163, 0.13);
-        --accent-wash-2: rgba(43, 179, 163, 0.22);
+        --accent: #22d3ee;
+        --accent-strong: #7ce9f8;
+        --accent-deep: #0e7490;
+        --accent-ink: #04161c;
+        --accent-tint: rgba(34, 211, 238, 0.055);
+        --accent-wash: rgba(34, 211, 238, 0.09);
+        --accent-wash-2: rgba(34, 211, 238, 0.16);
 
-        /* « Sans bordures » : bordures et filets presque invisibles. */
-        --border: rgba(236, 236, 236, 0.07);
-        --border-strong: rgba(43, 179, 163, 0.65);
-        --hairline: rgba(236, 236, 236, 0.04);
-        --hairline-soft: rgba(236, 236, 236, 0.02);
+        --border: rgba(138, 182, 222, 0.15);
+        --border-strong: rgba(34, 211, 238, 0.4);
+        --hairline: rgba(138, 182, 222, 0.09);
+        --hairline-soft: rgba(138, 182, 222, 0.06);
 
-        --wash: rgba(236, 236, 236, 0.04);
-        --wash-hover: rgba(236, 236, 236, 0.08);
-        --shadow-card: none;
-        --overlay: rgba(0, 0, 0, 0.9);
+        --wash: rgba(255, 255, 255, 0.025);
+        --wash-hover: rgba(255, 255, 255, 0.055);
+        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --overlay: rgba(8, 12, 20, 0.85);
 
-        --ok: #3fae78;
-        --ok-ink: #04190d;
-        --ok-wash: rgba(63, 174, 120, 0.12);
-        --ok-border: rgba(63, 174, 120, 0.5);
-        --todo: #f0ad3c;
-        --todo-wash: rgba(240, 173, 60, 0.1);
-        --todo-border: rgba(240, 173, 60, 0.45);
-        --danger: #f87171;
-        --danger-ink: #ffe0e0;
-        --danger-wash: rgba(248, 113, 113, 0.1);
-        --danger-border: rgba(248, 113, 113, 0.5);
-      }
+        --page-bg:
+          radial-gradient(1100px 620px at 22% -12%, #14243a 0%, rgba(20, 36, 58, 0) 62%),
+          radial-gradient(900px 520px at 108% 4%, #0f2b34 0%, rgba(15, 43, 52, 0) 58%),
+          var(--bg-1);
 
-      /* Nuit : boutons choisis et cases cochées = même vert que le mode jour
-         (vert canard à 15 % sur blanc, texte et bordure vert canard). */
-      :root[data-theme="nuit"] .context-option.is-selected,
-      :root[data-theme="nuit"] .context-option.is-selected:hover {
-        background: #dbe9e3;
-        color: #0b5e58;
-        border-color: #0f766e;
-        box-shadow: inset 0 0 0 1px #0f766e;
-      }
-
-      :root[data-theme="nuit"] .context-option.is-selected .motif-code {
-        background: rgba(15, 118, 110, 0.15);
-        color: #0b5e58;
+        --ok: #34d399;
+        --ok-ink: #04241a;
+        --ok-wash: rgba(52, 211, 153, 0.12);
+        --ok-border: rgba(52, 211, 153, 0.4);
+        --todo: #f0a92e;
+        --todo-wash: rgba(240, 169, 46, 0.1);
+        --todo-border: rgba(240, 169, 46, 0.42);
+        --danger: #fb7185;
+        --danger-ink: #ffd8de;
+        --danger-wash: rgba(251, 113, 133, 0.1);
+        --danger-border: rgba(251, 113, 133, 0.45);
       }
 
       /* ---------- 2. Reset minimal + globales --------------------------------- */
