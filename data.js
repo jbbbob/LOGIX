@@ -1646,12 +1646,6 @@ const dcd1ereEnqueteInconnusLeaf = {
           },
           {
             type: "question",
-            id: "dcd-cas-interdit",
-            label: "UN CAS INTERDIT LA RÉORIENTATION ?",
-            aide: "Commentaire « héritiers et notaire non connus », ADM NV issue de RC08/TC08, sollicitation régionale, ou ADM NV déjà codifiée.",
-          },
-          {
-            type: "question",
             id: "dcd-radie-dcd",
             label: "USAGER RADIÉ AU MOTIF DCD ?",
             aide: "Si NON : reroutage au GCC.",
@@ -1672,7 +1666,7 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "alerte",
             niveau: "info",
             if: { "reroutage-evite": ["oui"] },
-            texte: "PAS DE REROUTAGE AU GCC : DLP PROCHE OU CAS QUI INTERDIT LA RÉORIENTATION.",
+            texte: "PAS DE REROUTAGE AU GCC : DLP PROCHE.",
           },
           {
             type: "check",

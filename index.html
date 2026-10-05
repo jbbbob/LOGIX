@@ -2126,8 +2126,8 @@
           vars["deces-plus-6-mois"] = deces ? (addMonths(deces, 6) <= new Date() ? "oui" : "non") : "";
 
           // 4. Reroutage GCC : seulement si (pas radié DCD OU affaire GCC en cours)
-          //    ET qu'aucun cas ne l'interdit (DLP proche ou cas interdit).
-          const bloque = vars["dcd-dlp-proche"] === "oui" || vars["dcd-cas-interdit"] === "oui";
+          //    ET que la DLP n'est pas proche.
+          const bloque = vars["dcd-dlp-proche"] === "oui";
           const motifReroutage = vars["dcd-radie-dcd"] === "non" || vars["dcd-affaire-gcc"] === "oui";
           vars["reroutage-gcc"] = motifReroutage && !bloque ? "oui" : "non";
           vars["reroutage-evite"] = motifReroutage && bloque ? "oui" : "non";
