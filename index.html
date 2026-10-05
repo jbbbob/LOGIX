@@ -1608,6 +1608,11 @@
         flex: 1 1 260px;
       }
 
+      /* Bandeau rouge = on s'arrête là : repérable avant même de le lire. */
+      .chk-alert.is-danger > span::before {
+        content: "⛔ ";
+      }
+
       .chk-tag {
         font-size: var(--fs-micro);
         font-weight: 700;
@@ -3470,7 +3475,7 @@
           if (out.length === 0) {
             out.push({
               type: "alerte",
-              niveau: "info",
+              niveau: "warning",
               texte: "SAISIR CI-DESSUS LE DÉPARTEMENT DE NAISSANCE ET CELUI DU DERNIER DOMICILE : LES BONS SITES S'AFFICHERONT ICI.",
             });
           }

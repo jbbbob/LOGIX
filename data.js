@@ -1569,7 +1569,10 @@ const reexecutionBranch = {
 //     copie: [{ label, texte }],                   (textes avec bouton COPIER)
 //     lien: { label, url },                        (bouton qui ouvre un site)
 //     facultatif: true, tag: "SI RETOUR" }         (pas compté, avec une étiquette)
-//   { type: "alerte", niveau, texte }               → bandeau danger/warning/info
+//   { type: "alerte", niveau, texte }               → bandeau :
+//        "danger"  (rouge, ⛔) = on s'arrête là (DLP proche, reroutage GCC)
+//        "warning" (orange)    = une action à faire (saisir, vérifier)
+//        "info"    (gris)      = simple information
 //   champs: [{ id, label, placeholder }]  (sur un check) → champs à remplir
 //                                                     DANS l'étape, au fil du
 //                                                     traitement
@@ -1758,17 +1761,31 @@ const dcd1ereEnqueteInconnusLeaf = {
               },
             ],
           },
+          // Demande d'acte à la mairie : même découpage que le courrier aux
+          // héritiers (ouvrir SCRIBE → modèle → demande).
           {
-            type: "check",
-            id: "dcd-mairie",
+            type: "groupe",
+            label: "DEMANDE D'ACTE À LA MAIRIE",
             if: { "dcd-acte-ged": ["non", ""] },
-            label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
-            // Rappel en lecture seule de ce qui a été relevé dans SNGI (à
-            // modifier là-haut), avec un bouton COPIER pour chaque valeur.
-            copie: [
-              { label: "MODÈLE", texte: "RECHERCHE COTISANT - DEMANDE À PARTENAIRE" },
-              { label: "N° D'ACTE", texte: "{{num-acte-aff}}" },
-              { label: "LIEU DU DÉCÈS", texte: "{{lieu-deces-aff}}" },
+            items: [
+              { type: "check", id: "dcd-mairie-ouvrir", label: "OUVRIR SCRIBE" },
+              {
+                type: "check",
+                id: "dcd-mairie-modele",
+                label: "CHOISIR LE MODÈLE",
+                copie: [{ label: "MODÈLE", texte: "RECHERCHE COTISANT - DEMANDE À PARTENAIRE" }],
+              },
+              {
+                type: "check",
+                id: "dcd-mairie",
+                label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
+                // Rappel en lecture seule de ce qui a été relevé dans SNGI (à
+                // modifier là-haut), avec un bouton COPIER pour chaque valeur.
+                copie: [
+                  { label: "N° D'ACTE", texte: "{{num-acte-aff}}" },
+                  { label: "LIEU DU DÉCÈS", texte: "{{lieu-deces-aff}}" },
+                ],
+              },
             ],
           },
         ],
@@ -1799,13 +1816,13 @@ const dcd1ereEnqueteInconnusLeaf = {
           },
           {
             type: "alerte",
-            niveau: "info",
+            niveau: "warning",
             if: { "deces-plus-6-mois": [""], "deces-futur": ["non"] },
             texte: "SAISIR LA DATE DU DÉCÈS : SI LE DÉCÈS A MOINS DE 6 MOIS, CETTE RECHERCHE N'EST PAS À FAIRE.",
           },
           {
             type: "alerte",
-            niveau: "danger",
+            niveau: "warning",
             if: { "deces-futur": ["oui"] },
             texte: "DATE DU DÉCÈS DANS LE FUTUR ({{deces-date-lue}}) : VÉRIFIER LA SAISIE.",
           },
