@@ -2524,8 +2524,8 @@
               chambresDe(deptsScribe) +
                 (deptsScribe.length > 1 ? " interrogées" : " interrogée") +
                 " par SCRIBE envoyé par " + (envoiAutre === "mail" ? "mail" : "courrier") +
-                (pjActe ? ", acte de décès joint" : "") +
-                ", " + finJustif(deptsScribe)
+                // Par SCRIBE (mail / courrier) : pas de justificatif à rattacher.
+                (pjActe ? ", acte de décès joint" : "")
             );
           }
           // Une ligne par mode d'envoi dans le commentaire WATT (le saut de
@@ -3438,8 +3438,7 @@
                       {
                         type: "check",
                         id: "dcd-notaire-autre-demande",
-                        label: "SCRIBE ENVOYÉ PAR " + (vars["dcd-notaire-autre-envoi"] === "mail" ? "MAIL" : "COURRIER") +
-                          ", COPIE RATTACHÉE À L'AFFAIRE",
+                        label: "SCRIBE ENVOYÉ PAR " + (vars["dcd-notaire-autre-envoi"] === "mail" ? "MAIL" : "COURRIER"),
                         copie: autre.modeleScribe
                           ? [{
                               label: "MODÈLE SCRIBE",
