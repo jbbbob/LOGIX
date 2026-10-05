@@ -1308,6 +1308,18 @@
         border-left: 2px solid var(--accent);
       }
 
+      .chk-fields {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 18px;
+      }
+
+      .chk-fields-row {
+        padding-top: 9px;
+        padding-bottom: 9px;
+      }
+
       .chk-alert {
         display: flex;
         flex-wrap: wrap;
@@ -1317,44 +1329,6 @@
 
       .chk-alert > span {
         flex: 1 1 260px;
-      }
-
-      /* "↑ NOTER EN HAUT" : aplat cyan, pour se voir. */
-      .chk-jump {
-        font-size: var(--fs-micro);
-        font-weight: 700;
-        letter-spacing: var(--ls-wide);
-        color: var(--accent-ink);
-        background: var(--accent);
-        border: 1px solid var(--accent);
-        border-radius: var(--r-md);
-        padding: 3px 9px;
-        white-space: nowrap;
-        cursor: pointer;
-      }
-
-      .chk-jump:hover {
-        background: var(--accent-strong);
-        border-color: var(--accent-strong);
-      }
-
-      /* "↓ REVENIR À L'ÉTAPE" : juste sous les champs à remplir, tant qu'un
-         aller-retour est en cours. */
-      .return-btn {
-        width: 100%;
-        height: 2.3rem;
-        font-size: var(--fs-label);
-        font-weight: 700;
-        letter-spacing: var(--ls-wide);
-        color: var(--accent-ink);
-        background: var(--accent);
-        border: 1px solid var(--accent-strong);
-        border-radius: var(--r-md);
-        cursor: pointer;
-      }
-
-      .return-btn:hover {
-        background: var(--accent-strong);
       }
 
       .chk-tag {
@@ -2878,7 +2852,6 @@
               activeToggleStack = [];
               topAnswers = {};
               checkState = {};
-              clearReturnTarget();
               render();
             });
             content.appendChild(back);
@@ -2904,7 +2877,6 @@
               activeToggleStack = [];
               topAnswers = {};
               checkState = {};
-              clearReturnTarget();
               render();
             });
             content.appendChild(pill);
@@ -3090,8 +3062,7 @@
             out.push({
               type: "alerte",
               niveau: "info",
-              texte: "SAISIR EN HAUT LE DÉPARTEMENT DE NAISSANCE ET CELUI DU DERNIER DOMICILE : LES BONS SITES S'AFFICHERONT ICI.",
-              saisie: { champs: ["dept-naissance", "dept-domicile"] },
+              texte: "SAISIR CI-DESSUS LE DÉPARTEMENT DE NAISSANCE ET CELUI DU DERNIER DOMICILE : LES BONS SITES S'AFFICHERONT ICI.",
             });
           }
           return out;
@@ -3165,82 +3136,40 @@
           return el;
         }
 
-        // ---- Aller-retour "↑ NOTER EN HAUT" / "↓ REVENIR À L'ÉTAPE" ----------
-        // On mémorise d'où l'on part (l'élément de la checklist + sa section),
-        // on remonte au champ à remplir, et un bouton placé juste sous les
-        // champs permet de redescendre exactement au même endroit. Entrée dans
-        // le champ fait la même chose.
-        let returnTarget = null; // { anchorId, sectionId }
-        const returnRow = document.createElement("div");
-        returnRow.className = "card-row return-row";
-        const returnBtn = document.createElement("button");
-        returnBtn.type = "button";
-        returnBtn.className = "return-btn";
-        returnBtn.textContent = "↓ REVENIR À L'ÉTAPE (OU ENTRÉE)";
-        returnBtn.addEventListener("click", () => goBackToStep());
-        returnRow.appendChild(returnBtn);
-
-        // Appelée après chaque renderCascade (qui vide cascadeFlow) : remet
-        // le bouton à la fin des champs tant qu'un aller-retour est en cours.
-        function placeReturnButton() {
-          if (returnTarget) cascadeFlow.appendChild(returnRow);
-          else returnRow.remove();
-        }
-
-        function clearReturnTarget() {
-          returnTarget = null;
-          returnRow.remove();
-        }
-
-        function goUpToFields(champs, anchorId, sectionId) {
-          const field = document.querySelector(`[data-input-id="${(champs || [])[0]}"]`);
-          if (!field) return;
-          returnTarget = { anchorId, sectionId };
-          placeReturnButton();
-          field.scrollIntoView({ behavior: "auto", block: "center" });
-          field.focus();
-        }
-
-        function goBackToStep() {
-          if (!returnTarget) return;
-          // L'élément de départ peut avoir disparu (ex : l'alerte "saisir les
-          // départements" est remplacée par les cartes) → on vise sa section.
-          const el =
-            document.getElementById(returnTarget.anchorId) ||
-            document.getElementById(returnTarget.sectionId);
-          clearReturnTarget();
-          if (el) el.scrollIntoView({ behavior: "auto", block: "center" });
-        }
-
-        document.addEventListener("keydown", (e) => {
-          if (e.key !== "Enter" || !returnTarget) return;
-          const t = e.target;
-          if (t && t.tagName === "INPUT" && t.hasAttribute("data-input-id")) {
-            e.preventDefault();
-            goBackToStep();
-          }
-        });
-
-        function makeSaisieButton(item, anchorId, sectionId) {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "chk-jump";
-          btn.textContent = "↑ NOTER EN HAUT";
-          btn.addEventListener("click", () => goUpToFields(item.saisie.champs, anchorId, sectionId));
-          return btn;
+        // Champs à remplir DANS une étape (type "champs", ou "champs" d'un
+        // check). Mêmes champs que la cascade (createFieldElement) : la valeur
+        // va dans nodeInputs, donc dans les {{variables}} et les conditions.
+        function makeChecklistFields(champs) {
+          const wrap = document.createElement("div");
+          wrap.className = "chk-fields";
+          champs.forEach((input) => {
+            const field = document.createElement("span");
+            field.className = "leaf-input-wrap";
+            const lbl = document.createElement("span");
+            lbl.className = "leaf-input-label";
+            lbl.textContent = input.label || "";
+            field.appendChild(lbl);
+            field.appendChild(createFieldElement(input));
+            wrap.appendChild(field);
+          });
+          return wrap;
         }
 
         function renderChecklistItem(item, vars, parent, sectionId) {
+          if (item.type === "champs") {
+            const row = document.createElement("div");
+            row.className = "chk-row chk-fields-row";
+            row.appendChild(makeChecklistFields(item.champs || []));
+            parent.appendChild(row);
+            return;
+          }
+
           if (item.type === "alerte") {
             const el = document.createElement("div");
             el.className = "chk-alert is-" + (item.niveau || "info");
             const txt = document.createElement("span");
             txt.textContent = fillPlain(item.texte, vars);
             el.appendChild(txt);
-            if (item.saisie) {
-              el.id = "chk-alert-" + sectionId + "-" + (item.saisie.champs || []).join("-");
-              el.appendChild(makeSaisieButton(item, el.id, "chk-sec-" + sectionId));
-            }
             parent.appendChild(el);
             return;
           }
@@ -3330,9 +3259,11 @@
             }
             const link = makeChecklistLink(item.lien);
             if (link) line.appendChild(link);
-            if (item.saisie) line.appendChild(makeSaisieButton(item, row.id, "chk-sec-" + sectionId));
             body.appendChild(line);
             if (item.aide) body.appendChild(makeChecklistAide(fillPlain(item.aide, vars)));
+            if (Array.isArray(item.champs) && item.champs.length > 0) {
+              body.appendChild(makeChecklistFields(item.champs));
+            }
             if (Array.isArray(item.copie) && item.copie.length > 0) {
               const tools = document.createElement("div");
               tools.className = "chk-tools";
@@ -3345,6 +3276,26 @@
         }
 
         function renderChecklist() {
+          const active = document.activeElement;
+          const activeId =
+            active && checklistContainer.contains(active) ? active.getAttribute("data-input-id") : null;
+          const selStart = activeId ? active.selectionStart : null;
+          const selEnd = activeId ? active.selectionEnd : null;
+          const scrollY = window.scrollY;
+
+          drawChecklist();
+
+          if (activeId) {
+            const again = checklistContainer.querySelector(`[data-input-id="${activeId}"]`);
+            if (again) {
+              again.focus();
+              try { again.setSelectionRange(selStart, selEnd); } catch (err) { /* type sans sélection */ }
+            }
+          }
+          if (window.scrollY !== scrollY) window.scrollTo(0, scrollY);
+        }
+
+        function drawChecklist() {
           checklistContainer.innerHTML = "";
           const leaf = getDeepestNode();
           if (!leaf || !leaf.checklist) return;
@@ -3952,7 +3903,6 @@
             activeToggleStack = [];
             topAnswers = {};
             checkState = {};
-            clearReturnTarget();
             render();
           }
         }
@@ -3989,7 +3939,6 @@
 
         function resetDossier() {
           checkState = {};
-          clearReturnTarget();
           trail = [{ label: "", node: window.treeData }];
           inlineRootNode = null;
           inlineChain = [];
@@ -4024,7 +3973,6 @@
           renderContextPanel();
           renderToggles();
           renderCascade();
-          placeReturnButton();
           renderLeafQuestions();
           renderChecklist();
           renderResults(deepestNode);

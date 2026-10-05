@@ -1555,10 +1555,6 @@ const reexecutionBranch = {
   },
 };
 
-// treeData = racine de l'arbre. Liste toutes les catégories disponibles.
-// Pour ajouter une catégorie future (ex: REEXECUTION) :
-// 1) créer une nouvelle constante (comme anvBranch / delaiBranch)
-// 2) l'ajouter dans le tableau choix ci-dessous.
 // ============================================================================
 // Branche DCD : MODE OPÉRATOIRE (checklist) pour les usagers décédés.
 // ----------------------------------------------------------------------------
@@ -1574,9 +1570,10 @@ const reexecutionBranch = {
 //     lien: { label, url },                        (bouton qui ouvre un site)
 //     facultatif: true, tag: "SI RETOUR" }         (pas compté, avec une étiquette)
 //   { type: "alerte", niveau, texte }               → bandeau danger/warning/info
-//   saisie: { champs: ["id-input"] }  (check/alerte) → bouton "↑ NOTER EN HAUT"
-//                                                     qui remonte au champ, puis
-//                                                     "↓ REVENIR À L'ÉTAPE"
+//   champs: [{ id, label, placeholder }]  (sur un check) → champs à remplir
+//                                                     DANS l'étape, au fil du
+//                                                     traitement
+//   { type: "champs", champs: [...] }               → champs seuls, sans case
 //   { type: "chambres" }                            → une carte par chambre des
 //                                                     notaires selon les départements
 // Tous acceptent un "if" (mêmes règles que les resultats).
@@ -1594,15 +1591,6 @@ const reexecutionBranch = {
 // ============================================================================
 
 const dcd1ereEnqueteInconnusLeaf = {
-  // Saisies en haut de page (rien n'est enregistré : tout part au F5).
-  inputs: [
-    { id: "date-deces", label: "DATE DU DÉCÈS", type: "text", placeholder: "JJ/MM/AAAA" },
-    { id: "lieu-deces", label: "LIEU DU DÉCÈS", type: "text", placeholder: "Commune", inline: true },
-    { id: "num-acte", label: "N° D'ACTE", type: "text", placeholder: "", inline: true },
-    { id: "dept-naissance", label: "DÉPT NAISSANCE", type: "text", placeholder: "Ex : 93", inline: true },
-    { id: "dept-domicile", label: "DÉPT DERNIER DOMICILE", type: "text", placeholder: "Ex : 75", inline: true },
-  ],
-
   checklist: {
     // Chambres qui ont un formulaire en ligne de recherche de succession.
     // Pour en ajouter une : copier une ligne et changer id / label / depts / url.
@@ -1712,10 +1700,12 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "check",
             id: "dcd-sngi-releve",
             label: "SNGI : N° D'ACTE ET LIEU DU DÉCÈS RELEVÉS",
-            aide: "À noter dans les champs N° D'ACTE et LIEU DU DÉCÈS en haut de page.",
-            // Bouton "↑ NOTER EN HAUT" : remonte au 1er champ cité, puis un
-            // bouton "↓ REVENIR À L'ÉTAPE" ramène ici.
-            saisie: { champs: ["num-acte", "lieu-deces"] },
+            // Champs remplis directement ici (rien n'est enregistré : tout
+            // part au F5). Le lieu sert à la phrase "mairie de …" du WATT.
+            champs: [
+              { id: "num-acte", label: "N° D'ACTE", placeholder: "" },
+              { id: "lieu-deces", label: "LIEU DU DÉCÈS", placeholder: "Commune" },
+            ],
           },
           {
             type: "check",
@@ -1754,7 +1744,16 @@ const dcd1ereEnqueteInconnusLeaf = {
         id: "dcd-notaires",
         titre: "4. CHAMBRE(S) DES NOTAIRES",
         if: { "traitement-stop": ["non"] },
-        items: [{ type: "chambres" }],
+        items: [
+          {
+            type: "champs",
+            champs: [
+              { id: "dept-naissance", label: "DÉPT NAISSANCE", placeholder: "Ex : 93" },
+              { id: "dept-domicile", label: "DÉPT DERNIER DOMICILE", placeholder: "Ex : 75" },
+            ],
+          },
+          { type: "chambres" },
+        ],
       },
       {
         id: "dcd-succession",
@@ -1762,18 +1761,20 @@ const dcd1ereEnqueteInconnusLeaf = {
         if: { "traitement-stop": ["non"] },
         items: [
           {
+            type: "champs",
+            champs: [{ id: "date-deces", label: "DATE DU DÉCÈS", placeholder: "JJ/MM/AAAA" }],
+          },
+          {
             type: "alerte",
             niveau: "info",
             if: { "deces-plus-6-mois": [""], "deces-futur": ["non"] },
-            texte: "SAISIR LA DATE DU DÉCÈS EN HAUT : SI LE DÉCÈS A MOINS DE 6 MOIS, CETTE RECHERCHE N'EST PAS À FAIRE.",
-            saisie: { champs: ["date-deces"] },
+            texte: "SAISIR LA DATE DU DÉCÈS : SI LE DÉCÈS A MOINS DE 6 MOIS, CETTE RECHERCHE N'EST PAS À FAIRE.",
           },
           {
             type: "alerte",
             niveau: "danger",
             if: { "deces-futur": ["oui"] },
             texte: "DATE DU DÉCÈS DANS LE FUTUR ({{deces-date-lue}}) : VÉRIFIER LA SAISIE.",
-            saisie: { champs: ["date-deces"] },
           },
           // La date comprise est rappelée : une faute de frappe se voit tout de suite.
           {
@@ -1781,7 +1782,6 @@ const dcd1ereEnqueteInconnusLeaf = {
             niveau: "info",
             if: { "deces-plus-6-mois": ["non"] },
             texte: "DÉCÈS LE {{deces-date-lue}}, IL Y A {{deces-mois}} MOIS : MOINS DE 6 MOIS, PAS DE RECHERCHE DE SUCCESSION VACANTE.",
-            saisie: { champs: ["date-deces"] },
           },
           {
             type: "alerte",
@@ -1932,6 +1932,10 @@ const dcdBranch = {
   },
 };
 
+// treeData = racine de l'arbre. Liste toutes les catégories disponibles.
+// Pour ajouter une catégorie future (ex: REEXECUTION) :
+// 1) créer une nouvelle constante (comme anvBranch / delaiBranch)
+// 2) l'ajouter dans le tableau choix ci-dessous.
 const treeData = {
   question: "",
   choix: [anvBranch, delaiBranch, reexecutionBranch, dcdBranch],
