@@ -2123,7 +2123,21 @@
 
           // 3. Décès de plus de 6 mois ? "" tant que la date n'est pas saisie.
           const deces = parseDateFr(nodeInputs["date-deces"]);
-          vars["deces-plus-6-mois"] = deces ? (addMonths(deces, 6) <= new Date() ? "oui" : "non") : "";
+          //    Une date dans le futur est signalée (deces-futur) et traitée
+          //    comme "pas encore saisie". deces-date-lue / deces-mois servent
+          //    à afficher ce que l'appli a compris de la saisie.
+          const now = new Date();
+          const futur = !!deces && deces > now;
+          vars["deces-futur"] = futur ? "oui" : "non";
+          vars["deces-date-lue"] = deces ? formatDateLong(deces) : "";
+          vars["deces-mois"] = deces && !futur
+            ? String(
+                (now.getFullYear() - deces.getFullYear()) * 12 +
+                  (now.getMonth() - deces.getMonth()) -
+                  (now.getDate() < deces.getDate() ? 1 : 0)
+              )
+            : "";
+          vars["deces-plus-6-mois"] = deces && !futur ? (addMonths(deces, 6) <= now ? "oui" : "non") : "";
 
           // 4. Reroutage GCC : seulement si (pas radié DCD OU affaire GCC en cours)
           //    ET que la DLP n'est pas proche.
@@ -3044,7 +3058,6 @@
                   type: "check",
                   id: "dcd-notaire-" + ch.id + "-ar",
                   label: "ACCUSÉ DE RÉCEPTION REÇU PAR MAIL ET RATTACHÉ À L'AFFAIRE",
-                  facultatif: true,
                 },
               ],
             });
@@ -3068,6 +3081,7 @@
                   id: "dcd-notaire-autre-ar",
                   label: "ACCUSÉ DE RÉCEPTION RATTACHÉ À L'AFFAIRE (S'IL Y EN A UN)",
                   facultatif: true,
+                  tag: "SI RETOUR",
                 },
               ],
             });
@@ -3308,10 +3322,10 @@
             lbl.htmlFor = box.id;
             lbl.textContent = fillPlain(item.label, vars);
             line.appendChild(lbl);
-            if (item.facultatif) {
+            if (item.tag) {
               const tag = document.createElement("span");
               tag.className = "chk-tag";
-              tag.textContent = "PLUS TARD";
+              tag.textContent = item.tag;
               line.appendChild(tag);
             }
             const link = makeChecklistLink(item.lien);

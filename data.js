@@ -1572,7 +1572,7 @@ const reexecutionBranch = {
 //   { type: "check", id, label, aide, outil,        → case à cocher
 //     copie: [{ label, texte }],                   (textes avec bouton COPIER)
 //     lien: { label, url },                        (bouton qui ouvre un site)
-//     facultatif: true }                           (pas compté : "PLUS TARD")
+//     facultatif: true, tag: "SI RETOUR" }         (pas compté, avec une étiquette)
 //   { type: "alerte", niveau, texte }               → bandeau danger/warning/info
 //   saisie: { champs: ["id-input"] }  (check/alerte) → bouton "↑ NOTER EN HAUT"
 //                                                     qui remonte au champ, puis
@@ -1629,7 +1629,7 @@ const dcd1ereEnqueteInconnusLeaf = {
     ],
     chambreAutre: {
       url: "https://www.csn.notaires.fr/fr/conseil-regional-notaire-val-doise-eure-et-loir-hauts-de-seine-yvelines-95-28-92-78",
-      modeleScribe: "Succession - Chambre des notaires - Recherche coordonnées - réf. BNC | 9453",
+      modeleScribe: "Succession - Chambre des notaires - Recherche coordonnées - réf. BNC &lt;&lt; | 9453 &gt;&gt;",
     },
 
     sections: [
@@ -1764,15 +1764,30 @@ const dcd1ereEnqueteInconnusLeaf = {
           {
             type: "alerte",
             niveau: "info",
-            if: { "deces-plus-6-mois": [""] },
+            if: { "deces-plus-6-mois": [""], "deces-futur": ["non"] },
             texte: "SAISIR LA DATE DU DÉCÈS EN HAUT : SI LE DÉCÈS A MOINS DE 6 MOIS, CETTE RECHERCHE N'EST PAS À FAIRE.",
             saisie: { champs: ["date-deces"] },
           },
           {
             type: "alerte",
+            niveau: "danger",
+            if: { "deces-futur": ["oui"] },
+            texte: "DATE DU DÉCÈS DANS LE FUTUR ({{deces-date-lue}}) : VÉRIFIER LA SAISIE.",
+            saisie: { champs: ["date-deces"] },
+          },
+          // La date comprise est rappelée : une faute de frappe se voit tout de suite.
+          {
+            type: "alerte",
             niveau: "info",
             if: { "deces-plus-6-mois": ["non"] },
-            texte: "DÉCÈS DE MOINS DE 6 MOIS : PAS DE RECHERCHE DE SUCCESSION VACANTE.",
+            texte: "DÉCÈS LE {{deces-date-lue}}, IL Y A {{deces-mois}} MOIS : MOINS DE 6 MOIS, PAS DE RECHERCHE DE SUCCESSION VACANTE.",
+            saisie: { champs: ["date-deces"] },
+          },
+          {
+            type: "alerte",
+            niveau: "info",
+            if: { "deces-plus-6-mois": ["oui"] },
+            texte: "DÉCÈS LE {{deces-date-lue}}, IL Y A {{deces-mois}} MOIS : RECHERCHE À FAIRE.",
           },
           {
             type: "check",
@@ -1831,7 +1846,7 @@ const dcd1ereEnqueteInconnusLeaf = {
       id: "dcd-watt-esdc",
       type: "fragment",
       if: { "dcd-esdc": ["oui"] },
-      texte: "Écrit en ESDC avec le code DCD : RECHERCHE HERITIERS : 1ère enquête",
+      texte: "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : 1ère enquête",
     },
     {
       id: "dcd-watt-sngi",
