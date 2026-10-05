@@ -1313,6 +1313,28 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 8px 18px;
+        padding: 10px;
+        border: 1px dashed var(--todo);
+        border-radius: var(--r-md);
+        background: rgba(240, 169, 46, 0.06);
+      }
+
+      .chk-fields.is-filled {
+        border-style: solid;
+        border-color: var(--ok);
+        background: rgba(52, 211, 153, 0.06);
+      }
+
+      .chk-fields-tag {
+        flex-basis: 100%;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--todo);
+      }
+
+      .chk-fields.is-filled .chk-fields-tag {
+        color: var(--ok);
       }
 
       .chk-fields-row {
@@ -3140,8 +3162,16 @@
         // check). Mêmes champs que la cascade (createFieldElement) : la valeur
         // va dans nodeInputs, donc dans les {{variables}} et les conditions.
         function makeChecklistFields(champs) {
+          // Cadre orange en pointillés « À REMPLIR » tant qu'un champ est vide,
+          // vert « REMPLI ✓ » quand tout est saisi. Taper re-dessine la
+          // checklist (renderChecklist), donc l'état se met à jour en direct.
+          const filled = champs.every((c) => String(nodeInputs[c.id] || "").trim() !== "");
           const wrap = document.createElement("div");
-          wrap.className = "chk-fields";
+          wrap.className = "chk-fields" + (filled ? " is-filled" : "");
+          const tag = document.createElement("span");
+          tag.className = "chk-fields-tag";
+          tag.textContent = filled ? "REMPLI ✓" : "À REMPLIR";
+          wrap.appendChild(tag);
           champs.forEach((input) => {
             const field = document.createElement("span");
             field.className = "leaf-input-wrap";
