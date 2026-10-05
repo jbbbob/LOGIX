@@ -1369,12 +1369,6 @@
         border-color: #0f766e;
       }
 
-      /* Étape avec des champs encore vides : case grisée en pointillés. */
-      .chk-box.is-locked {
-        border-style: dashed;
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
 
       .chk-box:checked {
         background: #0f766e;
@@ -2279,26 +2273,14 @@
           return /^(\d{2,3}|2A|2B)$/.test(v) ? v : "";
         }
 
-        // Une étape avec des champs (N° D'ACTE, NOM…) ne peut être cochée que
-        // si TOUS ses champs sont remplis.
+        // Étape avec des champs (N° D'ACTE, NOM…) : on CONSEILLE de les remplir
+        // avant de cocher (ils servent aux textes à copier et au commentaire
+        // WATT), sans l'interdire.
         function champsRemplis(item) {
           return (item.champs || []).every((c) => String(nodeInputs[c.id] || "").trim() !== "");
         }
 
-        // Si un champ a été vidé après coup, l'étape se décoche toute seule
-        // (sinon le commentaire WATT annoncerait une étape pas vraiment faite).
-        function decocherEtapesIncompletes(cl) {
-          const visit = (it) => {
-            if (it.type === "groupe") (it.items || []).forEach(visit);
-            else if (it.type === "check" && Array.isArray(it.champs) && it.champs.length > 0) {
-              if (checkState[it.id] === true && !champsRemplis(it)) checkState[it.id] = false;
-            }
-          };
-          (cl.sections || []).forEach((sec) => (sec.items || []).forEach(visit));
-        }
-
         function addChecklistVars(vars, leaf) {
-          if (leaf && leaf.checklist) decocherEtapesIncompletes(leaf.checklist);
           // 1. Cases cochées / questions : utilisables dans les "if" par leur id.
           //    Une question pas encore répondue vaut "" (ex : if ["non", ""] =
           //    "afficher tant qu'on n'a pas répondu OUI").
@@ -3474,26 +3456,19 @@
 
             const box = document.createElement("input");
             box.type = "checkbox";
-            const verrou = Array.isArray(item.champs) && item.champs.length > 0 && !champsRemplis(item);
-            box.className = "chk-box" + (verrou ? " is-locked" : "");
-            if (verrou) box.title = "Remplir d'abord les champs de cette étape";
+            box.className = "chk-box";
             box.id = "chk-" + item.id;
             box.checked = checked;
             box.addEventListener("change", () => {
-              if (box.checked && !champsRemplis(item)) {
-                // Pas encore rempli : on refuse, on le dit, et on place le
-                // curseur dans le premier champ vide de l'étape.
-                box.checked = false;
+              checkState[item.id] = box.checked;
+              render();
+              if (box.checked && Array.isArray(item.champs) && !champsRemplis(item)) {
+                // Coché quand même : simple rappel de ce qu'il reste à saisir.
                 const vides = item.champs
                   .filter((c) => String(nodeInputs[c.id] || "").trim() === "")
                   .map((c) => c.label);
-                showToast("À REMPLIR D'ABORD : " + vides.join(", "), 2600);
-                const premier = row.querySelector(`[data-input-id="${item.champs.find((c) => String(nodeInputs[c.id] || "").trim() === "").id}"]`);
-                if (premier) premier.focus();
-                return;
+                showToast("CONSEILLÉ : REMPLIR " + vides.join(", "), 2600);
               }
-              checkState[item.id] = box.checked;
-              render();
             });
             row.appendChild(box);
 
