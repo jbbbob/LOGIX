@@ -1844,7 +1844,6 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "check",
             id: "dcd-enq",
             label: "ENQ CODIFIÉE AU STADE DEMAND PUIS R DIV",
-            aide: "Via Portail TI (A/C) ou DECA (PL).",
           },
           {
             type: "check",
