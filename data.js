@@ -1634,19 +1634,19 @@ const dcd1ereEnqueteInconnusLeaf = {
           },
           // Si DLP proche : on passe directement à la RELANCE, donc les
           // questions de reroutage GCC et l'étape MD/CO ANO sont masquées.
+          // Si reroutage GCC : seul le bandeau rouge reste affiché.
           {
             type: "question",
             id: "dcd-radie-dcd",
             if: { "dcd-dlp-proche": ["non", ""] },
             label: "USAGER RADIÉ AU MOTIF DCD ?",
-            aide: "Si NON : reroutage au GCC.",
           },
           {
             type: "question",
             id: "dcd-affaire-gcc",
-            if: { "dcd-dlp-proche": ["non", ""] },
+            // Masquée aussi si déjà reroutage (usager pas radié DCD).
+            if: { "dcd-dlp-proche": ["non", ""], "dcd-radie-dcd": ["oui", ""] },
             label: "AUTRE AFFAIRE DE COMPÉTENCE GCC EN COURS ?",
-            aide: "Si OUI : reroutage au GCC.",
           },
           {
             type: "alerte",
@@ -1657,7 +1657,8 @@ const dcd1ereEnqueteInconnusLeaf = {
           {
             type: "check",
             id: "dcd-md-co-ano",
-            if: { "dcd-dlp-proche": ["non", ""] },
+            // Masquée si DLP proche ou si le dossier part au GCC.
+            if: { "dcd-dlp-proche": ["non", ""], "reroutage-gcc": ["non"] },
             label: "MD ANO ET CO ANO SUPPRIMÉES (SI PRÉSENTES)",
           },
         ],
