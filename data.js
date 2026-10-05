@@ -1760,6 +1760,12 @@ const dcd1ereEnqueteInconnusLeaf = {
             id: "dcd-mairie",
             if: { "dcd-acte-ged": ["non", ""] },
             label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
+            // Mêmes champs que l'étape SNGI (mêmes id) : ce qui a été relevé
+            // réapparaît ici, et une correction ici se répercute là-haut.
+            champs: [
+              { id: "num-acte", label: "N° D'ACTE", placeholder: "" },
+              { id: "lieu-deces", label: "LIEU DU DÉCÈS", placeholder: "Commune" },
+            ],
             copie: [{ label: "MODÈLE", texte: "RECHERCHE COTISANT - DEMANDE À PARTENAIRE" }],
           },
         ],

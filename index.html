@@ -3471,6 +3471,11 @@
           const active = document.activeElement;
           const activeId =
             active && checklistContainer.contains(active) ? active.getAttribute("data-input-id") : null;
+          // Un même champ peut apparaître 2 fois (ex : N° D'ACTE dans SNGI et
+          // dans MAIRIE) : on retient lequel des deux avait le curseur.
+          const activeIdx = activeId
+            ? [...checklistContainer.querySelectorAll(`[data-input-id="${activeId}"]`)].indexOf(active)
+            : -1;
           const selStart = activeId ? active.selectionStart : null;
           const selEnd = activeId ? active.selectionEnd : null;
           const scrollY = window.scrollY;
@@ -3478,7 +3483,7 @@
           drawChecklist();
 
           if (activeId) {
-            const again = checklistContainer.querySelector(`[data-input-id="${activeId}"]`);
+            const again = checklistContainer.querySelectorAll(`[data-input-id="${activeId}"]`)[Math.max(activeIdx, 0)];
             if (again) {
               again.focus();
               try { again.setSelectionRange(selStart, selEnd); } catch (err) { /* type sans sélection */ }
