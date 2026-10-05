@@ -4,13 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LOGIX</title>
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
     <!-- Favicon inline (data URI) : aucun fichier externe, aucun appel réseau. -->
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0e15'/%3E%3Cpath d='M9 8v16h13' stroke='%2322d3ee' stroke-width='3.2' fill='none' stroke-linecap='square'/%3E%3Ccircle cx='23' cy='9.5' r='2.6' fill='%2322d3ee'/%3E%3C/svg%3E"
     />
 
+    <script>
+      // Mode JOUR / NUIT : dernier choix retenu dans ce navigateur (préférence
+      // d'affichage uniquement, aucune donnée de dossier).
+      try {
+        if (localStorage.getItem("logix-theme") === "nuit") {
+          document.documentElement.setAttribute("data-theme", "nuit");
+        }
+      } catch (e) { /* stockage indisponible : on reste en mode jour */ }
+    </script>
     <style>
       /* =========================================================================
          LOGIX — feuille de style unique (aucune dépendance externe, 100 % offline)
@@ -29,57 +38,68 @@
 
       /* ---------- 1. Jetons ---------------------------------------------------- */
       :root {
-        /* Fond sombre légèrement bleuté (encre).
-           Trois niveaux seulement : page → carte → contrôle. */
-        --bg-1: #090d14;          /* fond général */
-        --bg-2: #0d1220;
-        --surface: #101825;       /* les CARTES */
-        --surface-strong: #101825; /* cartes résultat (même niveau) */
-        --surface-raised: #19212f; /* boutons et champs DANS une carte */
-        --surface-hover: #202a3a;  /* survol d'un contrôle */
-        --surface-input: #0c1220;
+        /* COULEURS — thème PAPIER CRÈME + VERT CANARD.
+           Deux modes, mêmes noms de jetons :
+             - JOUR (défaut, ici) : fond crème, cartes blanches ;
+             - NUIT ([data-theme="nuit"], section 1 bis) : même palette en
+               sombre, le blanc devient une teinte foncée assortie, les
+               textes restent crème (pas de blanc pur qui éblouit).
+           Toutes les couleurs de la page passent par ces jetons : pour
+           changer une couleur, c'est ici (et dans le bloc NUIT). */
+        color-scheme: light;
 
-        --ink: #dbe5f2;
-        --muted: #7f93ad;
-        --muted-strong: #eef4fb;
+        /* Fonds : page → carte → contrôle */
+        --bg-1: #f1ebe0;          /* fond général (crème) */
+        --bg-2: #e9e1d3;
+        --surface: #fffdf8;       /* les CARTES */
+        --surface-strong: #fffdf8;
+        --surface-raised: #f4ede1; /* boutons et champs DANS une carte */
+        --surface-hover: #ebe2d2;  /* survol d'un contrôle */
+        --surface-input: #fffefb;
+        --surface-input-focus: #ffffff;
 
-        /* Accent principal : cyan / bleu électrique */
-        --accent: #22d3ee;
-        --accent-strong: #7ce9f8;
-        --accent-deep: #0e7490;
-        --accent-ink: #04161c; /* texte posé SUR l'accent */
-        --accent-wash: rgba(34, 211, 238, 0.09);
-        --accent-wash-2: rgba(34, 211, 238, 0.16);
+        /* Textes */
+        --ink: #2b2419;
+        --muted: #7a6c58;
+        --muted-strong: #1a140c;
+        --brand-ink: #1a140c;      /* la marque LOGIX */
 
-        /* Bordure des cartes et des contrôles : fine, 1px, discrète. */
-        --border: rgba(138, 182, 222, 0.15);
-        --border-strong: rgba(34, 211, 238, 0.4);
-        /* Filet interne : sépare les lignes À L'INTÉRIEUR d'une carte,
-           pour ne pas empiler une carte dans une carte. */
-        --hairline: rgba(138, 182, 222, 0.09);
-        --hairline-soft: rgba(138, 182, 222, 0.06);
-        /* Aplats très légers */
-        --wash: rgba(255, 255, 255, 0.025);
-        --wash-hover: rgba(255, 255, 255, 0.055);
-        /* Ombre de carte : quasi imperceptible, juste un décollement. */
-        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+        /* Accent : vert canard */
+        --accent: #0f766e;
+        --accent-strong: #0b5e58;
+        --accent-deep: #084842;
+        --accent-ink: #ffffff;     /* texte posé SUR l'accent */
+        --accent-tint: rgba(15, 118, 110, 0.06); /* bandeaux titre */
+        --accent-wash: rgba(15, 118, 110, 0.08);
+        --accent-wash-2: rgba(15, 118, 110, 0.15);
 
-        /* Fond de page, défini UNE seule fois.
-           Le header réutilise exactement la même valeur (avec
-           background-attachment: fixed) : comme un fond « fixed » se
-           positionne par rapport à la fenêtre et non par rapport à
-           l'élément, le header peint rigoureusement les mêmes pixels que la
-           page derrière lui. Résultat : aucune démarcation visible, tout en
-           restant opaque — le contenu ne transparaît pas quand on défile. */
-        --page-bg:
-          radial-gradient(1100px 620px at 22% -12%, #14243a 0%, rgba(20, 36, 58, 0) 62%),
-          radial-gradient(900px 520px at 108% 4%, #0f2b34 0%, rgba(15, 43, 52, 0) 58%),
-          var(--bg-1);
+        /* Bordures et filets */
+        --border: rgba(80, 60, 30, 0.2);
+        --border-strong: rgba(15, 118, 110, 0.5);
+        --hairline: rgba(80, 60, 30, 0.11);
+        --hairline-soft: rgba(80, 60, 30, 0.06);
 
-        --ok: #34d399;
-        --ok-ink: #04241a;
-        --todo: #f0a92e;
-        --danger: #fb7185;
+        /* Aplats très légers, ombre, voile */
+        --wash: rgba(80, 60, 30, 0.035);
+        --wash-hover: rgba(80, 60, 30, 0.07);
+        --shadow-card: 0 1px 2px rgba(80, 60, 30, 0.12);
+        --overlay: rgba(255, 253, 248, 0.9);
+
+        /* Fond de page (le header réutilise la même valeur, voir .app-header) */
+        --page-bg: var(--bg-1);
+
+        /* États : fait / à faire / danger (+ fonds et bordures assortis) */
+        --ok: #2f855a;
+        --ok-ink: #ffffff;
+        --ok-wash: rgba(47, 133, 90, 0.1);
+        --ok-border: rgba(47, 133, 90, 0.45);
+        --todo: #b45309;
+        --todo-wash: rgba(180, 83, 9, 0.08);
+        --todo-border: rgba(180, 83, 9, 0.4);
+        --danger: #c53030;
+        --danger-ink: #8f1d1d;
+        --danger-wash: rgba(197, 48, 48, 0.08);
+        --danger-border: rgba(197, 48, 48, 0.45);
 
         /* Anciens jetons conservés (référencés par .brand-button) */
         --button-bg: #e8f4f8;
@@ -119,6 +139,58 @@
 
         /* Durée unique pour TOUTES les transitions autorisées (≤ 120 ms) */
         --t: 110ms;
+      }
+
+      /* ---------- 1 bis. Mode NUIT ------------------------------------------- */
+      /* Même palette crème + vert canard, en sombre. Le blanc des cartes est
+         remplacé par un vert-de-gris très foncé (assorti au vert canard), les
+         textes sont crème. Activé par le bouton ☾ / ☀ de l'en-tête. */
+      :root[data-theme="nuit"] {
+        color-scheme: dark;
+
+        --bg-1: #141713;
+        --bg-2: #181c17;
+        --surface: #1e2420;
+        --surface-strong: #1e2420;
+        --surface-raised: #29302a;
+        --surface-hover: #333b34;
+        --surface-input: #171b17;
+        --surface-input-focus: #1b201b;
+
+        --ink: #ece4d3;
+        --muted: #bdb19a;
+        --muted-strong: #f4ecdc;
+        --brand-ink: #f4ecdc;
+
+        --accent: #3cc9b4;
+        --accent-strong: #86e3d4;
+        --accent-deep: #0f766e;
+        --accent-ink: #04201c;
+        --accent-tint: rgba(60, 201, 180, 0.07);
+        --accent-wash: rgba(60, 201, 180, 0.11);
+        --accent-wash-2: rgba(60, 201, 180, 0.2);
+
+        --border: rgba(236, 228, 211, 0.24);
+        --border-strong: rgba(60, 201, 180, 0.6);
+        --hairline: rgba(236, 228, 211, 0.13);
+        --hairline-soft: rgba(236, 228, 211, 0.07);
+
+        --wash: rgba(236, 228, 211, 0.035);
+        --wash-hover: rgba(236, 228, 211, 0.07);
+        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45);
+        --overlay: rgba(20, 23, 19, 0.88);
+
+        --ok: #7bd88f;
+        --ok-ink: #0b2412;
+        --ok-wash: rgba(123, 216, 143, 0.1);
+        --ok-border: rgba(123, 216, 143, 0.45);
+        --todo: #e9b44c;
+        --todo-wash: rgba(233, 180, 76, 0.09);
+        --todo-border: rgba(233, 180, 76, 0.42);
+        --danger: #f08a8a;
+        --danger-ink: #ffd9d9;
+        --danger-wash: rgba(240, 138, 138, 0.1);
+        --danger-border: rgba(240, 138, 138, 0.5);
       }
 
       /* ---------- 2. Reset minimal + globales --------------------------------- */
@@ -371,7 +443,7 @@
         letter-spacing: 0.26em;
         /* Élément le plus lumineux de la page : posé à même le fond, il doit
            porter seul, sans cadre pour le soutenir. */
-        color: #f2f7ff;
+        color: var(--brand-ink);
         user-select: none;
       }
 
@@ -435,9 +507,9 @@
       }
 
       .hdr-btn-strong:hover:not(:disabled) {
-        border-color: rgba(251, 113, 133, 0.45);
-        background: rgba(251, 113, 133, 0.1);
-        color: #ffd8de;
+        border-color: var(--danger-border);
+        background: var(--danger-wash);
+        color: var(--danger-ink);
       }
 
       /* --- Corps : sidebar + colonne principale ------------------------------ */
@@ -618,8 +690,8 @@
 
       /* Étape franchie */
       .path-step.is-done .path-mark {
-        border-color: rgba(52, 211, 153, 0.4);
-        background: rgba(52, 211, 153, 0.12);
+        border-color: var(--ok-border);
+        background: var(--ok-wash);
         color: var(--ok);
       }
       .path-step.is-done .path-value {
@@ -643,7 +715,7 @@
       /* Étape restante */
       .path-step.is-todo .path-mark {
         border-style: dashed;
-        border-color: rgba(240, 169, 46, 0.42);
+        border-color: var(--todo-border);
         background: none;
         color: var(--todo);
       }
@@ -812,7 +884,7 @@
       }
 
       .context-option.is-selected .motif-code {
-        background: rgba(34, 211, 238, 0.18);
+        background: var(--accent-wash-2);
         color: var(--accent-strong);
       }
 
@@ -828,8 +900,8 @@
         padding: 0.1rem 0.35rem;
         border-radius: var(--r-sm);
         color: var(--todo);
-        background: rgba(240, 169, 46, 0.1);
-        border: 1px solid rgba(240, 169, 46, 0.28);
+        background: var(--todo-wash);
+        border: 1px solid var(--todo-border);
       }
 
       /* MOTIF : code discret dans une pastille sobre, puis intitulé. */
@@ -851,7 +923,7 @@
         height: 1.35rem;
         padding: 0 0.3rem;
         border-radius: var(--r-sm);
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--wash-hover);
         color: var(--muted);
         font-size: var(--fs-micro);
         font-weight: 700;
@@ -908,7 +980,7 @@
       .card-input:focus,
       .card-textarea:focus {
         border-color: var(--accent);
-        background: #0e1724;
+        background: var(--surface-input-focus);
       }
 
       .card-textarea {
@@ -945,13 +1017,13 @@
 
       .image-paste-zone:hover {
         border-color: var(--accent);
-        background: #0e1724;
+        background: var(--surface-input-focus);
       }
 
       .image-paste-zone:focus {
         border-color: var(--accent);
         border-style: solid;
-        background: #0e1724;
+        background: var(--surface-input-focus);
       }
 
       .image-paste-zone .image-placeholder {
@@ -978,7 +1050,7 @@
         height: 1.6rem;
         border-radius: var(--r-sm);
         border: 1px solid var(--border);
-        background: rgba(8, 12, 20, 0.85);
+        background: var(--overlay);
         color: var(--ink);
         font-size: var(--fs-label);
         font-weight: 700;
@@ -989,9 +1061,9 @@
       }
 
       .image-clear-btn:hover {
-        border-color: rgba(251, 113, 133, 0.5);
-        background: rgba(251, 113, 133, 0.18);
-        color: #ffd8de;
+        border-color: var(--danger-border);
+        background: var(--danger-wash);
+        color: var(--danger-ink);
       }
 
       .back-arrow-btn {
@@ -1047,7 +1119,7 @@
         align-items: center;
         gap: 12px;
         padding: 8px 12px;
-        background: rgba(34, 211, 238, 0.055);
+        background: var(--accent-tint);
         border-bottom: 1px solid var(--border);
       }
 
@@ -1185,7 +1257,7 @@
         align-items: center;
         gap: 6px 12px;
         padding: 10px 13px;
-        background: rgba(34, 211, 238, 0.055);
+        background: var(--accent-tint);
         border-bottom: 1px solid var(--border);
       }
 
@@ -1316,13 +1388,13 @@
         padding: 10px;
         border: 1px dashed var(--todo);
         border-radius: var(--r-md);
-        background: rgba(240, 169, 46, 0.06);
+        background: var(--todo-wash);
       }
 
       .chk-fields.is-filled {
         border-style: solid;
         border-color: var(--ok);
-        background: rgba(52, 211, 153, 0.06);
+        background: var(--ok-wash);
       }
 
       .chk-fields-tag {
@@ -1460,13 +1532,13 @@
       .chk-alert.is-danger {
         color: var(--danger);
         border-color: var(--danger);
-        background: rgba(251, 113, 133, 0.08);
+        background: var(--danger-wash);
       }
 
       .chk-alert.is-warning {
         color: var(--todo);
         border-color: var(--todo);
-        background: rgba(240, 169, 46, 0.08);
+        background: var(--todo-wash);
       }
 
       .chk-alert.is-info {
@@ -1608,6 +1680,10 @@
         <div class="brand"><span class="brand-mark" aria-hidden="true"></span>LOGIX</div>
         <div class="brand-sub">OUTIL RECOUVREMENT</div>
         <div class="header-actions">
+          <button type="button" id="themeBtn" class="hdr-btn"
+            title="Basculer entre le mode jour (clair) et le mode nuit (sombre)">
+            ☾ NUIT
+          </button>
           <button type="button" id="backBtn" class="hdr-btn"
             title="Revenir d'un seul niveau en arrière (conserve COMPTE et STATUT)">
             ↩ RETOUR
@@ -3986,6 +4062,24 @@
         }
 
         if (backBtn) backBtn.addEventListener("click", goBackOneStep);
+
+        // Bouton JOUR / NUIT : bascule l'attribut data-theme de <html> et
+        // retient le choix (voir le petit script en tête de page).
+        const themeBtn = document.getElementById("themeBtn");
+        function syncThemeButton() {
+          const nuit = document.documentElement.getAttribute("data-theme") === "nuit";
+          themeBtn.textContent = nuit ? "☀ JOUR" : "☾ NUIT";
+        }
+        if (themeBtn) {
+          syncThemeButton();
+          themeBtn.addEventListener("click", () => {
+            const nuit = document.documentElement.getAttribute("data-theme") !== "nuit";
+            if (nuit) document.documentElement.setAttribute("data-theme", "nuit");
+            else document.documentElement.removeAttribute("data-theme");
+            try { localStorage.setItem("logix-theme", nuit ? "nuit" : "jour"); } catch (e) { /* rien */ }
+            syncThemeButton();
+          });
+        }
         if (resetBtn) resetBtn.addEventListener("click", onResetClick);
 
         function render() {
