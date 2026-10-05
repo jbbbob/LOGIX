@@ -1694,7 +1694,7 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "alerte",
             niveau: "info",
             if: { "dcd-acte-ged": ["oui"] },
-            texte: "ACTE PRÉSENT EN GED : PAS DE RELEVÉ SNGI NI DE DEMANDE À LA MAIRIE.",
+            texte: "PAS DE DEMANDE À LA MAIRIE.",
           },
           {
             type: "check",
