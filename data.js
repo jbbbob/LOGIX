@@ -1699,18 +1699,18 @@ const dcd1ereEnqueteInconnusLeaf = {
         titre: "2. JUSTIFICATIF DE DÉCÈS",
         if: { "traitement-stop": ["non"] },
         items: [
-          // Acte présent en GED → rien à relever, pas de SNGI, pas de mairie.
+          // Acte présent en GED → on fait quand même le SNGI, mais pas de
+          // demande d'acte à la mairie (section 3).
           { type: "question", id: "dcd-acte-ged", label: "ACTE DE DÉCÈS PRÉSENT EN GED ?" },
           {
             type: "alerte",
             niveau: "info",
             if: { "dcd-acte-ged": ["oui"] },
-            texte: "ACTE PRÉSENT EN GED : PAS DE RELEVÉ SNGI NI DE DEMANDE À LA MAIRIE.",
+            texte: "ACTE PRÉSENT EN GED : PAS DE DEMANDE À LA MAIRIE.",
           },
           {
             type: "check",
             id: "dcd-sngi-releve",
-            if: { "dcd-acte-ged": ["non", ""] },
             label: "SNGI : N° D'ACTE ET LIEU DU DÉCÈS RELEVÉS",
             aide: "À noter dans les champs N° D'ACTE et LIEU DU DÉCÈS en haut de page.",
             // Bouton "↑ NOTER EN HAUT" : remonte au 1er champ cité, puis un
@@ -1720,7 +1720,6 @@ const dcd1ereEnqueteInconnusLeaf = {
           {
             type: "check",
             id: "dcd-sngi-pdf",
-            if: { "dcd-acte-ged": ["non", ""] },
             label: "PAGE SNGI IMPRIMÉE EN PDF ET RATTACHÉE À L'AFFAIRE",
           },
         ],
@@ -1835,7 +1834,7 @@ const dcd1ereEnqueteInconnusLeaf = {
     {
       id: "dcd-watt-sngi",
       type: "fragment",
-      if: { "dcd-sngi-pdf": ["oui"], "dcd-acte-ged": ["non", ""] },
+      if: { "dcd-sngi-pdf": ["oui"] },
       texte: "Justificatif de décès SNGI rattaché à l'affaire",
     },
     {
