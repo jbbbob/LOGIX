@@ -39,7 +39,7 @@ Si tu vois une occasion d'économiser un clic ou une seconde, signale-la.
 
 Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dossier :
 
-1. J'ai déjà sélectionné **une fois** mon contexte global (COMPTE = ACTIF ou RADIÉ, STATUT = A/C ou PL) au début — persisté en localStorage, je n'y retouche plus.
+1. J'ai déjà sélectionné **une fois** mon contexte global (COMPTE = ACTIF ou RADIÉ, STATUT = A/C ou PL) au début — conservé d'un dossier à l'autre par RECOMMENCER (mais perdu au F5), je n'y retouche plus.
 2. Je clique sur la catégorie (ex : **ANV**).
 3. Je clique sur le motif (ex : **11 - INSOLVABILITÉ**).
 4. Si nécessaire, je clique sur un sous-motif (ex : **01 - PV DE CARENCE**).
@@ -54,7 +54,7 @@ Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dos
 ## Fichiers du projet
 
 - `data.js` — source de vérité de l'arborescence. Expose `globalContextOptions` + `treeData` sur `window`.
-- `index.html` — UI complète en un seul fichier : CSS custom + Tailwind CDN + JS en IIFE.
+- `index.html` — UI complète en un seul fichier : CSS natif + JS en IIFE (+ un mini-script en tête pour appliquer le mode jour/nuit avant l'affichage).
 
 **Tout tient dans ces deux fichiers.** Ne rien splitter sans me demander.
 
@@ -68,7 +68,11 @@ Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dos
   - `--fs-choice: 12pt` (boutons de choix, taille de base du `body`)
   - `--fs-body: 13pt` → **taille historique, appliquée aux `.result-content`. Ne pas y toucher.**
   - `--fs-title: 14pt`, `--fs-brand: 17pt`
-- **Thème sombre, identité LOGIX** : fond encre légèrement bleuté, accent cyan / bleu électrique. Variables principales : `--bg-1: #0a0e15`, `--surface`, `--surface-strong`, `--surface-raised`, `--surface-input`, `--ink`, `--muted`, `--muted-strong`, `--accent: #22d3ee`, `--accent-strong`, `--accent-deep`, `--accent-ink`, `--accent-wash`, `--border`, `--border-strong`, `--ok`, `--todo`, `--danger`.
+- **Deux thèmes, bouton ☾ NUIT / ☀ JOUR dans l'en-tête** (`#themeBtn`), choix retenu dans `localStorage` (clé `logix-theme`, seule donnée stockée — une préférence d'affichage) :
+  - **JOUR (défaut)** — « papier crème + vert canard » : fond crème `#f1ebe0`, cartes blanches `#fffdf8`, boutons crème `#f4ede1`, accent vert canard `#0f766e`. Jetons dans `:root`.
+  - **NUIT** — le **thème LOGIX d'origine** : encre bleutée `#090d14`, cartes `#101825`, accent cyan `#22d3ee`, dégradés bleus en fond. Jetons dans `:root[data-theme="nuit"]` (section « 1 bis »).
+  - **Toutes les couleurs passent par des jetons** (`--bg-1`, `--surface*`, `--ink`, `--muted*`, `--brand-ink`, `--brand-sub-ink`, `--header-line`, `--accent*` dont `--accent-tint`, `--border*`, `--hairline*`, `--wash*`, `--overlay`, `--ok/--ok-wash/--ok-border`, `--todo/--todo-wash/--todo-border`, `--danger/--danger-ink/--danger-wash/--danger-border`). **Aucune couleur en dur dans le CSS** hors de ces deux blocs (exceptions volontaires : le vert canard fixe de la case cochée et de la ligne cochée, identique dans les deux modes).
+  - **Règle des couleurs des bandeaux** : rouge + ⛔ = on s'arrête là (DLP proche, reroutage GCC) · orange = action à faire (saisir, vérifier, étapes manquantes) · gris = simple information.
 - **Animations — règle stricte, à respecter à la lettre** :
   - `animation: none !important` reste global (aucun keyframe, jamais).
   - Seules `background-color`, `border-color`, `box-shadow` et `color` peuvent transitionner, en **110 ms** (`--t`), sans aucun délai.
@@ -83,8 +87,8 @@ Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dos
 4. **Tout contenu dynamique venant de `data.js` passe par `escapeHtml()` avant injection.** **Seule exception intentionnelle** : `resultats[].texte` est injecté en HTML riche via `innerHTML` (nécessaire pour que le bouton "Copier" colle du rich text via `ClipboardItem` `text/html`). Tout nouveau champ doit être échappé par défaut.
    - Complément : les **valeurs saisies par l'utilisateur** (inputs, textareas) sont échappées par `escapeValue()` au moment de la substitution `{{var}}` dans `substituteTemplate()`. Le template reste du HTML riche, la valeur injectée dedans n'en est jamais. `escapeValue` n'échappe pas l'apostrophe (fréquente en français, sans danger dans un attribut délimité par des guillemets).
 5. Conserver les commentaires pédagogiques en tête de `data.js` — ils me servent si j'édite l'arbre sans passer par Claude.
-6. Ne pas renommer ces **IDs DOM** : `questionZone`, `inlineTitleContainer`, `choicesContainer`, `choicesHeader`, `inputsContainer`, `togglesContainer`, `cascadeFlow`, `contextPanel`, `entryLayout`, `mainPanel`, `breadcrumbs`, `breadcrumbsSection`, `resultsContainer`, `inlineBackArrow`, `copyPathBtn`. Note : `inputsContainer`, `choicesHeader`, `choicesContainer` sont conservés pour compat mais cachés (le rendu réel passe par `cascadeFlow`). **Nouveaux IDs** (également à ne pas renommer) : `categoryTabs`, `leafQuestionsContainer`, `pathPanel`, `pathCount`, `backBtn`, `resetBtn`.
-7. Ne pas renommer ces **classes CSS custom** : `surface-shell`, `surface-card`, `text-muted`, `text-strong`, `brand-button`, `context-option`, `is-selected`, `motif-label`, `motif-code`, `motif-text`, `page-shell`, `context-dock`, `choice-grid-root`, `copy-success`, `fade-in`, `pop-in`, `floating-reset`, `card-row`, `card-row-label`, `card-row-content`, `card-row-inline`, `pill-btn`, `card-input`, `card-textarea`, `back-arrow-btn`, `leaf-input-wrap`, `leaf-input-label`, `result-card`, `result-header`, `result-body`, `result-sub`, `result-content`, `empty-tag`, `empty-choice`, `image-paste-zone`, `image-placeholder`. **Nouvelles classes** : `app`, `app-header`, `app-body`, `brand`, `brand-mark`, `brand-sub`, `header-actions`, `hdr-btn`, `hdr-btn-strong`, `sidebar`, `main-col`, `panel`, `panel-title`, `panel-count`, `stack`, `hidden`, `crumbs`, `path-list`, `path-step`, `path-mark`, `path-label`, `path-value`, `path-copy-btn`, `path-empty`, `is-done`, `is-current`, `is-todo`, `result-title`, `copy-btn`, `image-clear-btn`, `results-stack`, `toast`.
+6. Ne pas renommer ces **IDs DOM** : `questionZone`, `inlineTitleContainer`, `choicesContainer`, `choicesHeader`, `inputsContainer`, `togglesContainer`, `cascadeFlow`, `contextPanel`, `entryLayout`, `mainPanel`, `breadcrumbs`, `breadcrumbsSection`, `resultsContainer`, `inlineBackArrow`, `copyPathBtn`. Note : `inputsContainer`, `choicesHeader`, `choicesContainer` sont conservés pour compat mais cachés (le rendu réel passe par `cascadeFlow`). **Nouveaux IDs** (également à ne pas renommer) : `categoryTabs`, `leafQuestionsContainer`, `pathPanel`, `pathCount`, `backBtn`, `resetBtn`, `checklistContainer`, `themeBtn`. Générés par la checklist : `chk-sec-<section>`, `chk-row-<étape>`, `chk-<étape>` (case).
+7. Ne pas renommer ces **classes CSS custom** : `surface-shell`, `surface-card`, `text-muted`, `text-strong`, `brand-button`, `context-option`, `is-selected`, `motif-label`, `motif-code`, `motif-text`, `page-shell`, `context-dock`, `choice-grid-root`, `copy-success`, `fade-in`, `pop-in`, `floating-reset`, `card-row`, `card-row-label`, `card-row-content`, `card-row-inline`, `pill-btn`, `card-input`, `card-textarea`, `back-arrow-btn`, `leaf-input-wrap`, `leaf-input-label`, `result-card`, `result-header`, `result-body`, `result-sub`, `result-content`, `empty-tag`, `empty-choice`, `image-paste-zone`, `image-placeholder`. **Nouvelles classes** : `app`, `app-header`, `app-body`, `brand`, `brand-mark`, `brand-sub`, `header-actions`, `hdr-btn`, `hdr-btn-strong`, `sidebar`, `main-col`, `panel`, `panel-title`, `panel-count`, `stack`, `hidden`, `crumbs`, `path-list`, `path-step`, `path-mark`, `path-label`, `path-value`, `path-copy-btn`, `path-empty`, `is-done`, `is-current`, `is-todo`, `result-title`, `copy-btn`, `image-clear-btn`, `results-stack`, `toast`. **Checklist** : `chk-head`, `chk-head-title`, `chk-head-count`, `chk-head-go`, `chk-bar`, `chk-section`, `chk-section-title`, `chk-row`, `chk-question`, `chk-box`, `chk-body`, `chk-line`, `chk-label`, `chk-aide`, `chk-tag`, `chk-tools`, `chk-copy`, `chk-copy-label`, `chk-copy-text`, `chk-copy-rappel`, `chk-link`, `chk-group`, `chk-group-head`, `chk-group-title`, `chk-alert` (+ `is-danger` / `is-warning` / `is-info`), `chk-fields`, `chk-fields-tag`, `chk-fields-row`, `chk-recap` (+ `is-ok` / `is-todo`), `chk-recap-title`, `chk-recap-list`, `chk-recap-item`, `chk-recap-go`, `is-checked`, `is-filled`, `is-flash`, `is-large`.
    - ⚠️ `.hidden` venait de Tailwind et est manipulée par le JS (`classList.toggle("hidden", …)`). Elle est **définie à la main** maintenant : ne jamais la supprimer du CSS.
    - `.floating-reset`, `.fade-in`, `.pop-in`, `.choice-grid-root`, `.brand-button` sont conservées mais **plus utilisées** — gardées pour ne rien casser.
 
@@ -155,6 +159,35 @@ suite: {
   ]
 }
 ```
+
+### Feuille avec checklist (MODE OPÉRATOIRE — catégorie DCD)
+
+Une feuille peut avoir, en plus de `resultats`, un champ `checklist` : étapes à cocher affichées dans `#checklistContainer` (entre les leafQuestions et les résultats). Le schéma complet est commenté en tête de la branche DCD dans `data.js`.
+
+```js
+checklist: {
+  chambresNotaires: [{ id, label, depts: ["75", "93"], url }], // routage par département
+  chambreAutre: { url, modeleScribe },                         // tout autre département
+  sections: [
+    { id, titre, if: {...}, items: [
+      { type: "question", id, label, aide, choix: [{ val, label }] }, // OUI/NON par défaut
+      { type: "check", id, label, aide, if,
+        copie: [{ label, texte, rappel }],       // textes à copier (texte = HTML, {{var}})
+        lien: { label, url },                    // bouton qui ouvre un site (https)
+        champs: [{ id, label, type, placeholder, large }], // saisies DANS l'étape
+        facultatif: true, tag: "SI RETOUR" },    // non compté dans la progression
+      { type: "alerte", niveau: "danger" | "warning" | "info", texte, if },
+      { type: "champs", champs: [...] },         // champs seuls, sans case
+      { type: "groupe", label, if, items: [...] }, // carte titrée regroupant des étapes
+      { type: "chambres" },                      // une carte par chambre des notaires
+    ]},
+  ],
+}
+```
+
+- Chaque case cochée vaut `"oui"` dans les `if` (par son `id`) ; une question sans réponse vaut `""` (d'où les `if: { x: ["non", ""] }` = « tant qu'on n'a pas répondu OUI »).
+- Les `champs` écrivent dans `nodeInputs` (mêmes id = mêmes valeurs partout, ex : N° D'ACTE).
+- Le commentaire WATT est un `composite` de `fragment` conditionnés par les cases cochées : **chaque ligne n'apparaît que si l'étape est faite**.
 
 ### Toggles (cases à cocher au-dessus de la cascade)
 
@@ -239,12 +272,19 @@ Calculées dans `buildTemplateVars()` à chaque rendu :
 - `{{<slug>-id}}`, `{{<slug>-label}}`, `{{<slug>-code}}`, `{{<slug>-text}}`, `{{<slug>-abbrev}}` : pour chaque niveau de cascade qui a un `choicesTitle`, le slug est le titre slugifié. Ex : `{{motif-id}}`, `{{sous-motif-abbrev}}`.
 - `{{dretaf}}`, `{{suspen}}`, `{{dca}}`, `{{plus50k}}`, `{{ae-ti}}`, `{{instructions-cj}}` : réponses aux leafQuestions (par leur `id`).
 - `{{compte-en-ligne}}`, `{{ficoba}}`, `{{ficoba-reex}}` : réponses aux topQuestions (`"oui"` / `"non"` / vide).
-- `vars.__category` (interne, non substituable dans un template) : id de la catégorie active (`"anv"`, `"delai"`, `"reexecution"`). Utilisée pour le post-traitement conditionnel.
+- `vars.__category` (interne, non substituable dans un template) : id de la catégorie active (`"anv"`, `"delai"`, `"reexecution"`, `"dcd"`). Utilisée pour le post-traitement conditionnel.
+- **DCD** (calculées dans `addChecklistVars()`, source unique) :
+  - `{{date-effet-m1}}` : date du jour + 1 mois en `JJ/MM/AAAA` (le 31/01 donne fin février, pas début mars).
+  - `{{deces-plus-6-mois}}` (`"oui"`/`"non"`/`""`), `{{deces-futur}}`, `{{deces-date-lue}}`, `{{deces-mois}}` : à partir de la DATE DU DÉCÈS.
+  - `{{reroutage-gcc}}`, `{{traitement-stop}}` : reroutage si (pas radié DCD OU affaire GCC) ET DLP pas proche ; stop si reroutage OU DLP proche.
+  - `{{chambre-<id>}}`, `{{chambre-autre}}`, `{{depts-autres}}` : chambres selon DÉPT NAISSANCE / DÉPT DERNIER DOMICILE.
+  - `{{phrase-chambres}}` : ligne(s) WATT des chambres, une par mode d'envoi (« via formulaire en ligne, justificatif(s) rattaché(s) » / « par SCRIBE envoyé par mail|courrier[, acte de décès joint] »), accord singulier/pluriel.
+  - `{{mairie-deces}}`, `{{num-acte-aff}}`, `{{lieu-deces-aff}}`, `{{nom-defunt-maj}}`, `{{adresse-defunt-maj}}` (adresse collée sur une ligne → coupée avant le code postal par `formatAdresse()`).
 
 ### Post-traitement automatique de `substituteTemplate`
 
 Appliqué à TOUT le résultat HTML après substitution :
-1. **Date 4 chiffres → 2 chiffres** : `JJ/MM/AAAA` → `JJ/MM/AA`. Marche pour les inputs DATE et pour les écritures collées. **Skip dans la catégorie RÉEXÉCUTION** (où on veut au contraire 4 chiffres pour la date de prescription, via `{{date-prescription-full}}`).
+1. **Date 4 chiffres → 2 chiffres** : `JJ/MM/AAAA` → `JJ/MM/AA`. Marche pour les inputs DATE et pour les écritures collées. **Skip dans les catégories RÉEXÉCUTION et DCD** (où on veut au contraire 4 chiffres pour la date de prescription, via `{{date-prescription-full}}`).
    - ⚠️ Avant ce remplacement, les **data URL d'images** (`data:image/...;base64,...`) sont mises de côté puis restaurées telles quelles. Sans ça, le base64 (qui contient des `/` et des chiffres) pouvait contenir par hasard une suite du type `12/34/5678` et se faire mutiler → image cassée. Ne pas retirer cette protection.
 
 *Note : les bascules conditionnelles (V2 du RELDET, FICOBA absent) ne passent plus par un post-traitement regex mais par des variables de template (`{{phrase-reldet}}`, `{{phrase-eopps}}`) calculées dans `buildTemplateVars()`. Source unique = un seul endroit pour modifier ces phrases.*
@@ -306,7 +346,7 @@ Les étapes **CATÉGORIE** et les **niveaux de choix déjà faits** sont des `<b
 
 ### État et persistance
 
-- `globalSelections` (COMPTE / STATUT), `nodeSelections`, `nodeInputs`, `leafAnswers`, `leafInputs`, `topAnswers`, `activeToggleStack` : tous en mémoire JS uniquement. Persistent pendant la navigation, **se réinitialisent à chaque F5**.
+- `globalSelections` (COMPTE / STATUT), `nodeSelections`, `nodeInputs`, `leafAnswers`, `leafInputs`, `topAnswers`, `activeToggleStack` : tous en mémoire JS uniquement. Persistent pendant la navigation, **se réinitialisent à chaque F5**. Idem pour `checkState` (cases et réponses de la checklist), remis à zéro par RECOMMENCER et au changement de catégorie. **Seule exception** : le mode jour/nuit, dans `localStorage`.
 - Pour enchaîner les dossiers, utiliser **RECOMMENCER** plutôt que F5 : c'est plus rapide et ça garde COMPTE/STATUT.
 - **Optimisation à ne pas casser** : taper dans un champ n'appelle **jamais** `render()` (cela recréerait le champ et ferait perdre le focus à chaque caractère). Les handlers `input` appellent uniquement `renderResults()` + `renderPathPanel()`.
 - Désactivation d'un toggle ne reset pas `topAnswers` (pour conserver la réponse si l'user re-active le toggle).
@@ -332,6 +372,17 @@ ACTIF + A/C + DÉLAI + REFUS - PAS DE PJ + DATE=15/03/26 + MOIS=37 + DCA NON + +
 ```
 
 Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles activés, choix de la cascade, inputs remplis, leafAnswers, leafInputs, topAnswers. Format `LABEL VAL` pour les flags (OUI/NON/AE/TI), `LABEL=VALEUR` pour les inputs textuels.
+
+### Checklist MODE OPÉRATOIRE (catégorie DCD)
+
+- **Barre MODE OPÉRATOIRE collée** sous l'en-tête (`position: sticky; top: 58px`) : compteur, progression, bouton « → ÉTAPE MANQUANTE ».
+- **Bilan en fin de liste** : « TOUT EST FAIT » (vert) ou « IL MANQUE X ÉTAPES » (orange) avec la liste cliquable et « ↑ REMONTER À LA PREMIÈRE ÉTAPE MANQUANTE ». L'étape atteinte clignote (`is-flash`, couleur seule).
+- **Case cochée = « ligne surlignée »** : carré vert canard + coche blanche, ligne vert pâle, libellé barré. Dans une ligne cochée, les jetons du mode jour sont remis pour que tout reste lisible en nuit.
+- **Champs dans l'étape** : cadre orange pointillé « À REMPLIR » → vert « REMPLI ✓ ». Cocher une étape aux champs vides est **permis** mais affiche un conseil (« CONSEILLÉ : REMPLIR … »).
+- **Taper dans un champ de la checklist** la redessine (`renderChecklist`) en **gardant le curseur** (même champ, même position, même si le champ existe 2 fois) et la position de la page.
+- **RECOMMENCER** : s'il reste des étapes, le 1er clic prévient (toast), un 2e clic dans les 4 s passe au dossier suivant.
+- Règles métier DCD (1ère enquête, héritiers et notaire inconnus) : DLP proche → tout masqué sauf le bandeau rouge ; reroutage GCC → idem ; acte en GED → pas de relevé SNGI ni de mairie, et acte joint au SCRIBE de la chambre interdépartementale ; décès < 6 mois → pas de succession vacante ; chambre « autre » → choix FORMULAIRE / SCRIBE MAIL / SCRIBE COURRIER (AR seulement pour le formulaire).
+- ⚠️ Source métier : fiche réflexe interne « usage interne » D5-MO-20260812 — le repo est public.
 
 ## Workflow que j'attends
 
@@ -367,6 +418,8 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - [ ] Le panneau CHEMIN reflète bien les étapes réelles
 - [ ] RETOUR recule d'un seul niveau, RECOMMENCER garde COMPTE/STATUT
 - [ ] Parcours complet testé + bouton Copier testé dans Word
+- [ ] Testé en mode JOUR **et** en mode NUIT
+- [ ] Rechargé avec **Ctrl+F5** (le navigateur garde parfois l'ancien `data.js` en cache)
 
 ## Ne jamais
 
@@ -429,14 +482,18 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - Corrections : vrai repli presse-papier (`execCommand`), protection des data URL contre le raccourcissement de date, échappement des valeurs saisies (`escapeValue`), `aria-pressed`, focus visible.
 - Dépôt Git local initialisé (commit « état initial » avant refonte) + `index.html.bak`.
 
+*Catégorie DCD — MODE OPÉRATOIRE (checklist)* : 1ÈRE ENQUÊTE → HÉRITIERS ET NOTAIRE INCONNUS.
+- Contrôles préalables (DLP proche, radié DCD, affaire GCC, MD/CO ANO), blocage A/C / PL, justificatif de décès (acte en GED ?), courriers SCRIBE (héritiers avec bloc destinataire, mairie), chambres des notaires selon les départements, succession vacante, codifications, commentaire WATT automatique.
+- Thème jour (papier crème) / nuit (LOGIX d'origine), barre de progression collée, bilan de fin.
+
 **🎯 Court terme (priorité)**
+- DCD : étape **RELANCE** (dont la codification ANV quand la DLP est proche), situations **NOTAIRE CONNU** et **HÉRITIERS CONNUS**.
 - Sous-catégorie DÉLAI : `REFUS DCA MANQUANTES` (squelette sans suite).
 - Compléter ANV / DÉLAI / RÉEXÉCUTION si nouveaux cas métier remontent.
 - Gagner en vitesse : raccourcis clavier (touches numériques pour les choix, Esc pour retour) — à discuter.
 - Refactoriser RÉEXÉCUTION : 6 chemins quasi-identiques avec ~450 lignes de duplication. Helper `makeReexCourrier({phrase3, phraseAReception, phraseSansReaction, mentionFicobaIndispo})` économiserait beaucoup.
 
 **📅 Plus tard**
-- Modes opératoires : "comment faire X" (procédures internes) — pas prioritaire.
 - Peut-être un moteur de recherche si la liste de motifs devient longue.
 - Refactoriser anvLeafConfig + anv12LeafConfig + anv16LeafConfig si plus de duplication apparaît.
 
@@ -448,7 +505,7 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 
 ## Commandes utiles
 
-- **Lancer en local** : double-clic sur `index.html`, aucun serveur requis, aucune connexion requise
+- **Lancer en local** : double-clic sur `index.html`, aucun serveur requis, aucune connexion requise. Après une mise à jour : **Ctrl+F5**.
 - **Sauvegarde** : dépôt Git local initialisé (`git log` pour l'historique, `git diff` avant chaque commit). Copie de secours de l'ancienne UI dans `index.html.bak` (ignorée par Git).
 - **Publier** : `git remote add origin …` puis `git push` sur `main` + activer GitHub Pages dans Settings → Pages *(aucun remote configuré pour l'instant)*
 - **Régénérer la doc de l'arbre** : `node scripts/generate-motifs.js`

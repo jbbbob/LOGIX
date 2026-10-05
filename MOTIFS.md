@@ -315,11 +315,41 @@
 - [simple] `reex-postit-com-ficoba-non` — **POST-IT PORTAIL TI OU ESDC & COMMENTAIRE AFFAIRE WATT** *[si ficoba-reex=non, instructions-cj=com]*
   - « Réexécution faite ce jour au CJ {{cj-numero}} »
 
+### DCD (`dcd`)
+
+- *ÉTAPE* :
+  - `dcd-1ere-enquete` — **1ÈRE ENQUÊTE**
+    - *SITUATION* :
+      - `dcd-inconnus` — **HÉRITIERS ET NOTAIRE INCONNUS**
+        - [fragment] `dcd-watt-titre` — ****
+          - fragment : « RECHERCHE HERITIERS : 1ÈRE ENQUÊTE »
+        - [fragment] `dcd-watt-adm` — **** *[si dcd-adm-nv=oui]*
+          - fragment : « ADM NV SUSPEN codifiée avec date d'effet au {{date-effet-m1}} »
+        - [fragment] `dcd-watt-enq` — **** *[si dcd-enq=oui]*
+          - fragment : « ENQ codifiée au stade R DIV »
+        - [fragment] `dcd-watt-esdc` — **** *[si dcd-esdc=oui]*
+          - fragment : « ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : 1ÈRE ENQUÊTE »
+        - [fragment] `dcd-watt-sngi` — **** *[si dcd-sngi-pdf=oui]*
+          - fragment : « Justificatif de décès SNGI rattaché à l'affaire »
+        - [fragment] `dcd-watt-mairie` — **** *[si dcd-mairie=oui, dcd-acte-ged=non|]*
+          - fragment : « Acte de décès demandé à {{mairie-deces}} »
+        - [fragment] `dcd-watt-heritiers` — **** *[si dcd-scribe-heritiers=oui]*
+          - fragment : « Courrier envoyé à l'attention des héritiers, non connus de nos services, à la dernière adresse connue du défunt »
+        - [fragment] `dcd-watt-notaires` — **** *[si dcd-notaires-demande=oui]*
+          - fragment : « {{phrase-chambres}} »
+        - [fragment] `dcd-watt-succession` — **** *[si dcd-succession-vacante=oui, deces-plus-6-mois=oui|]*
+          - fragment : « Recherche de succession vacante effectuée et justificatif rattaché à l'affaire »
+        - [composite] `dcd-watt` — **COMMENTAIRE AFFAIRE WATT** *[si traitement-stop=non]*
+          - combine: dcd-watt-titre + dcd-watt-adm + dcd-watt-enq + dcd-watt-esdc + dcd-watt-sngi + dcd-watt-mairie + dcd-watt-heritiers + dcd-watt-notaires + dcd-watt-succession
+      - `dcd-notaire-connu` — **NOTAIRE CONNU**
+      - `dcd-heritiers-connus` — **HÉRITIERS CONNUS**
+  - `dcd-relance` — **RELANCE**
+
 ## Stats
 
-- Catégories : 3
-- Choix totaux (tous niveaux) : 33
+- Catégories : 4
+- Choix totaux (tous niveaux) : 39
 - Inputs : 8
 - Toggles : 2
 - TopQuestions : 2
-- Résultats (blocs texte) : 95
+- Résultats (blocs texte) : 105
