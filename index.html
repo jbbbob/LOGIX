@@ -2180,7 +2180,6 @@
           const bloque = vars["dcd-dlp-proche"] === "oui";
           const motifReroutage = vars["dcd-radie-dcd"] === "non" || vars["dcd-affaire-gcc"] === "oui";
           vars["reroutage-gcc"] = motifReroutage && !bloque ? "oui" : "non";
-          vars["reroutage-evite"] = motifReroutage && bloque ? "oui" : "non";
           vars["traitement-stop"] =
             vars["reroutage-gcc"] === "oui" || vars["dcd-dlp-proche"] === "oui" ? "oui" : "non";
 

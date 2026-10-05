@@ -1632,15 +1632,19 @@ const dcd1ereEnqueteInconnusLeaf = {
             if: { "dcd-dlp-proche": ["oui"] },
             texte: "DLP PROCHE : NE PAS RÉORIENTER. PASSER DIRECTEMENT À LA CODIFICATION DE L'ANV (ÉTAPE RELANCE).",
           },
+          // Si DLP proche : on ne réoriente jamais, donc les 2 questions de
+          // reroutage GCC ne servent à rien → masquées.
           {
             type: "question",
             id: "dcd-radie-dcd",
+            if: { "dcd-dlp-proche": ["non", ""] },
             label: "USAGER RADIÉ AU MOTIF DCD ?",
             aide: "Si NON : reroutage au GCC.",
           },
           {
             type: "question",
             id: "dcd-affaire-gcc",
+            if: { "dcd-dlp-proche": ["non", ""] },
             label: "AUTRE AFFAIRE DE COMPÉTENCE GCC EN COURS ?",
             aide: "Si OUI : reroutage au GCC.",
           },
@@ -1649,12 +1653,6 @@ const dcd1ereEnqueteInconnusLeaf = {
             niveau: "danger",
             if: { "reroutage-gcc": ["oui"] },
             texte: "REROUTER LE DOSSIER AU GCC. NE PAS CONTINUER LE TRAITEMENT.",
-          },
-          {
-            type: "alerte",
-            niveau: "info",
-            if: { "reroutage-evite": ["oui"] },
-            texte: "PAS DE REROUTAGE AU GCC : DLP PROCHE.",
           },
           {
             type: "check",
