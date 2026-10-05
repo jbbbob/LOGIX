@@ -2444,6 +2444,13 @@
           vars["traitement-stop"] =
             vars["reroutage-gcc"] === "oui" || vars["dcd-dlp-proche"] === "oui" ? "oui" : "non";
 
+          // 5 ter. Relevés SNGI rappelés (en lecture seule) sous la demande à la
+          //        mairie : en MAJUSCULES, repère entre crochets si vide.
+          const numActe = String(nodeInputs["num-acte"] || "").trim();
+          const lieuDeces = String(nodeInputs["lieu-deces"] || "").trim();
+          vars["num-acte-aff"] = numActe ? numActe.toUpperCase() : "[À RELEVER DANS SNGI]";
+          vars["lieu-deces-aff"] = lieuDeces ? lieuDeces.toUpperCase() : "[À RELEVER DANS SNGI]";
+
           // 5 bis. Courrier aux héritiers : nom et adresse en MAJUSCULES pour
           //        le bloc DESTINATAIRE à copier. Un repère entre crochets
           //        tant que le champ est vide (on voit ce qu'il manque).

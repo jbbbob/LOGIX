@@ -1589,6 +1589,8 @@ const reexecutionBranch = {
 //   {{chambre-<id>}}, {{chambre-autre}}, {{depts-autres}}, {{phrase-chambres}}
 //   {{mairie-deces}}      = "la mairie de <lieu>" ou "la mairie du lieu de décès"
 //   {{dcd-notaires-demande}} = "oui" si au moins une demande notaire est cochée
+//   {{num-acte-aff}}, {{lieu-deces-aff}} = relevés SNGI en MAJUSCULES, pour
+//                           les rappels à copier (repère entre crochets si vide)
 //   {{nom-defunt-maj}}, {{adresse-defunt-maj}} = saisies du courrier aux
 //                           héritiers, en MAJUSCULES (repère entre crochets si vide).
 //                           Adresse collée sur une ligne → coupée avant le code postal.
@@ -1761,13 +1763,13 @@ const dcd1ereEnqueteInconnusLeaf = {
             id: "dcd-mairie",
             if: { "dcd-acte-ged": ["non", ""] },
             label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
-            // Mêmes champs que l'étape SNGI (mêmes id) : ce qui a été relevé
-            // réapparaît ici, et une correction ici se répercute là-haut.
-            champs: [
-              { id: "num-acte", label: "N° D'ACTE", placeholder: "" },
-              { id: "lieu-deces", label: "LIEU DU DÉCÈS", placeholder: "Commune" },
+            // Rappel en lecture seule de ce qui a été relevé dans SNGI (à
+            // modifier là-haut), avec un bouton COPIER pour chaque valeur.
+            copie: [
+              { label: "MODÈLE", texte: "RECHERCHE COTISANT - DEMANDE À PARTENAIRE" },
+              { label: "N° D'ACTE", texte: "{{num-acte-aff}}" },
+              { label: "LIEU DU DÉCÈS", texte: "{{lieu-deces-aff}}" },
             ],
-            copie: [{ label: "MODÈLE", texte: "RECHERCHE COTISANT - DEMANDE À PARTENAIRE" }],
           },
         ],
       },
