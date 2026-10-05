@@ -143,18 +143,80 @@
         --t: 110ms;
       }
 
-      /* ---------- 1 bis. Mode NUIT ------------------------------------------- */
-      /* Le mode nuit garde TOUT le mode jour (cartes blanches, boutons crème,
-         vert canard) : seul le FOND DE LA PAGE, derrière les cartes, devient
-         sombre. Les rares textes posés directement sur ce fond (marque LOGIX,
-         sous-titre de l'en-tête) passent en clair. Activé par le bouton
-         ☾ NUIT / ☀ JOUR de l'en-tête. */
+      /* ---------- 1 bis. Mode NUIT : « NOIR SANS BORDURES » ------------------ */
+      /* Fond noir pur, cartes et boutons en gris très sombres, presque pas de
+         bordures : les blocs se distinguent par leur nuance de gris. Textes
+         blanc cassé. Les boutons choisis et les cases cochées gardent
+         EXACTEMENT le vert du mode jour (voir juste en dessous).
+         Activé par le bouton ☾ NUIT / ☀ JOUR de l'en-tête. */
       :root[data-theme="nuit"] {
-        --bg-1: #1c1c1e;
-        --bg-2: #1c1c1e;
-        --brand-ink: #f1ebe0;
-        --brand-sub-ink: #c9bda8;
-        --header-line: rgba(241, 235, 224, 0.25);
+        color-scheme: dark;
+
+        --bg-1: #000000;
+        --bg-2: #000000;
+        --surface: #0f0f0f;
+        --surface-strong: #0f0f0f;
+        --surface-raised: #1d1d1d;
+        --surface-hover: #282828;
+        --surface-input: #070707;
+        --surface-input-focus: #070707;
+
+        --ink: #ececec;
+        --muted: #a6a6a6;
+        --muted-strong: #f7f7f7;
+        --brand-ink: #f7f7f7;
+        --brand-sub-ink: #a6a6a6;
+        --header-line: rgba(236, 236, 236, 0.22);
+
+        --accent: #2bb3a3;
+        --accent-strong: #7fd8cd;
+        --accent-deep: #0f766e;
+        --accent-ink: #021a17;
+        --accent-tint: rgba(43, 179, 163, 0.08);
+        --accent-wash: rgba(43, 179, 163, 0.13);
+        --accent-wash-2: rgba(43, 179, 163, 0.22);
+
+        /* « Sans bordures » : bordures et filets presque invisibles. */
+        --border: rgba(236, 236, 236, 0.07);
+        --border-strong: rgba(43, 179, 163, 0.65);
+        --hairline: rgba(236, 236, 236, 0.04);
+        --hairline-soft: rgba(236, 236, 236, 0.02);
+
+        --wash: rgba(236, 236, 236, 0.04);
+        --wash-hover: rgba(236, 236, 236, 0.08);
+        --shadow-card: none;
+        --overlay: rgba(0, 0, 0, 0.9);
+
+        --ok: #3fae78;
+        --ok-ink: #04190d;
+        --ok-wash: rgba(63, 174, 120, 0.12);
+        --ok-border: rgba(63, 174, 120, 0.5);
+        --todo: #f0ad3c;
+        --todo-wash: rgba(240, 173, 60, 0.1);
+        --todo-border: rgba(240, 173, 60, 0.45);
+        --danger: #f87171;
+        --danger-ink: #ffe0e0;
+        --danger-wash: rgba(248, 113, 113, 0.1);
+        --danger-border: rgba(248, 113, 113, 0.5);
+      }
+
+      /* Nuit : boutons choisis et cases cochées = même vert que le mode jour
+         (vert canard à 15 % sur blanc, texte et bordure vert canard). */
+      :root[data-theme="nuit"] .context-option.is-selected,
+      :root[data-theme="nuit"] .context-option.is-selected:hover {
+        background: #dbe9e3;
+        color: #0b5e58;
+        border-color: #0f766e;
+        box-shadow: inset 0 0 0 1px #0f766e;
+      }
+
+      :root[data-theme="nuit"] .context-option.is-selected .motif-code {
+        background: rgba(15, 118, 110, 0.15);
+        color: #0b5e58;
+      }
+
+      :root[data-theme="nuit"] .chk-box {
+        accent-color: #2f855a;
       }
 
       /* ---------- 2. Reset minimal + globales --------------------------------- */
