@@ -1590,7 +1590,8 @@ const reexecutionBranch = {
 //   {{mairie-deces}}      = "la mairie de <lieu>" ou "la mairie du lieu de décès"
 //   {{dcd-notaires-demande}} = "oui" si au moins une demande notaire est cochée
 //   {{nom-defunt-maj}}, {{adresse-defunt-maj}} = saisies du courrier aux
-//                           héritiers, en MAJUSCULES (repère entre crochets si vide)
+//                           héritiers, en MAJUSCULES (repère entre crochets si vide).
+//                           Adresse collée sur une ligne → coupée avant le code postal.
 // Chaque case cochée vaut "oui" dans les conditions (par son id).
 // ============================================================================
 
@@ -1743,8 +1744,8 @@ const dcd1ereEnqueteInconnusLeaf = {
                 id: "dcd-scribe-heritiers",
                 label: "DESTINATAIRE SAISI À LA MAIN ET COURRIER ENVOYÉ",
                 champs: [
-                  { id: "nom-defunt", label: "NOM ET PRÉNOM", type: "text", placeholder: "M. DUPONT JEAN" },
-                  { id: "adresse-defunt", label: "DERNIÈRE ADRESSE CONNUE", type: "textarea", placeholder: "15 RUE DE PARIS\n75005 PARIS" },
+                  { id: "nom-defunt", label: "NOM ET PRÉNOM DU DÉFUNT", type: "text", placeholder: "M. DUPONT JEAN" },
+                  { id: "adresse-defunt", label: "DERNIÈRE ADRESSE CONNUE", type: "textarea", placeholder: "15 RUE DE PARIS 75005 PARIS (une ou deux lignes)" },
                 ],
                 copie: [
                   {
