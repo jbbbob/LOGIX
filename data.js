@@ -1632,8 +1632,8 @@ const dcd1ereEnqueteInconnusLeaf = {
             if: { "dcd-dlp-proche": ["oui"] },
             texte: "DLP PROCHE : NE PAS RÉORIENTER. PASSER DIRECTEMENT À LA CODIFICATION DE L'ANV (ÉTAPE RELANCE).",
           },
-          // Si DLP proche : on ne réoriente jamais, donc les 2 questions de
-          // reroutage GCC ne servent à rien → masquées.
+          // Si DLP proche : on passe directement à la RELANCE, donc les
+          // questions de reroutage GCC et l'étape MD/CO ANO sont masquées.
           {
             type: "question",
             id: "dcd-radie-dcd",
@@ -1657,6 +1657,7 @@ const dcd1ereEnqueteInconnusLeaf = {
           {
             type: "check",
             id: "dcd-md-co-ano",
+            if: { "dcd-dlp-proche": ["non", ""] },
             label: "MD ANO ET CO ANO SUPPRIMÉES (SI PRÉSENTES)",
           },
         ],
