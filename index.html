@@ -63,6 +63,8 @@
         --muted: #7a6c58;
         --muted-strong: #1a140c;
         --brand-ink: #1a140c;      /* la marque LOGIX */
+        --brand-sub-ink: #7a6c58;  /* « OUTIL RECOUVREMENT » */
+        --header-line: rgba(80, 60, 30, 0.2); /* filet à côté de la marque */
 
         /* Accent : vert canard */
         --accent: #0f766e;
@@ -142,76 +144,17 @@
       }
 
       /* ---------- 1 bis. Mode NUIT ------------------------------------------- */
-      /* Même palette crème + vert canard, en sombre. Le blanc des cartes est
-         remplacé par un vert-de-gris très foncé (assorti au vert canard), les
-         textes sont crème. Activé par le bouton ☾ / ☀ de l'en-tête. */
+      /* Le mode nuit garde TOUT le mode jour (cartes blanches, boutons crème,
+         vert canard) : seul le FOND DE LA PAGE, derrière les cartes, devient
+         sombre. Les rares textes posés directement sur ce fond (marque LOGIX,
+         sous-titre de l'en-tête) passent en clair. Activé par le bouton
+         ☾ NUIT / ☀ JOUR de l'en-tête. */
       :root[data-theme="nuit"] {
-        color-scheme: dark;
-
-        --bg-1: #141713;
-        --bg-2: #181c17;
-        --surface: #1e2420;
-        --surface-strong: #1e2420;
-        --surface-raised: #29302a;
-        --surface-hover: #333b34;
-        --surface-input: #171b17;
-        --surface-input-focus: #1b201b;
-
-        --ink: #ece4d3;
-        --muted: #bdb19a;
-        --muted-strong: #f4ecdc;
-        --brand-ink: #f4ecdc;
-
-        --accent: #3cc9b4;
-        --accent-strong: #86e3d4;
-        --accent-deep: #0f766e;
-        --accent-ink: #04201c;
-        --accent-tint: rgba(60, 201, 180, 0.07);
-        --accent-wash: rgba(60, 201, 180, 0.11);
-        --accent-wash-2: rgba(60, 201, 180, 0.2);
-
-        --border: rgba(236, 228, 211, 0.24);
-        --border-strong: rgba(60, 201, 180, 0.6);
-        --hairline: rgba(236, 228, 211, 0.13);
-        --hairline-soft: rgba(236, 228, 211, 0.07);
-
-        --wash: rgba(236, 228, 211, 0.035);
-        --wash-hover: rgba(236, 228, 211, 0.07);
-        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45);
-        --overlay: rgba(20, 23, 19, 0.88);
-
-        --ok: #7bd88f;
-        --ok-ink: #0b2412;
-        --ok-wash: rgba(123, 216, 143, 0.1);
-        --ok-border: rgba(123, 216, 143, 0.45);
-        --todo: #e9b44c;
-        --todo-wash: rgba(233, 180, 76, 0.09);
-        --todo-border: rgba(233, 180, 76, 0.42);
-        --danger: #f08a8a;
-        --danger-ink: #ffd9d9;
-        --danger-wash: rgba(240, 138, 138, 0.1);
-        --danger-border: rgba(240, 138, 138, 0.5);
-      }
-
-      /* En mode NUIT, les boutons de choix (catégories, motifs, toggles comme
-         AMIABLE RELDET, OUI / NON…) gardent l'apparence du mode JOUR : fond
-         crème, et une fois cliqués le MÊME vert canard qu'en journée.
-         On redonne simplement à ces boutons les jetons du mode jour.
-         --accent-wash-2 est ici opaque : c'est la teinte exacte qu'a un bouton
-         sélectionné en journée (vert canard à 15 % sur carte blanche). */
-      :root[data-theme="nuit"] .context-option {
-        --surface-raised: #f4ede1;
-        --surface-hover: #ebe2d2;
-        --ink: #2b2419;
-        --muted: #7a6c58;
-        --muted-strong: #1a140c;
-        --accent: #0f766e;
-        --accent-strong: #0b5e58;
-        --accent-wash-2: #dbe9e3;
-        --border: rgba(80, 60, 30, 0.35);
-        --border-strong: rgba(15, 118, 110, 0.6);
-        --hairline: rgba(80, 60, 30, 0.11);
-        --todo: #b45309;
+        --bg-1: #1c1c1e;
+        --bg-2: #1c1c1e;
+        --brand-ink: #f1ebe0;
+        --brand-sub-ink: #c9bda8;
+        --header-line: rgba(241, 235, 224, 0.25);
       }
 
       /* ---------- 2. Reset minimal + globales --------------------------------- */
@@ -486,11 +429,11 @@
         text-overflow: ellipsis;
         font-size: var(--fs-micro);
         letter-spacing: var(--ls-wide);
-        color: var(--muted);
+        color: var(--brand-sub-ink);
         font-weight: 600;
         opacity: 0.75;
         padding-left: 14px;
-        border-left: 1px solid var(--border);
+        border-left: 1px solid var(--header-line);
       }
 
       .header-actions {
