@@ -1733,10 +1733,12 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "check",
             id: "dcd-scribe-heritiers",
             label: "COURRIER AUX HÉRITIERS ENVOYÉ",
-            aide: "Dans SCRIBE, saisir à la main la dernière adresse connue du cotisant, précédée de la formule ADRESSE ci-dessous.",
+            aide: "Dans SCRIBE, saisir à la main la dernière adresse connue du cotisant, précédée de la formule ADRESSE ci-dessous (en majuscules ou en minuscules).",
             copie: [
               { label: "MODÈLE", texte: "Succession - Heritiers" },
-              { label: "ADRESSE", texte: "À l'attention des héritiers de" },
+              // Deux casses : chacun colle celle qui correspond à son usage.
+              { label: "ADRESSE MAJ", texte: "À L'ATTENTION DES HÉRITIERS DE" },
+              { label: "ADRESSE MIN", texte: "À l'attention des héritiers de" },
             ],
           },
           {
