@@ -1687,18 +1687,19 @@ const dcd1ereEnqueteInconnusLeaf = {
         titre: "2. JUSTIFICATIF DE DÉCÈS",
         if: { "traitement-stop": ["non"] },
         items: [
-          // Acte présent en GED → on fait quand même le SNGI, mais pas de
+          // Acte présent en GED → pas de relevé SNGI (n° d'acte, lieu) ni de
           // demande d'acte à la mairie (section 3).
           { type: "question", id: "dcd-acte-ged", label: "ACTE DE DÉCÈS PRÉSENT EN GED ?" },
           {
             type: "alerte",
             niveau: "info",
             if: { "dcd-acte-ged": ["oui"] },
-            texte: "ACTE PRÉSENT EN GED : PAS DE DEMANDE À LA MAIRIE.",
+            texte: "ACTE PRÉSENT EN GED : PAS DE RELEVÉ SNGI NI DE DEMANDE À LA MAIRIE.",
           },
           {
             type: "check",
             id: "dcd-sngi-releve",
+            if: { "dcd-acte-ged": ["non", ""] },
             label: "SNGI : N° D'ACTE ET LIEU DU DÉCÈS RELEVÉS",
             // Champs remplis directement ici (rien n'est enregistré : tout
             // part au F5). Le lieu sert à la phrase "mairie de …" du WATT.
