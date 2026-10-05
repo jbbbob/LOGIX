@@ -2482,7 +2482,11 @@
             const chambreId = ch ? ch.id : "autre";
             if (ch) vars["chambre-" + ch.id] = "oui";
             else deptsAutres.push(d);
-            if (checkState["dcd-notaire-" + chambreId + "-demande"] === true) deptsInterroges.push(d);
+            // (pour l'autre chambre, il faut aussi que le mode d'envoi soit choisi)
+            const demandeFaite =
+              checkState["dcd-notaire-" + chambreId + "-demande"] === true &&
+              (chambreId !== "autre" || !!checkState["dcd-notaire-autre-envoi"]);
+            if (demandeFaite) deptsInterroges.push(d);
           });
           vars["chambre-autre"] = deptsAutres.length > 0 ? "oui" : "non";
           vars["depts-autres"] = deptsAutres.join(" ET ");
@@ -2490,26 +2494,43 @@
           // 7. Phrase WATT : uniquement les départements réellement interrogés,
           //    avec l'accord singulier / pluriel.
           vars["dcd-notaires-demande"] = deptsInterroges.length > 0 ? "oui" : "non";
-          // Acte de décès (GED) joint au SCRIBE de la chambre interdépartementale :
-          // mentionné dans la phrase, pour les départements concernés.
+          // Mode d'envoi à la chambre interdépartementale (« autre chambre ») :
+          // "formulaire" (en ligne), "mail" ou "courrier" (SCRIBE). Les chambres
+          // de Paris / 77 / 91 passent toujours par leur formulaire en ligne.
+          const envoiAutre = checkState["dcd-notaire-autre-envoi"] || "";
+          const parScribe = envoiAutre === "mail" || envoiAutre === "courrier";
+          const deptsScribe = parScribe ? deptsInterroges.filter((d) => deptsAutres.includes(d)) : [];
+          const deptsForm = deptsInterroges.filter((d) => !deptsScribe.includes(d));
+          // Acte de décès (GED) joint au SCRIBE : seulement par mail / courrier.
           const pjActe =
+            parScribe &&
             vars["dcd-acte-ged"] === "oui" &&
-            checkState["dcd-notaire-autre-pj-acte"] === true &&
-            checkState["dcd-notaire-autre-demande"] === true;
-          const deptsAvecPj = pjActe ? deptsInterroges.filter((d) => deptsAutres.includes(d)) : [];
-          const pluriel = deptsInterroges.length > 1;
-          const debut = pluriel
-            ? "Chambres des notaires du " + deptsInterroges.join(" et du ") + " interrogées"
-            : "Chambre des notaires du " + (deptsInterroges[0] || "") + " interrogée";
-          const fin = pluriel ? "justificatifs rattachés à l'affaire" : "justificatif rattaché à l'affaire";
-          if (deptsAvecPj.length === 0) {
-            vars["phrase-chambres"] = debut + " et " + fin;
-          } else if (deptsAvecPj.length === deptsInterroges.length) {
-            vars["phrase-chambres"] = debut + ", acte de décès joint, " + fin;
-          } else {
-            vars["phrase-chambres"] =
-              debut + " (acte de décès joint pour le " + deptsAvecPj.join(" et le ") + "), " + fin;
+            checkState["dcd-notaire-autre-pj-acte"] === true;
+
+          const chambresDe = (depts) =>
+            (depts.length > 1 ? "Chambres des notaires du " : "Chambre des notaires du ") + depts.join(" et du ");
+          const finJustif = (depts) =>
+            depts.length > 1 ? "justificatifs rattachés à l'affaire" : "justificatif rattaché à l'affaire";
+          const phrases = [];
+          if (deptsForm.length > 0) {
+            phrases.push(
+              chambresDe(deptsForm) +
+                (deptsForm.length > 1 ? " interrogées" : " interrogée") +
+                " via formulaire en ligne, " + finJustif(deptsForm)
+            );
           }
+          if (deptsScribe.length > 0) {
+            phrases.push(
+              chambresDe(deptsScribe) +
+                (deptsScribe.length > 1 ? " interrogées" : " interrogée") +
+                " par SCRIBE envoyé par " + (envoiAutre === "mail" ? "mail" : "courrier") +
+                (pjActe ? ", acte de décès joint" : "") +
+                ", " + finJustif(deptsScribe)
+            );
+          }
+          // Une ligne par mode d'envoi dans le commentaire WATT (le saut de
+          // ligne devient <br> à l'insertion, voir substituteTemplate).
+          vars["phrase-chambres"] = phrases.join("\n");
         }
 
         function getDeepestNode() {
@@ -3396,25 +3417,46 @@
               aide: "Choisir « chambre interdépartementale » dans le menu déroulant, puis le département, puis RECHERCHER. Trouver comment la chambre reçoit les demandes de recherche de succession.",
               items: [
                 {
-                  type: "check",
-                  id: "dcd-notaire-autre-demande",
-                  label: "DEMANDE FAITE : FORMULAIRE EN LIGNE (IMPRIMÉ EN PDF ET RATTACHÉ), SINON SCRIBE PAR MAIL OU COURRIER",
-                  copie: autre.modeleScribe
-                    ? [{
-                        label: "MODÈLE SCRIBE",
-                        texte: autre.modeleScribe,
-                        rappel: vars["dcd-acte-ged"] === "oui" ? "+ JOINDRE L'ACTE" : "",
-                      }]
-                    : null,
+                  type: "question",
+                  id: "dcd-notaire-autre-envoi",
+                  label: "DEMANDE FAITE PAR",
+                  choix: [
+                    { val: "formulaire", label: "FORMULAIRE EN LIGNE" },
+                    { val: "mail", label: "SCRIBE PAR MAIL" },
+                    { val: "courrier", label: "SCRIBE PAR COURRIER" },
+                  ],
                 },
-                // Acte de décès présent en GED : on le joint au SCRIBE envoyé
-                // à la chambre (par mail ou par courrier).
-                ...(vars["dcd-acte-ged"] === "oui"
+                ...(vars["dcd-notaire-autre-envoi"] === "formulaire"
                   ? [{
                       type: "check",
-                      id: "dcd-notaire-autre-pj-acte",
-                      label: "ACTE DE DÉCÈS (GED) JOINT EN PIÈCE JOINTE DU SCRIBE",
+                      id: "dcd-notaire-autre-demande",
+                      label: "FORMULAIRE REMPLI, IMPRIMÉ EN PDF AVANT ENVOI, ENVOYÉ, PDF RATTACHÉ À L'AFFAIRE",
                     }]
+                  : []),
+                ...(vars["dcd-notaire-autre-envoi"] === "mail" || vars["dcd-notaire-autre-envoi"] === "courrier"
+                  ? [
+                      {
+                        type: "check",
+                        id: "dcd-notaire-autre-demande",
+                        label: "SCRIBE ENVOYÉ PAR " + (vars["dcd-notaire-autre-envoi"] === "mail" ? "MAIL" : "COURRIER") +
+                          ", COPIE RATTACHÉE À L'AFFAIRE",
+                        copie: autre.modeleScribe
+                          ? [{
+                              label: "MODÈLE SCRIBE",
+                              texte: autre.modeleScribe,
+                              rappel: vars["dcd-acte-ged"] === "oui" ? "+ JOINDRE L'ACTE" : "",
+                            }]
+                          : null,
+                      },
+                      // Acte de décès présent en GED : joint au SCRIBE.
+                      ...(vars["dcd-acte-ged"] === "oui"
+                        ? [{
+                            type: "check",
+                            id: "dcd-notaire-autre-pj-acte",
+                            label: "ACTE DE DÉCÈS (GED) JOINT EN PIÈCE JOINTE DU SCRIBE",
+                          }]
+                        : []),
+                    ]
                   : []),
                 {
                   type: "check",
@@ -3593,10 +3635,13 @@
             lbl.textContent = fillPlain(item.label, vars);
             line.appendChild(lbl);
             const current = checkState[item.id];
-            ["oui", "non"].forEach((val) => {
+            const choix = Array.isArray(item.choix) && item.choix.length > 0
+              ? item.choix
+              : [{ val: "oui", label: "OUI" }, { val: "non", label: "NON" }];
+            choix.forEach(({ val, label }) => {
               const btn = document.createElement("button");
               btn.type = "button";
-              btn.textContent = val.toUpperCase();
+              btn.textContent = label;
               btn.className = `context-option pill-btn ${current === val ? "is-selected" : ""}`;
               btn.setAttribute("aria-pressed", current === val ? "true" : "false");
               btn.addEventListener("click", () => {
