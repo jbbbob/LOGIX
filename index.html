@@ -3462,13 +3462,16 @@
                         : []),
                     ]
                   : []),
-                {
-                  type: "check",
-                  id: "dcd-notaire-autre-ar",
-                  label: "ACCUSÉ DE RÉCEPTION RATTACHÉ À L'AFFAIRE (S'IL Y EN A UN)",
-                  facultatif: true,
-                  tag: "SI RETOUR",
-                },
+                // AR seulement pour le formulaire en ligne (pas par SCRIBE).
+                ...(vars["dcd-notaire-autre-envoi"] === "formulaire"
+                  ? [{
+                      type: "check",
+                      id: "dcd-notaire-autre-ar",
+                      label: "ACCUSÉ DE RÉCEPTION RATTACHÉ À L'AFFAIRE (S'IL Y EN A UN)",
+                      facultatif: true,
+                      tag: "SI RETOUR",
+                    }]
+                  : []),
               ],
             });
           }
