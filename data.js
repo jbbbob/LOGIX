@@ -1574,6 +1574,9 @@ const reexecutionBranch = {
 //     lien: { label, url },                        (bouton qui ouvre un site)
 //     facultatif: true }                           (pas compté : "PLUS TARD")
 //   { type: "alerte", niveau, texte }               → bandeau danger/warning/info
+//   saisie: { champs: ["id-input"] }  (check/alerte) → bouton "↑ NOTER EN HAUT"
+//                                                     qui remonte au champ, puis
+//                                                     "↓ REVENIR À L'ÉTAPE"
 //   { type: "chambres" }                            → une carte par chambre des
 //                                                     notaires selon les départements
 // Tous acceptent un "if" (mêmes règles que les resultats).
@@ -1673,11 +1676,6 @@ const dcd1ereEnqueteInconnusLeaf = {
           },
           {
             type: "check",
-            id: "dcd-comptes-debit",
-            label: "TOUS LES COMPTES DE L'USAGER PRÉSENTANT UN DÉBIT SONT VÉRIFIÉS",
-          },
-          {
-            type: "check",
             id: "dcd-md-co-ano",
             label: "MD ANO ET CO ANO SUPPRIMÉES (SI PRÉSENTES)",
           },
@@ -1707,15 +1705,28 @@ const dcd1ereEnqueteInconnusLeaf = {
         titre: "2. JUSTIFICATIF DE DÉCÈS",
         if: { "traitement-stop": ["non"] },
         items: [
+          // Acte présent en GED → rien à relever, pas de SNGI, pas de mairie.
+          { type: "question", id: "dcd-acte-ged", label: "ACTE DE DÉCÈS PRÉSENT EN GED ?" },
+          {
+            type: "alerte",
+            niveau: "info",
+            if: { "dcd-acte-ged": ["oui"] },
+            texte: "ACTE PRÉSENT EN GED : PAS DE RELEVÉ SNGI NI DE DEMANDE À LA MAIRIE.",
+          },
           {
             type: "check",
             id: "dcd-sngi-releve",
-            label: "SNGI : N° D'ACTE ET LIEU DU DÉCÈS RELEVÉS (SI ABSENTS EN GED)",
+            if: { "dcd-acte-ged": ["non", ""] },
+            label: "SNGI : N° D'ACTE ET LIEU DU DÉCÈS RELEVÉS",
             aide: "À noter dans les champs N° D'ACTE et LIEU DU DÉCÈS en haut de page.",
+            // Bouton "↑ NOTER EN HAUT" : remonte au 1er champ cité, puis un
+            // bouton "↓ REVENIR À L'ÉTAPE" ramène ici.
+            saisie: { champs: ["num-acte", "lieu-deces"] },
           },
           {
             type: "check",
             id: "dcd-sngi-pdf",
+            if: { "dcd-acte-ged": ["non", ""] },
             label: "PAGE SNGI IMPRIMÉE EN PDF ET RATTACHÉE À L'AFFAIRE",
           },
         ],
@@ -1729,7 +1740,7 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "check",
             id: "dcd-scribe-heritiers",
             label: "COURRIER AUX HÉRITIERS ENVOYÉ",
-            aide: "Modèle ci-dessous. Saisir à la main la dernière adresse connue du cotisant, précédée de la formule ci-dessous.",
+            aide: "Dans SCRIBE, saisir à la main la dernière adresse connue du cotisant, précédée de la formule ADRESSE ci-dessous.",
             copie: [
               { label: "MODÈLE", texte: "Succession - Heritiers" },
               { label: "ADRESSE", texte: "À l'attention des héritiers de" },
@@ -1738,6 +1749,7 @@ const dcd1ereEnqueteInconnusLeaf = {
           {
             type: "check",
             id: "dcd-mairie",
+            if: { "dcd-acte-ged": ["non", ""] },
             label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
             copie: [{ label: "MODÈLE", texte: "Recherche cotisant - Demande à partenaire" }],
           },
@@ -1759,6 +1771,7 @@ const dcd1ereEnqueteInconnusLeaf = {
             niveau: "info",
             if: { "deces-plus-6-mois": [""] },
             texte: "SAISIR LA DATE DU DÉCÈS EN HAUT : SI LE DÉCÈS A MOINS DE 6 MOIS, CETTE RECHERCHE N'EST PAS À FAIRE.",
+            saisie: { champs: ["date-deces"] },
           },
           {
             type: "alerte",
@@ -1828,13 +1841,13 @@ const dcd1ereEnqueteInconnusLeaf = {
     {
       id: "dcd-watt-sngi",
       type: "fragment",
-      if: { "dcd-sngi-pdf": ["oui"] },
+      if: { "dcd-sngi-pdf": ["oui"], "dcd-acte-ged": ["non", ""] },
       texte: "Justificatif de décès SNGI rattaché à l'affaire",
     },
     {
       id: "dcd-watt-mairie",
       type: "fragment",
-      if: { "dcd-mairie": ["oui"] },
+      if: { "dcd-mairie": ["oui"], "dcd-acte-ged": ["non", ""] },
       texte: "Acte de décès demandé à {{mairie-deces}}",
     },
     {

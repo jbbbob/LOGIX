@@ -1296,12 +1296,65 @@
         text-decoration-color: var(--ok);
       }
 
+      /* Phrases d'aide : assez visibles pour ne pas passer à côté
+         (filet cyan à gauche, texte clair, taille des libellés). */
       .chk-aide {
-        font-size: var(--fs-micro);
-        letter-spacing: var(--ls-ui);
-        color: var(--muted);
+        font-size: var(--fs-label);
+        letter-spacing: 0.02em;
+        color: var(--ink);
         text-transform: none;
         line-height: 1.45;
+        padding: 2px 0 2px 9px;
+        border-left: 2px solid var(--accent);
+      }
+
+      .chk-alert {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+      }
+
+      .chk-alert > span {
+        flex: 1 1 260px;
+      }
+
+      /* "↑ NOTER EN HAUT" : aplat cyan, pour se voir. */
+      .chk-jump {
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--accent-ink);
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: var(--r-md);
+        padding: 3px 9px;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .chk-jump:hover {
+        background: var(--accent-strong);
+        border-color: var(--accent-strong);
+      }
+
+      /* "↓ REVENIR À L'ÉTAPE" : juste sous les champs à remplir, tant qu'un
+         aller-retour est en cours. */
+      .return-btn {
+        width: 100%;
+        height: 2.3rem;
+        font-size: var(--fs-label);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--accent-ink);
+        background: var(--accent);
+        border: 1px solid var(--accent-strong);
+        border-radius: var(--r-md);
+        cursor: pointer;
+      }
+
+      .return-btn:hover {
+        background: var(--accent-strong);
       }
 
       .chk-tag {
@@ -2049,6 +2102,16 @@
 
         function addChecklistVars(vars, leaf) {
           // 1. Cases cochées / questions : utilisables dans les "if" par leur id.
+          //    Une question pas encore répondue vaut "" (ex : if ["non", ""] =
+          //    "afficher tant qu'on n'a pas répondu OUI").
+          const clDef = leaf && leaf.checklist;
+          if (clDef && Array.isArray(clDef.sections)) {
+            clDef.sections.forEach((sec) =>
+              (sec.items || []).forEach((it) => {
+                if (it.type === "question") vars[it.id] = "";
+              })
+            );
+          }
           Object.entries(checkState).forEach(([id, val]) => {
             if (val === true) vars[id] = "oui";
             else if (val === false) vars[id] = "non";
@@ -2801,6 +2864,7 @@
               activeToggleStack = [];
               topAnswers = {};
               checkState = {};
+              clearReturnTarget();
               render();
             });
             content.appendChild(back);
@@ -2826,6 +2890,7 @@
               activeToggleStack = [];
               topAnswers = {};
               checkState = {};
+              clearReturnTarget();
               render();
             });
             content.appendChild(pill);
@@ -3012,6 +3077,7 @@
               type: "alerte",
               niveau: "info",
               texte: "SAISIR EN HAUT LE DÉPARTEMENT DE NAISSANCE ET CELUI DU DERNIER DOMICILE : LES BONS SITES S'AFFICHERONT ICI.",
+              saisie: { champs: ["dept-naissance", "dept-domicile"] },
             });
           }
           return out;
@@ -3085,11 +3151,82 @@
           return el;
         }
 
-        function renderChecklistItem(item, vars, parent) {
+        // ---- Aller-retour "↑ NOTER EN HAUT" / "↓ REVENIR À L'ÉTAPE" ----------
+        // On mémorise d'où l'on part (l'élément de la checklist + sa section),
+        // on remonte au champ à remplir, et un bouton placé juste sous les
+        // champs permet de redescendre exactement au même endroit. Entrée dans
+        // le champ fait la même chose.
+        let returnTarget = null; // { anchorId, sectionId }
+        const returnRow = document.createElement("div");
+        returnRow.className = "card-row return-row";
+        const returnBtn = document.createElement("button");
+        returnBtn.type = "button";
+        returnBtn.className = "return-btn";
+        returnBtn.textContent = "↓ REVENIR À L'ÉTAPE (OU ENTRÉE)";
+        returnBtn.addEventListener("click", () => goBackToStep());
+        returnRow.appendChild(returnBtn);
+
+        // Appelée après chaque renderCascade (qui vide cascadeFlow) : remet
+        // le bouton à la fin des champs tant qu'un aller-retour est en cours.
+        function placeReturnButton() {
+          if (returnTarget) cascadeFlow.appendChild(returnRow);
+          else returnRow.remove();
+        }
+
+        function clearReturnTarget() {
+          returnTarget = null;
+          returnRow.remove();
+        }
+
+        function goUpToFields(champs, anchorId, sectionId) {
+          const field = document.querySelector(`[data-input-id="${(champs || [])[0]}"]`);
+          if (!field) return;
+          returnTarget = { anchorId, sectionId };
+          placeReturnButton();
+          field.scrollIntoView({ behavior: "auto", block: "center" });
+          field.focus();
+        }
+
+        function goBackToStep() {
+          if (!returnTarget) return;
+          // L'élément de départ peut avoir disparu (ex : l'alerte "saisir les
+          // départements" est remplacée par les cartes) → on vise sa section.
+          const el =
+            document.getElementById(returnTarget.anchorId) ||
+            document.getElementById(returnTarget.sectionId);
+          clearReturnTarget();
+          if (el) el.scrollIntoView({ behavior: "auto", block: "center" });
+        }
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Enter" || !returnTarget) return;
+          const t = e.target;
+          if (t && t.tagName === "INPUT" && t.hasAttribute("data-input-id")) {
+            e.preventDefault();
+            goBackToStep();
+          }
+        });
+
+        function makeSaisieButton(item, anchorId, sectionId) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chk-jump";
+          btn.textContent = "↑ NOTER EN HAUT";
+          btn.addEventListener("click", () => goUpToFields(item.saisie.champs, anchorId, sectionId));
+          return btn;
+        }
+
+        function renderChecklistItem(item, vars, parent, sectionId) {
           if (item.type === "alerte") {
             const el = document.createElement("div");
             el.className = "chk-alert is-" + (item.niveau || "info");
-            el.textContent = fillPlain(item.texte, vars);
+            const txt = document.createElement("span");
+            txt.textContent = fillPlain(item.texte, vars);
+            el.appendChild(txt);
+            if (item.saisie) {
+              el.id = "chk-alert-" + sectionId + "-" + (item.saisie.champs || []).join("-");
+              el.appendChild(makeSaisieButton(item, el.id, "chk-sec-" + sectionId));
+            }
             parent.appendChild(el);
             return;
           }
@@ -3107,7 +3244,7 @@
             if (link) head.appendChild(link);
             grp.appendChild(head);
             if (item.aide) grp.appendChild(makeChecklistAide(item.aide));
-            (item.items || []).forEach((sub) => renderChecklistItem(sub, vars, grp));
+            (item.items || []).forEach((sub) => renderChecklistItem(sub, vars, grp, sectionId));
             parent.appendChild(grp);
             return;
           }
@@ -3149,6 +3286,7 @@
             const checked = checkState[item.id] === true;
             const row = document.createElement("div");
             row.className = "chk-row" + (checked ? " is-checked" : "");
+            row.id = "chk-row-" + item.id;
 
             const box = document.createElement("input");
             box.type = "checkbox";
@@ -3178,6 +3316,7 @@
             }
             const link = makeChecklistLink(item.lien);
             if (link) line.appendChild(link);
+            if (item.saisie) line.appendChild(makeSaisieButton(item, row.id, "chk-sec-" + sectionId));
             body.appendChild(line);
             if (item.aide) body.appendChild(makeChecklistAide(fillPlain(item.aide, vars)));
             if (Array.isArray(item.copie) && item.copie.length > 0) {
@@ -3221,11 +3360,12 @@
           sections.forEach((section) => {
             const sec = document.createElement("div");
             sec.className = "chk-section";
+            sec.id = "chk-sec-" + section.id;
             const st = document.createElement("div");
             st.className = "chk-section-title";
             st.textContent = section.titre || "";
             sec.appendChild(st);
-            section.items.forEach((item) => renderChecklistItem(item, vars, sec));
+            section.items.forEach((item) => renderChecklistItem(item, vars, sec, section.id));
             checklistContainer.appendChild(sec);
           });
         }
@@ -3798,6 +3938,7 @@
             activeToggleStack = [];
             topAnswers = {};
             checkState = {};
+            clearReturnTarget();
             render();
           }
         }
@@ -3834,6 +3975,7 @@
 
         function resetDossier() {
           checkState = {};
+          clearReturnTarget();
           trail = [{ label: "", node: window.treeData }];
           inlineRootNode = null;
           inlineChain = [];
@@ -3868,6 +4010,7 @@
           renderContextPanel();
           renderToggles();
           renderCascade();
+          placeReturnButton();
           renderLeafQuestions();
           renderChecklist();
           renderResults(deepestNode);
