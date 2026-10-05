@@ -1559,9 +1559,359 @@ const reexecutionBranch = {
 // Pour ajouter une catégorie future (ex: REEXECUTION) :
 // 1) créer une nouvelle constante (comme anvBranch / delaiBranch)
 // 2) l'ajouter dans le tableau choix ci-dessous.
+// ============================================================================
+// Branche DCD : MODE OPÉRATOIRE (checklist) pour les usagers décédés.
+// ----------------------------------------------------------------------------
+// Différence avec les autres catégories : la feuille contient une "checklist"
+// (étapes à cocher, questions OUI/NON, alertes) en plus des "resultats".
+// Le COMMENTAIRE AFFAIRE WATT se construit tout seul à partir des cases
+// cochées : chaque ligne n'apparaît que si l'étape correspondante est faite.
+//
+// Types d'éléments d'une checklist :
+//   { type: "question", id, label, aide }          → boutons OUI / NON
+//   { type: "check", id, label, aide, outil,        → case à cocher
+//     copie: [{ label, texte }],                   (textes avec bouton COPIER)
+//     lien: { label, url },                        (bouton qui ouvre un site)
+//     facultatif: true }                           (pas compté : "PLUS TARD")
+//   { type: "alerte", niveau, texte }               → bandeau danger/warning/info
+//   { type: "chambres" }                            → une carte par chambre des
+//                                                     notaires selon les départements
+// Tous acceptent un "if" (mêmes règles que les resultats).
+// Les "label" peuvent contenir {{variables}} (ex : {{date-effet-m1}}).
+//
+// Variables calculées dans index.html (buildTemplateVars) pour cette branche :
+//   {{deces-plus-6-mois}} = "oui" / "non" / "" (date du décès pas encore saisie)
+//   {{date-effet-m1}}     = date du jour + 1 mois, format JJ/MM/AAAA
+//   {{reroutage-gcc}}     = "oui" si il faut rerouter au GCC
+//   {{traitement-stop}}   = "oui" si reroutage GCC ou DLP proche (on s'arrête)
+//   {{chambre-<id>}}, {{chambre-autre}}, {{depts-autres}}, {{phrase-chambres}}
+//   {{mairie-deces}}      = "la mairie de <lieu>" ou "la mairie du lieu de décès"
+//   {{dcd-notaires-demande}} = "oui" si au moins une demande notaire est cochée
+// Chaque case cochée vaut "oui" dans les conditions (par son id).
+// ============================================================================
+
+const dcd1ereEnqueteInconnusLeaf = {
+  // Saisies en haut de page (rien n'est enregistré : tout part au F5).
+  inputs: [
+    { id: "date-deces", label: "DATE DU DÉCÈS", type: "text", placeholder: "JJ/MM/AAAA" },
+    { id: "lieu-deces", label: "LIEU DU DÉCÈS", type: "text", placeholder: "Commune", inline: true },
+    { id: "num-acte", label: "N° D'ACTE", type: "text", placeholder: "", inline: true },
+    { id: "dept-naissance", label: "DÉPT NAISSANCE", type: "text", placeholder: "Ex : 93", inline: true },
+    { id: "dept-domicile", label: "DÉPT DERNIER DOMICILE", type: "text", placeholder: "Ex : 75", inline: true },
+  ],
+
+  checklist: {
+    // Chambres qui ont un formulaire en ligne de recherche de succession.
+    // Pour en ajouter une : copier une ligne et changer id / label / depts / url.
+    // Tout département absent de cette liste passe par le site du CSN.
+    chambresNotaires: [
+      {
+        id: "paris",
+        label: "CHAMBRE DE PARIS (75 · 93 · 94)",
+        depts: ["75", "93", "94"],
+        url: "https://paris.notaires.fr/fr/nous-contacter/recherche-succession",
+      },
+      {
+        id: "77",
+        label: "CHAMBRE DE SEINE-ET-MARNE (77)",
+        depts: ["77"],
+        url: "https://chambre-seineetmarne.notaires.fr/fr/nous-contacter/recherche-succession",
+      },
+      {
+        id: "91",
+        label: "CHAMBRE DE L'ESSONNE (91)",
+        depts: ["91"],
+        url: "https://chambre-essonne.notaires.fr/fr/nous-contacter/recherche-succession",
+      },
+    ],
+    chambreAutre: {
+      url: "https://www.csn.notaires.fr/fr/conseil-regional-notaire-val-doise-eure-et-loir-hauts-de-seine-yvelines-95-28-92-78",
+      modeleScribe: "Succession - Chambre des notaires - Recherche coordonnées - réf. BNC | 9453",
+    },
+
+    sections: [
+      {
+        id: "dcd-controles",
+        titre: "0. CONTRÔLES PRÉALABLES",
+        items: [
+          { type: "question", id: "dcd-dlp-proche", label: "DLP PROCHE (MOINS DE 6 MOIS) ?" },
+          {
+            type: "alerte",
+            niveau: "warning",
+            if: { "dcd-dlp-proche": ["oui"] },
+            texte: "DLP PROCHE : NE PAS RÉORIENTER. PASSER DIRECTEMENT À LA CODIFICATION DE L'ANV (ÉTAPE RELANCE).",
+          },
+          {
+            type: "question",
+            id: "dcd-cas-interdit",
+            label: "UN CAS INTERDIT LA RÉORIENTATION ?",
+            aide: "Commentaire « héritiers et notaire non connus », ADM NV issue de RC08/TC08, sollicitation régionale, ou ADM NV déjà codifiée.",
+          },
+          {
+            type: "question",
+            id: "dcd-radie-dcd",
+            label: "USAGER RADIÉ AU MOTIF DCD ?",
+            aide: "Si NON : reroutage au GCC.",
+          },
+          {
+            type: "question",
+            id: "dcd-affaire-gcc",
+            label: "AUTRE AFFAIRE DE COMPÉTENCE GCC EN COURS ?",
+            aide: "Si OUI : reroutage au GCC.",
+          },
+          {
+            type: "alerte",
+            niveau: "danger",
+            if: { "reroutage-gcc": ["oui"] },
+            texte: "REROUTER LE DOSSIER AU GCC. NE PAS CONTINUER LE TRAITEMENT.",
+          },
+          {
+            type: "alerte",
+            niveau: "info",
+            if: { "reroutage-evite": ["oui"] },
+            texte: "PAS DE REROUTAGE AU GCC : DLP PROCHE OU CAS QUI INTERDIT LA RÉORIENTATION.",
+          },
+          {
+            type: "check",
+            id: "dcd-comptes-debit",
+            label: "TOUS LES COMPTES DE L'USAGER PRÉSENTANT UN DÉBIT SONT VÉRIFIÉS",
+          },
+          {
+            type: "check",
+            id: "dcd-md-co-ano",
+            label: "MD ANO ET CO ANO SUPPRIMÉES (SI PRÉSENTES)",
+          },
+        ],
+      },
+      {
+        id: "dcd-blocage",
+        titre: "1. BLOCAGE",
+        if: { "traitement-stop": ["non"] },
+        items: [
+          {
+            type: "check",
+            id: "dcd-arret-25",
+            if: { statut: ["A/C", ""] },
+            label: "A/C : ARRET DEBUT MOTIF 25 POSITIONNÉ",
+          },
+          {
+            type: "check",
+            id: "dcd-cpts-top06",
+            if: { statut: ["PL", ""] },
+            label: "PL : TRANSACTION CPTS TOP 06 SUR LES ÉCARTS NON COMPRIS DANS L'ANV",
+          },
+        ],
+      },
+      {
+        id: "dcd-justif-deces",
+        titre: "2. JUSTIFICATIF DE DÉCÈS",
+        if: { "traitement-stop": ["non"] },
+        items: [
+          {
+            type: "check",
+            id: "dcd-sngi-releve",
+            label: "SNGI : N° D'ACTE ET LIEU DU DÉCÈS RELEVÉS (SI ABSENTS EN GED)",
+            aide: "À noter dans les champs N° D'ACTE et LIEU DU DÉCÈS en haut de page.",
+          },
+          {
+            type: "check",
+            id: "dcd-sngi-pdf",
+            label: "PAGE SNGI IMPRIMÉE EN PDF ET RATTACHÉE À L'AFFAIRE",
+          },
+        ],
+      },
+      {
+        id: "dcd-scribe",
+        titre: "3. COURRIERS SCRIBE",
+        if: { "traitement-stop": ["non"] },
+        items: [
+          {
+            type: "check",
+            id: "dcd-scribe-heritiers",
+            label: "COURRIER AUX HÉRITIERS ENVOYÉ",
+            aide: "Modèle ci-dessous. Saisir à la main la dernière adresse connue du cotisant, précédée de la formule ci-dessous.",
+            copie: [
+              { label: "MODÈLE", texte: "Succession - Heritiers" },
+              { label: "ADRESSE", texte: "À l'attention des héritiers de" },
+            ],
+          },
+          {
+            type: "check",
+            id: "dcd-mairie",
+            label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
+            copie: [{ label: "MODÈLE", texte: "Recherche cotisant - Demande à partenaire" }],
+          },
+        ],
+      },
+      {
+        id: "dcd-notaires",
+        titre: "4. CHAMBRE(S) DES NOTAIRES",
+        if: { "traitement-stop": ["non"] },
+        items: [{ type: "chambres" }],
+      },
+      {
+        id: "dcd-succession",
+        titre: "5. SUCCESSION VACANTE",
+        if: { "traitement-stop": ["non"] },
+        items: [
+          {
+            type: "alerte",
+            niveau: "info",
+            if: { "deces-plus-6-mois": [""] },
+            texte: "SAISIR LA DATE DU DÉCÈS EN HAUT : SI LE DÉCÈS A MOINS DE 6 MOIS, CETTE RECHERCHE N'EST PAS À FAIRE.",
+          },
+          {
+            type: "alerte",
+            niveau: "info",
+            if: { "deces-plus-6-mois": ["non"] },
+            texte: "DÉCÈS DE MOINS DE 6 MOIS : PAS DE RECHERCHE DE SUCCESSION VACANTE.",
+          },
+          {
+            type: "check",
+            id: "dcd-succession-vacante",
+            if: { "deces-plus-6-mois": ["oui", ""] },
+            label: "RECHERCHE LANCÉE, PAGE IMPRIMÉE EN PDF ET RATTACHÉE À L'AFFAIRE",
+            lien: { label: "OUVRIR LE SITE", url: "https://recherchesuccessionsvacantes.impots.gouv.fr/" },
+          },
+        ],
+      },
+      {
+        id: "dcd-codifications",
+        titre: "6. CODIFICATIONS",
+        if: { "traitement-stop": ["non"] },
+        items: [
+          {
+            type: "check",
+            id: "dcd-esdc",
+            label: "ESDC ÉCRIT AVEC LE CODE DCD",
+            copie: [{ texte: "RECHERCHE HERITIERS : 1ère enquête" }],
+          },
+          {
+            type: "check",
+            id: "dcd-enq",
+            label: "ENQ CODIFIÉE AU STADE DEMAND PUIS R DIV",
+            aide: "Via Portail TI (A/C) ou DECA (PL).",
+          },
+          {
+            type: "check",
+            id: "dcd-adm-nv",
+            label: "ADM NV SUSPEN CODIFIÉE, DATE D'EFFET AU {{date-effet-m1}}",
+            copie: [{ label: "DATE", texte: "{{date-effet-m1}}" }],
+          },
+        ],
+      },
+    ],
+  },
+
+  resultats: [
+    // Chaque ligne = un fragment qui n'existe que si l'étape est cochée.
+    // Le composite les assemble dans l'ordre, une ligne par étape faite.
+    { id: "dcd-watt-titre", type: "fragment", texte: "RECHERCHE HERITIERS : 1ère enquête" },
+    {
+      id: "dcd-watt-adm",
+      type: "fragment",
+      if: { "dcd-adm-nv": ["oui"] },
+      texte: "ADM NV SUSPEN codifiée avec date d'effet au {{date-effet-m1}}",
+    },
+    {
+      id: "dcd-watt-enq",
+      type: "fragment",
+      if: { "dcd-enq": ["oui"] },
+      texte: "ENQ codifiée au stade R DIV",
+    },
+    {
+      id: "dcd-watt-esdc",
+      type: "fragment",
+      if: { "dcd-esdc": ["oui"] },
+      texte: "Écrit en ESDC avec le code DCD : RECHERCHE HERITIERS : 1ère enquête",
+    },
+    {
+      id: "dcd-watt-sngi",
+      type: "fragment",
+      if: { "dcd-sngi-pdf": ["oui"] },
+      texte: "Justificatif de décès SNGI rattaché à l'affaire",
+    },
+    {
+      id: "dcd-watt-mairie",
+      type: "fragment",
+      if: { "dcd-mairie": ["oui"] },
+      texte: "Acte de décès demandé à {{mairie-deces}}",
+    },
+    {
+      id: "dcd-watt-heritiers",
+      type: "fragment",
+      if: { "dcd-scribe-heritiers": ["oui"] },
+      texte: "Courrier envoyé à l'attention des héritiers, non connus de nos services, à la dernière adresse connue du défunt",
+    },
+    {
+      id: "dcd-watt-notaires",
+      type: "fragment",
+      if: { "dcd-notaires-demande": ["oui"] },
+      texte: "{{phrase-chambres}}",
+    },
+    {
+      id: "dcd-watt-succession",
+      type: "fragment",
+      if: { "dcd-succession-vacante": ["oui"], "deces-plus-6-mois": ["oui", ""] },
+      texte: "Recherche de succession vacante effectuée et justificatif rattaché à l'affaire",
+    },
+    {
+      id: "dcd-watt",
+      label: "COMMENTAIRE AFFAIRE WATT",
+      type: "composite",
+      if: { "traitement-stop": ["non"] },
+      combine: [
+        "dcd-watt-titre",
+        "dcd-watt-adm",
+        "dcd-watt-enq",
+        "dcd-watt-esdc",
+        "dcd-watt-sngi",
+        "dcd-watt-mairie",
+        "dcd-watt-heritiers",
+        "dcd-watt-notaires",
+        "dcd-watt-succession",
+      ],
+      separator: "<br>",
+    },
+  ],
+};
+
+const dcdBranch = {
+  id: "dcd",
+  label: "DCD",
+  description: "",
+  suite: {
+    question: "DCD",
+    choicesTitle: "ÉTAPE",
+    choix: [
+      {
+        id: "dcd-1ere-enquete",
+        label: "1ÈRE ENQUÊTE",
+        description: "",
+        suite: {
+          choicesTitle: "SITUATION",
+          choix: [
+            {
+              id: "dcd-inconnus",
+              label: "HÉRITIERS ET NOTAIRE INCONNUS",
+              description: "",
+              suite: dcd1ereEnqueteInconnusLeaf,
+            },
+            // TODO: à coder — autres situations de la fiche réflexe (§5)
+            { id: "dcd-notaire-connu", label: "NOTAIRE CONNU", description: "" },
+            { id: "dcd-heritiers-connus", label: "HÉRITIERS CONNUS", description: "" },
+          ],
+        },
+      },
+      // TODO: à coder — étape RELANCE (dont la codification ANV si DLP proche)
+      { id: "dcd-relance", label: "RELANCE", description: "" },
+    ],
+  },
+};
+
 const treeData = {
   question: "",
-  choix: [anvBranch, delaiBranch, reexecutionBranch],
+  choix: [anvBranch, delaiBranch, reexecutionBranch, dcdBranch],
 };
 
 // ============================================================================

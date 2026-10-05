@@ -474,6 +474,7 @@
       #togglesContainer,
       #cascadeFlow,
       #leafQuestionsContainer,
+      #checklistContainer,
       .result-card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -485,7 +486,8 @@
          (Le contenu généré par ::before ne compte pas pour :empty.) */
       #togglesContainer:empty,
       #cascadeFlow:empty,
-      #leafQuestionsContainer:empty {
+      #leafQuestionsContainer:empty,
+      #checklistContainer:empty {
         display: none;
       }
 
@@ -1170,6 +1172,260 @@
         border-radius: var(--r-sm);
       }
 
+      /* ---------- 7 bis. Checklist MODE OPÉRATOIRE (DCD) ----------------------- */
+      /* Même carte que le reste. Une section = un titre discret + des lignes.
+         Ligne cochée : texte grisé et barré, rien ne bouge (couleurs seules). */
+      #checklistContainer {
+        gap: 0;
+      }
+
+      .chk-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 12px;
+        padding: 10px 13px;
+        background: rgba(34, 211, 238, 0.055);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .chk-head-title {
+        flex: 1 1 auto;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--accent-strong);
+      }
+
+      .chk-head-count {
+        font-size: var(--fs-label);
+        font-weight: 700;
+        letter-spacing: var(--ls-mid);
+        color: var(--todo);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .chk-head-count.is-complete {
+        color: var(--ok);
+      }
+
+      .chk-bar {
+        flex: 1 1 100%;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--hairline);
+        overflow: hidden;
+      }
+
+      .chk-bar > span {
+        display: block;
+        height: 100%;
+        background: var(--accent);
+      }
+
+      .chk-section {
+        padding: 4px 0 6px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .chk-section:last-child {
+        border-bottom: 0;
+      }
+
+      .chk-section-title {
+        padding: 9px 13px 5px;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--muted);
+      }
+
+      .chk-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 7px 13px;
+        border-bottom: 1px solid var(--hairline-soft);
+      }
+
+      .chk-row:last-child {
+        border-bottom: 0;
+      }
+
+      .chk-box {
+        flex: 0 0 auto;
+        width: 18px;
+        height: 18px;
+        margin: 1px 0 0;
+        accent-color: var(--ok);
+        cursor: pointer;
+      }
+
+      .chk-body {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .chk-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px 10px;
+      }
+
+      .chk-label {
+        font-size: var(--fs-label);
+        font-weight: 700;
+        letter-spacing: var(--ls-mid);
+        color: var(--muted-strong);
+        line-height: 1.4;
+        cursor: pointer;
+      }
+
+      .chk-question .chk-label {
+        cursor: default;
+        margin-right: 4px;
+      }
+
+      .chk-row.is-checked:not(.chk-question) .chk-label {
+        color: var(--muted);
+        text-decoration: line-through;
+        text-decoration-color: var(--ok);
+      }
+
+      .chk-aide {
+        font-size: var(--fs-micro);
+        letter-spacing: var(--ls-ui);
+        color: var(--muted);
+        text-transform: none;
+        line-height: 1.45;
+      }
+
+      .chk-tag {
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--todo);
+        border: 1px solid var(--todo);
+        border-radius: var(--r-md);
+        padding: 1px 6px;
+      }
+
+      .chk-tools {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      /* Texte à copier : on garde sa casse réelle (= ce qui sera collé). */
+      .chk-copy {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 5px 6px 5px 10px;
+        border-radius: var(--r-md);
+        background: var(--surface-input);
+        border: 1px solid var(--border);
+      }
+
+      .chk-copy-label {
+        flex: 0 0 auto;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--muted);
+      }
+
+      .chk-copy-text {
+        flex: 1 1 auto;
+        min-width: 0;
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--ink);
+        overflow-wrap: anywhere;
+      }
+
+      .chk-link {
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--accent);
+        text-decoration: none;
+        border: 1px solid var(--accent);
+        border-radius: var(--r-md);
+        padding: 3px 8px;
+        white-space: nowrap;
+      }
+
+      .chk-link:hover {
+        background: var(--accent-wash);
+      }
+
+      .chk-group {
+        margin: 4px 13px 8px;
+        border: 1px solid var(--border);
+        border-radius: var(--r-md);
+        background: var(--wash);
+      }
+
+      .chk-group-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px 10px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .chk-group-title {
+        flex: 1 1 auto;
+        font-size: var(--fs-label);
+        font-weight: 700;
+        letter-spacing: var(--ls-mid);
+        color: var(--accent-strong);
+      }
+
+      .chk-group > .chk-aide {
+        padding: 6px 10px 0;
+      }
+
+      .chk-group .chk-row {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .chk-alert {
+        margin: 6px 13px;
+        padding: 8px 11px;
+        border-radius: var(--r-md);
+        border: 1px solid;
+        font-size: var(--fs-label);
+        font-weight: 700;
+        letter-spacing: var(--ls-mid);
+        line-height: 1.45;
+      }
+
+      .chk-alert.is-danger {
+        color: var(--danger);
+        border-color: var(--danger);
+        background: rgba(251, 113, 133, 0.08);
+      }
+
+      .chk-alert.is-warning {
+        color: var(--todo);
+        border-color: var(--todo);
+        background: rgba(240, 169, 46, 0.08);
+      }
+
+      .chk-alert.is-info {
+        color: var(--muted-strong);
+        border-color: var(--border-strong);
+        background: var(--wash);
+      }
+
       /* ---------- 8. Toast ----------------------------------------------------- */
       .toast {
         position: fixed;
@@ -1348,6 +1604,7 @@
               <section id="togglesContainer" class="stack"></section>
               <section id="cascadeFlow" class="stack"></section>
               <section id="leafQuestionsContainer" class="stack"></section>
+              <section id="checklistContainer" class="stack"></section>
               <!-- Conservés pour compat (vides désormais, gérés via cascadeFlow) -->
               <section id="inputsContainer" class="hidden"></section>
               <section id="choicesHeader" class="hidden"></section>
@@ -1383,6 +1640,7 @@
         const breadcrumbs = document.getElementById("breadcrumbs");
         const categoryTabs = document.getElementById("categoryTabs");
         const leafQuestionsContainer = document.getElementById("leafQuestionsContainer");
+        const checklistContainer = document.getElementById("checklistContainer");
         const pathPanel = document.getElementById("pathPanel");
         const pathCount = document.getElementById("pathCount");
         const backBtn = document.getElementById("backBtn");
@@ -1417,6 +1675,11 @@
         // Utilisé par substituteTemplate pour adapter globalement le résultat.
         let topAnswers = {};
 
+        // État de la checklist du MODE OPÉRATOIRE (catégorie DCD).
+        // Format : { idEtape: true | false, idQuestion: "oui" | "non" }.
+        // Remis à zéro par RECOMMENCER et au changement de catégorie.
+        let checkState = {};
+
         function saveNodeInputValue(inputId, value) {
           nodeInputs[inputId] = value;
         }
@@ -1446,10 +1709,11 @@
           if (!option || !option.suite || typeof option.suite !== "object") return true;
           const hasChoix = Array.isArray(option.suite.choix) && option.suite.choix.length > 0;
           const hasResultats = Array.isArray(option.suite.resultats) && option.suite.resultats.length > 0;
-          return !hasChoix && !hasResultats;
+          const hasChecklist = !!option.suite.checklist;
+          return !hasChoix && !hasResultats && !hasChecklist;
         }
 
-        function showToast(message) {
+        function showToast(message, duration) {
           const existing = document.getElementById("taff-toast");
           if (existing) existing.remove();
           const toast = document.createElement("div");
@@ -1457,7 +1721,7 @@
           toast.textContent = message;
           toast.className = "toast";
           document.body.appendChild(toast);
-          setTimeout(() => toast.remove(), 1800);
+          setTimeout(() => toast.remove(), duration || 1800);
         }
 
         function stripHtmlToText(html) {
@@ -1512,8 +1776,9 @@
           });
           // Post-traitement : convertit toute date au format JJ/MM/AAAA en JJ/MM/AA.
           // Skip dans la catégorie RÉEXÉCUTION (où on veut au contraire 4 chiffres
-          // pour la date de prescription).
-          if (vars.__category !== "reexecution") {
+          // pour la date de prescription) et dans DCD (date d'effet ADM NV en
+          // JJ/MM/AAAA, comme dans le mode opératoire).
+          if (vars.__category !== "reexecution" && vars.__category !== "dcd") {
             // Une image collée est stockée en data URL base64. Or le base64 contient
             // des "/" et des chiffres : une suite du type 12/34/5678 peut y apparaître
             // par hasard et se faire mutiler par le raccourcissement de date, ce qui
@@ -1734,7 +1999,113 @@
             }
           });
 
+          addChecklistVars(vars, leaf);
+
           return vars;
+        }
+
+        // --------------------------------------------------------------------
+        // MODE OPÉRATOIRE (checklist DCD) : variables calculées.
+        // Source unique : si une règle du mode op change (6 mois, + 1 mois,
+        // reroutage GCC, phrase des chambres…), c'est ici et nulle part ailleurs.
+        // --------------------------------------------------------------------
+
+        // Lit une date tapée "JJ/MM/AA" ou "JJ/MM/AAAA" (/, . ou - acceptés).
+        // Renvoie null si la saisie n'est pas (encore) une date complète.
+        function parseDateFr(text) {
+          const m = String(text || "").trim().match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})$/);
+          if (!m) return null;
+          const day = Number(m[1]);
+          const month = Number(m[2]) - 1;
+          const year = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]);
+          const d = new Date(year, month, day);
+          if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) return null;
+          return d;
+        }
+
+        // Ajoute N mois sans déborder : le 31/01 + 1 mois donne le 28 (ou 29)/02,
+        // et pas le 03/03 comme le ferait un calcul naïf.
+        function addMonths(date, n) {
+          const target = new Date(date.getFullYear(), date.getMonth() + n, 1);
+          const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+          target.setDate(Math.min(date.getDate(), lastDay));
+          return target;
+        }
+
+        function formatDateLong(d) {
+          return (
+            String(d.getDate()).padStart(2, "0") + "/" +
+            String(d.getMonth() + 1).padStart(2, "0") + "/" +
+            d.getFullYear()
+          );
+        }
+
+        // "93" → "93", "1" → "01", "2a" → "2A". Vide si la saisie n'est pas un département.
+        function normalizeDept(text) {
+          let v = String(text || "").trim().toUpperCase().replace(/\s+/g, "");
+          if (/^\d$/.test(v)) v = "0" + v;
+          return /^(\d{2,3}|2A|2B)$/.test(v) ? v : "";
+        }
+
+        function addChecklistVars(vars, leaf) {
+          // 1. Cases cochées / questions : utilisables dans les "if" par leur id.
+          Object.entries(checkState).forEach(([id, val]) => {
+            if (val === true) vars[id] = "oui";
+            else if (val === false) vars[id] = "non";
+            else if (val != null) vars[id] = val;
+          });
+
+          // 2. Date d'effet de l'ADM NV : date du jour + 1 mois (JJ/MM/AAAA).
+          vars["date-effet-m1"] = formatDateLong(addMonths(new Date(), 1));
+
+          // 3. Décès de plus de 6 mois ? "" tant que la date n'est pas saisie.
+          const deces = parseDateFr(nodeInputs["date-deces"]);
+          vars["deces-plus-6-mois"] = deces ? (addMonths(deces, 6) <= new Date() ? "oui" : "non") : "";
+
+          // 4. Reroutage GCC : seulement si (pas radié DCD OU affaire GCC en cours)
+          //    ET qu'aucun cas ne l'interdit (DLP proche ou cas interdit).
+          const bloque = vars["dcd-dlp-proche"] === "oui" || vars["dcd-cas-interdit"] === "oui";
+          const motifReroutage = vars["dcd-radie-dcd"] === "non" || vars["dcd-affaire-gcc"] === "oui";
+          vars["reroutage-gcc"] = motifReroutage && !bloque ? "oui" : "non";
+          vars["reroutage-evite"] = motifReroutage && bloque ? "oui" : "non";
+          vars["traitement-stop"] =
+            vars["reroutage-gcc"] === "oui" || vars["dcd-dlp-proche"] === "oui" ? "oui" : "non";
+
+          // 5. Mairie du lieu de décès (phrase du commentaire WATT).
+          const lieu = String(nodeInputs["lieu-deces"] || "").trim();
+          vars["mairie-deces"] = lieu ? "la mairie de " + lieu.toUpperCase() : "la mairie du lieu de décès";
+
+          // 6. Chambres des notaires selon les départements de naissance et de
+          //    dernier domicile (sans doublon : 75 + 93 = une seule chambre).
+          const cl = leaf && leaf.checklist;
+          const chambres = (cl && Array.isArray(cl.chambresNotaires)) ? cl.chambresNotaires : [];
+          const depts = [];
+          [nodeInputs["dept-naissance"], nodeInputs["dept-domicile"]].forEach((raw) => {
+            const d = normalizeDept(raw);
+            if (d && !depts.includes(d)) depts.push(d);
+          });
+          const deptsAutres = [];
+          const deptsInterroges = []; // départements dont la demande est cochée
+          chambres.forEach((ch) => { vars["chambre-" + ch.id] = "non"; });
+          depts.forEach((d) => {
+            const ch = chambres.find((c) => (c.depts || []).includes(d));
+            const chambreId = ch ? ch.id : "autre";
+            if (ch) vars["chambre-" + ch.id] = "oui";
+            else deptsAutres.push(d);
+            if (checkState["dcd-notaire-" + chambreId + "-demande"] === true) deptsInterroges.push(d);
+          });
+          vars["chambre-autre"] = deptsAutres.length > 0 ? "oui" : "non";
+          vars["depts-autres"] = deptsAutres.join(" ET ");
+
+          // 7. Phrase WATT : uniquement les départements réellement interrogés,
+          //    avec l'accord singulier / pluriel.
+          vars["dcd-notaires-demande"] = deptsInterroges.length > 0 ? "oui" : "non";
+          vars["phrase-chambres"] =
+            deptsInterroges.length > 1
+              ? "Chambres des notaires du " + deptsInterroges.join(" et du ") +
+                " interrogées et justificatifs rattachés à l'affaire"
+              : "Chambre des notaires du " + (deptsInterroges[0] || "") +
+                " interrogée et justificatif rattaché à l'affaire";
         }
 
         function getDeepestNode() {
@@ -2091,7 +2462,9 @@
             saveNodeInputValue(input.id, event.target.value);
             // On ne rappelle PAS render() ici : cela reconstruirait le champ en
             // cours de saisie et ferait perdre le focus à chaque caractère.
-            // On rafraîchit seulement les deux zones concernées.
+            // On rafraîchit seulement les zones concernées (la checklist DCD
+            // dépend des saisies : départements, date du décès…).
+            renderChecklist();
             renderResults(getDeepestNode());
             renderPathPanel();
           });
@@ -2427,6 +2800,7 @@
               leafInputs = {};
               activeToggleStack = [];
               topAnswers = {};
+              checkState = {};
               render();
             });
             content.appendChild(back);
@@ -2451,6 +2825,7 @@
               leafInputs = {};
               activeToggleStack = [];
               topAnswers = {};
+              checkState = {};
               render();
             });
             content.appendChild(pill);
@@ -2543,6 +2918,324 @@
             card.appendChild(content);
             leafQuestionsContainer.appendChild(card);
           });
+        }
+
+        // ====================================================================
+        // MODE OPÉRATOIRE : checklist (catégorie DCD)
+        // --------------------------------------------------------------------
+        // Une feuille peut avoir un champ "checklist" (voir l'en-tête de la
+        // branche DCD dans data.js). Elle s'affiche entre les questions et les
+        // résultats. Cocher une case relance render() : les "if" des résultats
+        // (ex : lignes du commentaire WATT) se mettent à jour tout seuls.
+        // ====================================================================
+
+        // Remplace les {{variables}} d'un libellé par du TEXTE brut (affiché
+        // ensuite via textContent : jamais interprété comme du HTML).
+        function fillPlain(text, vars) {
+          return String(text || "").replace(/\{\{([^}]+)\}\}/g, (m, key) => {
+            const v = vars[key.trim()];
+            return v == null ? "" : String(v);
+          });
+        }
+
+        // Construit la liste des sections et éléments VISIBLES (conditions "if"
+        // appliquées, bloc "chambres" déplié en une carte par chambre).
+        // Partagée par l'affichage, le compteur et l'alerte de RECOMMENCER.
+        function buildChecklistModel(leaf, vars) {
+          const cl = leaf && leaf.checklist;
+          if (!cl || !Array.isArray(cl.sections)) return [];
+          const sections = [];
+          cl.sections.forEach((section) => {
+            if (section.if && !contextMatches(section.if, vars)) return;
+            const items = [];
+            (section.items || []).forEach((item) => {
+              if (item.if && !contextMatches(item.if, vars)) return;
+              if (item.type === "chambres") {
+                items.push(...buildChambresItems(cl, vars));
+              } else {
+                items.push(item);
+              }
+            });
+            if (items.length > 0) sections.push({ id: section.id, titre: section.titre, items });
+          });
+          return sections;
+        }
+
+        function buildChambresItems(cl, vars) {
+          const out = [];
+          (cl.chambresNotaires || []).forEach((ch) => {
+            if (vars["chambre-" + ch.id] !== "oui") return;
+            out.push({
+              type: "groupe",
+              label: ch.label,
+              lien: { label: "OUVRIR LE SITE", url: ch.url },
+              items: [
+                {
+                  type: "check",
+                  id: "dcd-notaire-" + ch.id + "-demande",
+                  label: "FORMULAIRE REMPLI, IMPRIMÉ EN PDF AVANT ENVOI, ENVOYÉ, PDF RATTACHÉ À L'AFFAIRE",
+                },
+                {
+                  type: "check",
+                  id: "dcd-notaire-" + ch.id + "-ar",
+                  label: "ACCUSÉ DE RÉCEPTION REÇU PAR MAIL ET RATTACHÉ À L'AFFAIRE",
+                  facultatif: true,
+                },
+              ],
+            });
+          });
+          if (vars["chambre-autre"] === "oui") {
+            const autre = cl.chambreAutre || {};
+            out.push({
+              type: "groupe",
+              label: "AUTRE CHAMBRE (DÉPT " + vars["depts-autres"] + ")",
+              lien: autre.url ? { label: "OUVRIR LE SITE CSN", url: autre.url } : null,
+              aide: "Choisir « chambre interdépartementale » dans le menu déroulant, puis le département, puis RECHERCHER. Trouver comment la chambre reçoit les demandes de recherche de succession.",
+              items: [
+                {
+                  type: "check",
+                  id: "dcd-notaire-autre-demande",
+                  label: "DEMANDE FAITE : FORMULAIRE EN LIGNE (IMPRIMÉ EN PDF ET RATTACHÉ), SINON SCRIBE PAR MAIL OU COURRIER",
+                  copie: autre.modeleScribe ? [{ label: "MODÈLE SCRIBE", texte: autre.modeleScribe }] : null,
+                },
+                {
+                  type: "check",
+                  id: "dcd-notaire-autre-ar",
+                  label: "ACCUSÉ DE RÉCEPTION RATTACHÉ À L'AFFAIRE (S'IL Y EN A UN)",
+                  facultatif: true,
+                },
+              ],
+            });
+          }
+          if (out.length === 0) {
+            out.push({
+              type: "alerte",
+              niveau: "info",
+              texte: "SAISIR EN HAUT LE DÉPARTEMENT DE NAISSANCE ET CELUI DU DERNIER DOMICILE : LES BONS SITES S'AFFICHERONT ICI.",
+            });
+          }
+          return out;
+        }
+
+        // Compte les étapes : questions répondues + cases cochées.
+        // Les étapes "facultatif" (accusés de réception, qui arrivent plus tard)
+        // ne sont pas comptées.
+        function countChecklist(sections) {
+          let done = 0;
+          let total = 0;
+          const visit = (item) => {
+            if (item.type === "groupe") {
+              (item.items || []).forEach(visit);
+              return;
+            }
+            if (item.facultatif) return;
+            if (item.type === "check") {
+              total += 1;
+              if (checkState[item.id] === true) done += 1;
+            } else if (item.type === "question") {
+              total += 1;
+              if (checkState[item.id]) done += 1;
+            }
+          };
+          sections.forEach((s) => s.items.forEach(visit));
+          return { done, total };
+        }
+
+        function makeChecklistCopy(copie, vars) {
+          const wrap = document.createElement("span");
+          wrap.className = "chk-copy";
+          if (copie.label) {
+            const lbl = document.createElement("span");
+            lbl.className = "chk-copy-label";
+            lbl.textContent = copie.label;
+            wrap.appendChild(lbl);
+          }
+          const html = substituteTemplate(copie.texte || "", vars);
+          const txt = document.createElement("span");
+          txt.className = "chk-copy-text";
+          // Même exception que resultats[].texte : HTML riche venant de data.js,
+          // les valeurs saisies y sont déjà échappées par substituteTemplate.
+          txt.innerHTML = html;
+          wrap.appendChild(txt);
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "copy-btn";
+          btn.textContent = "COPIER";
+          btn.addEventListener("click", () => copyRichHtml(html, btn));
+          wrap.appendChild(btn);
+          return wrap;
+        }
+
+        function makeChecklistLink(lien) {
+          // Uniquement des liens https (ouverts dans un nouvel onglet).
+          if (!lien || !/^https:\/\//i.test(lien.url || "")) return null;
+          const a = document.createElement("a");
+          a.className = "chk-link";
+          a.href = lien.url;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = (lien.label || "OUVRIR") + " ↗";
+          return a;
+        }
+
+        function makeChecklistAide(text) {
+          const el = document.createElement("div");
+          el.className = "chk-aide";
+          el.textContent = text;
+          return el;
+        }
+
+        function renderChecklistItem(item, vars, parent) {
+          if (item.type === "alerte") {
+            const el = document.createElement("div");
+            el.className = "chk-alert is-" + (item.niveau || "info");
+            el.textContent = fillPlain(item.texte, vars);
+            parent.appendChild(el);
+            return;
+          }
+
+          if (item.type === "groupe") {
+            const grp = document.createElement("div");
+            grp.className = "chk-group";
+            const head = document.createElement("div");
+            head.className = "chk-group-head";
+            const title = document.createElement("span");
+            title.className = "chk-group-title";
+            title.textContent = fillPlain(item.label, vars);
+            head.appendChild(title);
+            const link = makeChecklistLink(item.lien);
+            if (link) head.appendChild(link);
+            grp.appendChild(head);
+            if (item.aide) grp.appendChild(makeChecklistAide(item.aide));
+            (item.items || []).forEach((sub) => renderChecklistItem(sub, vars, grp));
+            parent.appendChild(grp);
+            return;
+          }
+
+          if (item.type === "question") {
+            const row = document.createElement("div");
+            row.className = "chk-row chk-question" + (checkState[item.id] ? " is-checked" : "");
+            const body = document.createElement("div");
+            body.className = "chk-body";
+            const line = document.createElement("div");
+            line.className = "chk-line";
+            const lbl = document.createElement("span");
+            lbl.className = "chk-label";
+            lbl.textContent = fillPlain(item.label, vars);
+            line.appendChild(lbl);
+            const current = checkState[item.id];
+            ["oui", "non"].forEach((val) => {
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.textContent = val.toUpperCase();
+              btn.className = `context-option pill-btn ${current === val ? "is-selected" : ""}`;
+              btn.setAttribute("aria-pressed", current === val ? "true" : "false");
+              btn.addEventListener("click", () => {
+                // Re-cliquer sur la réponse choisie l'efface (comme les topQuestions).
+                if (checkState[item.id] === val) delete checkState[item.id];
+                else checkState[item.id] = val;
+                render();
+              });
+              line.appendChild(btn);
+            });
+            body.appendChild(line);
+            if (item.aide) body.appendChild(makeChecklistAide(item.aide));
+            row.appendChild(body);
+            parent.appendChild(row);
+            return;
+          }
+
+          if (item.type === "check") {
+            const checked = checkState[item.id] === true;
+            const row = document.createElement("div");
+            row.className = "chk-row" + (checked ? " is-checked" : "");
+
+            const box = document.createElement("input");
+            box.type = "checkbox";
+            box.className = "chk-box";
+            box.id = "chk-" + item.id;
+            box.checked = checked;
+            box.addEventListener("change", () => {
+              checkState[item.id] = box.checked;
+              render();
+            });
+            row.appendChild(box);
+
+            const body = document.createElement("div");
+            body.className = "chk-body";
+            const line = document.createElement("div");
+            line.className = "chk-line";
+            const lbl = document.createElement("label");
+            lbl.className = "chk-label";
+            lbl.htmlFor = box.id;
+            lbl.textContent = fillPlain(item.label, vars);
+            line.appendChild(lbl);
+            if (item.facultatif) {
+              const tag = document.createElement("span");
+              tag.className = "chk-tag";
+              tag.textContent = "PLUS TARD";
+              line.appendChild(tag);
+            }
+            const link = makeChecklistLink(item.lien);
+            if (link) line.appendChild(link);
+            body.appendChild(line);
+            if (item.aide) body.appendChild(makeChecklistAide(fillPlain(item.aide, vars)));
+            if (Array.isArray(item.copie) && item.copie.length > 0) {
+              const tools = document.createElement("div");
+              tools.className = "chk-tools";
+              item.copie.forEach((c) => tools.appendChild(makeChecklistCopy(c, vars)));
+              body.appendChild(tools);
+            }
+            row.appendChild(body);
+            parent.appendChild(row);
+          }
+        }
+
+        function renderChecklist() {
+          checklistContainer.innerHTML = "";
+          const leaf = getDeepestNode();
+          if (!leaf || !leaf.checklist) return;
+
+          const vars = buildTemplateVars();
+          const sections = buildChecklistModel(leaf, vars);
+          const { done, total } = countChecklist(sections);
+
+          const head = document.createElement("div");
+          head.className = "chk-head";
+          const title = document.createElement("span");
+          title.className = "chk-head-title";
+          title.textContent = "MODE OPÉRATOIRE";
+          head.appendChild(title);
+          const count = document.createElement("span");
+          count.className = "chk-head-count" + (total > 0 && done === total ? " is-complete" : "");
+          count.textContent = done + " / " + total;
+          head.appendChild(count);
+          const bar = document.createElement("div");
+          bar.className = "chk-bar";
+          const fill = document.createElement("span");
+          fill.style.width = (total > 0 ? Math.round((done / total) * 100) : 0) + "%";
+          bar.appendChild(fill);
+          head.appendChild(bar);
+          checklistContainer.appendChild(head);
+
+          sections.forEach((section) => {
+            const sec = document.createElement("div");
+            sec.className = "chk-section";
+            const st = document.createElement("div");
+            st.className = "chk-section-title";
+            st.textContent = section.titre || "";
+            sec.appendChild(st);
+            section.items.forEach((item) => renderChecklistItem(item, vars, sec));
+            checklistContainer.appendChild(sec);
+          });
+        }
+
+        // Nombre d'étapes restantes dans la checklist affichée (0 si aucune).
+        function remainingChecklistSteps() {
+          const leaf = getDeepestNode();
+          if (!leaf || !leaf.checklist) return 0;
+          const { done, total } = countChecklist(buildChecklistModel(leaf, buildTemplateVars()));
+          return total - done;
         }
 
         // Repli pour les navigateurs d'entreprise anciens (ou les contextes où
@@ -2953,6 +3646,17 @@
             });
           }
 
+          // 5 bis. Checklist du MODE OPÉRATOIRE (DCD) : une seule ligne de
+          //        progression, le détail est dans la colonne principale.
+          if (leaf && leaf.checklist) {
+            const { done, total } = countChecklist(buildChecklistModel(leaf, vars));
+            steps.push({
+              label: "MODE OPÉRATOIRE",
+              value: done + "/" + total + " ÉTAPES",
+              state: total > 0 && done === total ? "done" : "todo",
+            });
+          }
+
           // 6. Résultat — renseigné après coup par renderPathPanel, qui est
           //    appelé APRÈS renderResults et peut donc compter les blocs réels.
           return steps;
@@ -3093,6 +3797,7 @@
             leafInputs = {};
             activeToggleStack = [];
             topAnswers = {};
+            checkState = {};
             render();
           }
         }
@@ -3108,7 +3813,27 @@
         // RECOMMENCER = dossier suivant. On remet tout le parcours à zéro MAIS on
         // garde COMPTE et STATUT (globalSelections), qui ne changent pas d'un
         // dossier à l'autre : ça économise 2 clics à chaque dossier.
+        // Garde-fou du MODE OPÉRATOIRE : s'il reste des étapes non cochées, le
+        // 1er clic sur RECOMMENCER prévient seulement (pas de fenêtre à
+        // valider) ; un 2e clic dans les 4 secondes lance le dossier suivant.
+        let resetArmedUntil = 0;
+        function onResetClick() {
+          const remaining = remainingChecklistSteps();
+          if (remaining > 0 && Date.now() > resetArmedUntil) {
+            resetArmedUntil = Date.now() + 4000;
+            showToast(
+              remaining + (remaining > 1 ? " ÉTAPES NON FAITES" : " ÉTAPE NON FAITE") +
+                " — RECLIQUER POUR PASSER AU DOSSIER SUIVANT",
+              4000
+            );
+            return;
+          }
+          resetArmedUntil = 0;
+          resetDossier();
+        }
+
         function resetDossier() {
+          checkState = {};
           trail = [{ label: "", node: window.treeData }];
           inlineRootNode = null;
           inlineChain = [];
@@ -3126,7 +3851,7 @@
         }
 
         if (backBtn) backBtn.addEventListener("click", goBackOneStep);
-        if (resetBtn) resetBtn.addEventListener("click", resetDossier);
+        if (resetBtn) resetBtn.addEventListener("click", onResetClick);
 
         function render() {
           // On capture la position de scroll avant le re-rendu pour la restaurer.
@@ -3144,6 +3869,7 @@
           renderToggles();
           renderCascade();
           renderLeafQuestions();
+          renderChecklist();
           renderResults(deepestNode);
           // renderPathPanel en dernier : il compte les blocs résultat déjà rendus.
           renderPathPanel();
