@@ -1273,14 +1273,113 @@
         gap: 0;
       }
 
+      /* Barre MODE OPÉRATOIRE collée sous l'en-tête (58 px) quand on défile :
+         compteur et progression toujours visibles. Fond opaque (teinte posée
+         sur la carte) pour que le contenu ne transparaisse pas dessous. */
       .chk-head {
+        position: sticky;
+        top: 58px;
+        z-index: 30;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 6px 12px;
         padding: 10px 13px;
-        background: var(--accent-tint);
+        background: linear-gradient(var(--accent-tint), var(--accent-tint)), var(--surface);
         border-bottom: 1px solid var(--border);
+        border-radius: var(--r-lg) var(--r-lg) 0 0;
+      }
+
+      .chk-head-go {
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--todo);
+        background: var(--todo-wash);
+        border: 1px solid var(--todo-border);
+        border-radius: var(--r-md);
+        padding: 3px 9px;
+        cursor: pointer;
+      }
+
+      .chk-head-go:hover {
+        border-color: var(--todo);
+      }
+
+      /* Bilan de fin de checklist */
+      .chk-recap {
+        margin: 10px 13px 13px;
+        padding: 11px 13px;
+        border-radius: var(--r-md);
+        border: 1px solid;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .chk-recap.is-ok {
+        border-color: #0f766e;
+        background: #dbe9e3;
+        color: #0b5e58;
+      }
+
+      .chk-recap.is-todo {
+        border-color: var(--todo-border);
+        background: var(--todo-wash);
+        color: var(--todo);
+      }
+
+      .chk-recap-title {
+        font-size: var(--fs-label);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+      }
+
+      .chk-recap-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .chk-recap-item {
+        text-align: left;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-mid);
+        color: var(--ink);
+        background: transparent;
+        border: 0;
+        padding: 3px 0;
+        cursor: pointer;
+      }
+
+      .chk-recap-item::before {
+        content: "○ ";
+        color: var(--todo);
+      }
+
+      .chk-recap-item:hover {
+        color: var(--todo);
+        text-decoration: underline;
+      }
+
+      .chk-recap-go {
+        align-self: flex-start;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: #ffffff;
+        background: var(--todo);
+        border: 1px solid var(--todo);
+        border-radius: var(--r-md);
+        padding: 6px 11px;
+        cursor: pointer;
+      }
+
+      /* Étape atteinte via le bilan : surlignée un instant (couleur seule). */
+      .chk-row.is-flash {
+        background: var(--todo-wash);
+        box-shadow: inset 4px 0 0 var(--todo);
       }
 
       .chk-head-title {
@@ -3477,6 +3576,7 @@
           if (item.type === "question") {
             const row = document.createElement("div");
             row.className = "chk-row chk-question" + (checkState[item.id] ? " is-checked" : "");
+            row.id = "chk-row-" + item.id;
             const body = document.createElement("div");
             body.className = "chk-body";
             const line = document.createElement("div");
@@ -3589,6 +3689,39 @@
           if (window.scrollY !== scrollY) window.scrollTo(0, scrollY);
         }
 
+        // Étapes encore à faire (mêmes règles que le compteur) : questions sans
+        // réponse et cases non cochées, hors étapes facultatives.
+        function listMissing(sections, vars) {
+          const out = [];
+          sections.forEach((section) => {
+            const visit = (item) => {
+              if (item.type === "groupe") {
+                (item.items || []).forEach(visit);
+                return;
+              }
+              if (item.facultatif) return;
+              const manque =
+                (item.type === "check" && checkState[item.id] !== true) ||
+                (item.type === "question" && !checkState[item.id]);
+              if (manque) {
+                out.push({ id: item.id, section: section.titre || "", label: fillPlain(item.label, vars) });
+              }
+            };
+            section.items.forEach(visit);
+          });
+          return out;
+        }
+
+        // Fait défiler jusqu'à une étape et la fait clignoter une fois (couleur
+        // seulement) pour que l'œil la trouve.
+        function goToStep(id) {
+          const el = document.getElementById("chk-row-" + id);
+          if (!el) return;
+          el.scrollIntoView({ behavior: "auto", block: "center" });
+          el.classList.add("is-flash");
+          setTimeout(() => el.classList.remove("is-flash"), 1400);
+        }
+
         function drawChecklist() {
           checklistContainer.innerHTML = "";
           const leaf = getDeepestNode();
@@ -3612,6 +3745,17 @@
           bar.className = "chk-bar";
           const fill = document.createElement("span");
           fill.style.width = (total > 0 ? Math.round((done / total) * 100) : 0) + "%";
+          const missing = listMissing(sections, vars);
+          // Bouton dans la barre collée en haut : aller directement à ce qui manque.
+          if (missing.length > 0) {
+            const go = document.createElement("button");
+            go.type = "button";
+            go.className = "chk-head-go";
+            go.textContent = "→ ÉTAPE MANQUANTE";
+            go.title = "Aller à la première étape pas encore faite";
+            go.addEventListener("click", () => goToStep(missing[0].id));
+            head.insertBefore(go, count);
+          }
           bar.appendChild(fill);
           head.appendChild(bar);
           checklistContainer.appendChild(head);
@@ -3627,6 +3771,37 @@
             section.items.forEach((item) => renderChecklistItem(item, vars, sec, section.id));
             checklistContainer.appendChild(sec);
           });
+
+          // BILAN en fin de checklist : tout est fait, ou la liste de ce qui
+          // manque (chaque ligne est cliquable) + un bouton pour y remonter.
+          const recap = document.createElement("div");
+          recap.className = "chk-recap " + (missing.length === 0 ? "is-ok" : "is-todo");
+          const rt = document.createElement("div");
+          rt.className = "chk-recap-title";
+          rt.textContent = missing.length === 0
+            ? "✓ TOUT EST FAIT : TU PEUX COPIER LE COMMENTAIRE WATT"
+            : "IL MANQUE " + missing.length + (missing.length > 1 ? " ÉTAPES" : " ÉTAPE");
+          recap.appendChild(rt);
+          if (missing.length > 0) {
+            const list = document.createElement("div");
+            list.className = "chk-recap-list";
+            missing.forEach((m) => {
+              const b = document.createElement("button");
+              b.type = "button";
+              b.className = "chk-recap-item";
+              b.textContent = (m.section ? m.section + " — " : "") + m.label;
+              b.addEventListener("click", () => goToStep(m.id));
+              list.appendChild(b);
+            });
+            recap.appendChild(list);
+            const up = document.createElement("button");
+            up.type = "button";
+            up.className = "chk-recap-go";
+            up.textContent = "↑ REMONTER À LA PREMIÈRE ÉTAPE MANQUANTE";
+            up.addEventListener("click", () => goToStep(missing[0].id));
+            recap.appendChild(up);
+          }
+          checklistContainer.appendChild(recap);
         }
 
         // Nombre d'étapes restantes dans la checklist affichée (0 si aucune).
