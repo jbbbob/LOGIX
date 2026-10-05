@@ -1465,6 +1465,10 @@
         background: var(--todo-wash);
       }
 
+      .chk-fields .card-input.is-large {
+        width: 22rem;
+      }
+
       /* Adresse sur plusieurs lignes : champ assez large pour une adresse. */
       .chk-fields .card-textarea {
         min-width: 18rem;
@@ -1530,6 +1534,20 @@
         border-radius: var(--r-md);
         background: var(--surface-input);
         border: 1px solid var(--border);
+      }
+
+      .chk-copy-rappel {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 7px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--todo);
+        background: var(--todo-wash);
+        color: var(--todo);
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        white-space: nowrap;
       }
 
       .chk-copy-label {
@@ -2366,12 +2384,26 @@
           // 7. Phrase WATT : uniquement les départements réellement interrogés,
           //    avec l'accord singulier / pluriel.
           vars["dcd-notaires-demande"] = deptsInterroges.length > 0 ? "oui" : "non";
-          vars["phrase-chambres"] =
-            deptsInterroges.length > 1
-              ? "Chambres des notaires du " + deptsInterroges.join(" et du ") +
-                " interrogées et justificatifs rattachés à l'affaire"
-              : "Chambre des notaires du " + (deptsInterroges[0] || "") +
-                " interrogée et justificatif rattaché à l'affaire";
+          // Acte de décès (GED) joint au SCRIBE de la chambre interdépartementale :
+          // mentionné dans la phrase, pour les départements concernés.
+          const pjActe =
+            vars["dcd-acte-ged"] === "oui" &&
+            checkState["dcd-notaire-autre-pj-acte"] === true &&
+            checkState["dcd-notaire-autre-demande"] === true;
+          const deptsAvecPj = pjActe ? deptsInterroges.filter((d) => deptsAutres.includes(d)) : [];
+          const pluriel = deptsInterroges.length > 1;
+          const debut = pluriel
+            ? "Chambres des notaires du " + deptsInterroges.join(" et du ") + " interrogées"
+            : "Chambre des notaires du " + (deptsInterroges[0] || "") + " interrogée";
+          const fin = pluriel ? "justificatifs rattachés à l'affaire" : "justificatif rattaché à l'affaire";
+          if (deptsAvecPj.length === 0) {
+            vars["phrase-chambres"] = debut + " et " + fin;
+          } else if (deptsAvecPj.length === deptsInterroges.length) {
+            vars["phrase-chambres"] = debut + ", acte de décès joint, " + fin;
+          } else {
+            vars["phrase-chambres"] =
+              debut + " (acte de décès joint pour le " + deptsAvecPj.join(" et le ") + "), " + fin;
+          }
         }
 
         function getDeepestNode() {
@@ -3261,7 +3293,13 @@
                   type: "check",
                   id: "dcd-notaire-autre-demande",
                   label: "DEMANDE FAITE : FORMULAIRE EN LIGNE (IMPRIMÉ EN PDF ET RATTACHÉ), SINON SCRIBE PAR MAIL OU COURRIER",
-                  copie: autre.modeleScribe ? [{ label: "MODÈLE SCRIBE", texte: autre.modeleScribe }] : null,
+                  copie: autre.modeleScribe
+                    ? [{
+                        label: "MODÈLE SCRIBE",
+                        texte: autre.modeleScribe,
+                        rappel: vars["dcd-acte-ged"] === "oui" ? "+ JOINDRE L'ACTE" : "",
+                      }]
+                    : null,
                 },
                 // Acte de décès présent en GED : on le joint au SCRIBE envoyé
                 // à la chambre (par mail ou par courrier).
@@ -3331,6 +3369,14 @@
           // Même exception que resultats[].texte : HTML riche venant de data.js,
           // les valeurs saisies y sont déjà échappées par substituteTemplate.
           txt.innerHTML = html;
+          // Petit rappel orange collé au texte (ex : « + JOINDRE L'ACTE »).
+          if (copie.rappel) {
+            const rap = document.createElement("span");
+            rap.className = "chk-copy-rappel";
+            rap.textContent = copie.rappel;
+            txt.appendChild(document.createTextNode(" "));
+            txt.appendChild(rap);
+          }
           wrap.appendChild(txt);
           const btn = document.createElement("button");
           btn.type = "button";
@@ -3381,7 +3427,11 @@
             lbl.className = "leaf-input-label";
             lbl.textContent = input.label || "";
             field.appendChild(lbl);
-            field.appendChild(createFieldElement(input));
+            const el = createFieldElement(input);
+            // large: true → champ plus large (noms, adresses…) pour lire et
+            // corriger toute la saisie sans qu'elle soit coupée.
+            if (input.large) el.classList.add("is-large");
+            field.appendChild(el);
             wrap.appendChild(field);
           });
           return wrap;
