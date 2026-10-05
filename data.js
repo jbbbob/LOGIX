@@ -1635,7 +1635,7 @@ const dcd1ereEnqueteInconnusLeaf = {
           { type: "question", id: "dcd-dlp-proche", label: "DLP PROCHE (MOINS DE 6 MOIS) ?" },
           {
             type: "alerte",
-            niveau: "warning",
+            niveau: "danger",
             if: { "dcd-dlp-proche": ["oui"] },
             texte: "DLP PROCHE : NE PAS RÉORIENTER. PASSER DIRECTEMENT À LA CODIFICATION DE L'ANV (ÉTAPE RELANCE).",
           },
