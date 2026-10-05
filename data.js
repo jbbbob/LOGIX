@@ -1745,7 +1745,7 @@ const dcd1ereEnqueteInconnusLeaf = {
                 label: "DESTINATAIRE SAISI À LA MAIN ET COURRIER ENVOYÉ",
                 champs: [
                   { id: "nom-defunt", label: "NOM ET PRÉNOM DU DÉFUNT", type: "text", placeholder: "M. DUPONT JEAN" },
-                  { id: "adresse-defunt", label: "DERNIÈRE ADRESSE CONNUE", type: "textarea", placeholder: "15 RUE DE PARIS 75005 PARIS (une ou deux lignes)" },
+                  { id: "adresse-defunt", label: "DERNIÈRE ADRESSE CONNUE", type: "textarea", placeholder: "Ex : 15 RUE DE PARIS 75005 PARIS" },
                 ],
                 copie: [
                   {
