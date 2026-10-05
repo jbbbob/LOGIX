@@ -3263,6 +3263,15 @@
                   label: "DEMANDE FAITE : FORMULAIRE EN LIGNE (IMPRIMÉ EN PDF ET RATTACHÉ), SINON SCRIBE PAR MAIL OU COURRIER",
                   copie: autre.modeleScribe ? [{ label: "MODÈLE SCRIBE", texte: autre.modeleScribe }] : null,
                 },
+                // Acte de décès présent en GED : on le joint au SCRIBE envoyé
+                // à la chambre (par mail ou par courrier).
+                ...(vars["dcd-acte-ged"] === "oui"
+                  ? [{
+                      type: "check",
+                      id: "dcd-notaire-autre-pj-acte",
+                      label: "ACTE DE DÉCÈS (GED) JOINT EN PIÈCE JOINTE DU SCRIBE",
+                    }]
+                  : []),
                 {
                   type: "check",
                   id: "dcd-notaire-autre-ar",
