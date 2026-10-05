@@ -193,6 +193,27 @@
         --danger-border: rgba(240, 138, 138, 0.5);
       }
 
+      /* En mode NUIT, les boutons de choix (catégories, motifs, toggles comme
+         AMIABLE RELDET, OUI / NON…) gardent l'apparence du mode JOUR : fond
+         crème, et une fois cliqués le MÊME vert canard qu'en journée.
+         On redonne simplement à ces boutons les jetons du mode jour.
+         --accent-wash-2 est ici opaque : c'est la teinte exacte qu'a un bouton
+         sélectionné en journée (vert canard à 15 % sur carte blanche). */
+      :root[data-theme="nuit"] .context-option {
+        --surface-raised: #f4ede1;
+        --surface-hover: #ebe2d2;
+        --ink: #2b2419;
+        --muted: #7a6c58;
+        --muted-strong: #1a140c;
+        --accent: #0f766e;
+        --accent-strong: #0b5e58;
+        --accent-wash-2: #dbe9e3;
+        --border: rgba(80, 60, 30, 0.35);
+        --border-strong: rgba(15, 118, 110, 0.6);
+        --hairline: rgba(80, 60, 30, 0.11);
+        --todo: #b45309;
+      }
+
       /* ---------- 2. Reset minimal + globales --------------------------------- */
       *,
       *::before,
