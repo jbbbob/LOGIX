@@ -1574,6 +1574,8 @@ const reexecutionBranch = {
 //                                                     DANS l'étape, au fil du
 //                                                     traitement
 //   { type: "champs", champs: [...] }               → champs seuls, sans case
+//   { type: "groupe", label, items: [...] }        → carte titrée regroupant
+//                                                     plusieurs étapes
 //   { type: "chambres" }                            → une carte par chambre des
 //                                                     notaires selon les départements
 // Tous acceptent un "if" (mêmes règles que les resultats).
@@ -1587,6 +1589,8 @@ const reexecutionBranch = {
 //   {{chambre-<id>}}, {{chambre-autre}}, {{depts-autres}}, {{phrase-chambres}}
 //   {{mairie-deces}}      = "la mairie de <lieu>" ou "la mairie du lieu de décès"
 //   {{dcd-notaires-demande}} = "oui" si au moins une demande notaire est cochée
+//   {{nom-defunt-maj}}, {{adresse-defunt-maj}} = saisies du courrier aux
+//                           héritiers, en MAJUSCULES (repère entre crochets si vide)
 // Chaque case cochée vaut "oui" dans les conditions (par son id).
 // ============================================================================
 
@@ -1617,7 +1621,7 @@ const dcd1ereEnqueteInconnusLeaf = {
     ],
     chambreAutre: {
       url: "https://www.csn.notaires.fr/fr/conseil-regional-notaire-val-doise-eure-et-loir-hauts-de-seine-yvelines-95-28-92-78",
-      modeleScribe: "Succession - Chambre des notaires - Recherche coordonnées - réf. BNC &lt;&lt; | 9453 &gt;&gt;",
+      modeleScribe: "SUCCESSION - CHAMBRE DES NOTAIRES - RECHERCHE COORDONNÉES - RÉF. BNC &lt;&lt; | 9453 &gt;&gt;",
     },
 
     sections: [
@@ -1720,16 +1724,35 @@ const dcd1ereEnqueteInconnusLeaf = {
         titre: "3. COURRIERS SCRIBE",
         if: { "traitement-stop": ["non"] },
         items: [
+          // Courrier aux héritiers : une carte avec les 3 gestes dans l'ordre.
+          // Le bloc DESTINATAIRE se remplit tout seul avec le nom et l'adresse
+          // saisis (rien n'est enregistré : tout part au F5 / RECOMMENCER).
           {
-            type: "check",
-            id: "dcd-scribe-heritiers",
-            label: "COURRIER AUX HÉRITIERS ENVOYÉ",
-            aide: "Dans SCRIBE, saisir à la main la dernière adresse connue du cotisant, précédée de la formule ADRESSE ci-dessous (en majuscules ou en minuscules).",
-            copie: [
-              { label: "MODÈLE", texte: "Succession - Heritiers" },
-              // Deux casses : chacun colle celle qui correspond à son usage.
-              { label: "ADRESSE MAJ", texte: "À L'ATTENTION DES HÉRITIERS DE" },
-              { label: "ADRESSE MIN", texte: "À l'attention des héritiers de" },
+            type: "groupe",
+            label: "COURRIER AUX HÉRITIERS",
+            items: [
+              { type: "check", id: "dcd-scribe-ouvrir", label: "OUVRIR SCRIBE" },
+              {
+                type: "check",
+                id: "dcd-scribe-modele",
+                label: "CHOISIR LE MODÈLE",
+                copie: [{ label: "MODÈLE", texte: "SUCCESSION - HERITIERS" }],
+              },
+              {
+                type: "check",
+                id: "dcd-scribe-heritiers",
+                label: "DESTINATAIRE SAISI À LA MAIN ET COURRIER ENVOYÉ",
+                champs: [
+                  { id: "nom-defunt", label: "NOM ET PRÉNOM", type: "text", placeholder: "M. DUPONT JEAN" },
+                  { id: "adresse-defunt", label: "DERNIÈRE ADRESSE CONNUE", type: "textarea", placeholder: "15 RUE DE PARIS\n75005 PARIS" },
+                ],
+                copie: [
+                  {
+                    label: "DESTINATAIRE",
+                    texte: "À L'ATTENTION DES HÉRITIERS DE<br>{{nom-defunt-maj}}<br>{{adresse-defunt-maj}}",
+                  },
+                ],
+              },
             ],
           },
           {
@@ -1737,7 +1760,7 @@ const dcd1ereEnqueteInconnusLeaf = {
             id: "dcd-mairie",
             if: { "dcd-acte-ged": ["non", ""] },
             label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
-            copie: [{ label: "MODÈLE", texte: "Recherche cotisant - Demande à partenaire" }],
+            copie: [{ label: "MODÈLE", texte: "RECHERCHE COTISANT - DEMANDE À PARTENAIRE" }],
           },
         ],
       },
@@ -1808,7 +1831,7 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "check",
             id: "dcd-esdc",
             label: "ESDC ÉCRIT AVEC LE CODE DCD",
-            copie: [{ texte: "RECHERCHE HERITIERS : 1ère enquête" }],
+            copie: [{ texte: "RECHERCHE HERITIERS : 1ÈRE ENQUÊTE" }],
           },
           {
             type: "check",
@@ -1830,7 +1853,7 @@ const dcd1ereEnqueteInconnusLeaf = {
   resultats: [
     // Chaque ligne = un fragment qui n'existe que si l'étape est cochée.
     // Le composite les assemble dans l'ordre, une ligne par étape faite.
-    { id: "dcd-watt-titre", type: "fragment", texte: "RECHERCHE HERITIERS : 1ère enquête" },
+    { id: "dcd-watt-titre", type: "fragment", texte: "RECHERCHE HERITIERS : 1ÈRE ENQUÊTE" },
     {
       id: "dcd-watt-adm",
       type: "fragment",
@@ -1847,7 +1870,7 @@ const dcd1ereEnqueteInconnusLeaf = {
       id: "dcd-watt-esdc",
       type: "fragment",
       if: { "dcd-esdc": ["oui"] },
-      texte: "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : 1ère enquête",
+      texte: "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : 1ÈRE ENQUÊTE",
     },
     {
       id: "dcd-watt-sngi",

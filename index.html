@@ -1446,9 +1446,8 @@
          (filet cyan à gauche, texte clair, taille des libellés). */
       .chk-aide {
         font-size: var(--fs-label);
-        letter-spacing: 0.02em;
+        letter-spacing: 0.04em;
         color: var(--ink);
-        text-transform: none;
         line-height: 1.45;
         padding: 2px 0 2px 9px;
         border-left: 2px solid var(--accent);
@@ -1463,6 +1462,12 @@
         border: 1px dashed var(--todo);
         border-radius: var(--r-md);
         background: var(--todo-wash);
+      }
+
+      /* Adresse sur plusieurs lignes : champ assez large pour une adresse. */
+      .chk-fields .card-textarea {
+        min-width: 18rem;
+        min-height: 4.6rem;
       }
 
       .chk-fields.is-filled {
@@ -2292,6 +2297,14 @@
           vars["reroutage-gcc"] = motifReroutage && !bloque ? "oui" : "non";
           vars["traitement-stop"] =
             vars["reroutage-gcc"] === "oui" || vars["dcd-dlp-proche"] === "oui" ? "oui" : "non";
+
+          // 5 bis. Courrier aux héritiers : nom et adresse en MAJUSCULES pour
+          //        le bloc DESTINATAIRE à copier. Un repère entre crochets
+          //        tant que le champ est vide (on voit ce qu'il manque).
+          const nomDefunt = String(nodeInputs["nom-defunt"] || "").trim();
+          const adresseDefunt = String(nodeInputs["adresse-defunt"] || "").trim();
+          vars["nom-defunt-maj"] = nomDefunt ? nomDefunt.toUpperCase() : "[NOM ET PRÉNOM]";
+          vars["adresse-defunt-maj"] = adresseDefunt ? adresseDefunt.toUpperCase() : "[DERNIÈRE ADRESSE CONNUE]";
 
           // 5. Mairie du lieu de décès (phrase du commentaire WATT).
           const lieu = String(nodeInputs["lieu-deces"] || "").trim();
