@@ -1744,6 +1744,11 @@
         content: "⛔ ";
       }
 
+      /* Bandeau orange = attention / action à faire (pas un arrêt). */
+      .chk-alert.is-warning > span::before {
+        content: "⚠ ";
+      }
+
       .chk-tag {
         font-size: var(--fs-micro);
         font-weight: 700;
@@ -2226,8 +2231,12 @@
       }
 
       /* Groupe terminé : bandeau titre vert, comme les lignes cochées. */
-      .chk-group.is-done > .chk-group-head {
+      .chk-group.is-done > .chk-group-head,
+      .chk-group.is-done > .chk-aide {
         background: #dbe9e3;
+        --accent: #0f766e;
+        --surface: #fffdf8;
+        --surface-raised: #f4ede1;
         --accent-strong: #0b5e58;
         --muted: #4f6560;
         --ink: #2b2419;
@@ -2247,7 +2256,8 @@
       }
 
       .chk-group > .chk-aide {
-        padding: 6px 10px 0;
+        padding: 6px 13px;
+        border-left: 0;
       }
 
       .chk-group .chk-row {
@@ -4778,7 +4788,9 @@
         function renderChecklistItem(item, vars, parent, sectionId) {
           if (item.type === "champs") {
             const row = document.createElement("div");
-            row.className = "chk-row chk-fields-row";
+            // Tous les champs remplis : ligne verte, comme une étape faite.
+            const remplis = (item.champs || []).length > 0 && champsRemplis(item);
+            row.className = "chk-row chk-fields-row" + (remplis ? " is-checked" : "");
             row.appendChild(makeChecklistFields(item.champs || []));
             parent.appendChild(row);
             return;

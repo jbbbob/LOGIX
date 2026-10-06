@@ -948,7 +948,7 @@ anvBranch.suite.checklist = {
         },
         {
           type: "alerte",
-          niveau: "danger",
+          niveau: "warning",
           if: { dretaf: ["oui"] },
           texte: "DRETAF à faire pour chaque contrainte.",
         },
