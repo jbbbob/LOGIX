@@ -4845,6 +4845,15 @@
 
         if (backBtn) backBtn.addEventListener("click", goBackOneStep);
 
+        // Accès discret à l'ATELIER TUTO : raccourci Alt + Maj + T (aucun
+        // bouton visible). Ouvre atelier-tuto.html dans un nouvel onglet.
+        document.addEventListener("keydown", (e) => {
+          if (e.altKey && e.shiftKey && !e.ctrlKey && e.key.toLowerCase() === "t") {
+            e.preventDefault();
+            window.open("atelier-tuto.html", "_blank");
+          }
+        });
+
         // Bouton JOUR / NUIT : bascule l'attribut data-theme de <html> et
         // retient le choix (voir le petit script en tête de page).
         const themeBtn = document.getElementById("themeBtn");
