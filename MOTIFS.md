@@ -202,28 +202,21 @@
     - [composite] `commentaire-watt-pl-16` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
       - combine: carence-pl-16 + suspen-line-pl-16 + dretaf-line-pl-16
 - *toggles* :
-  - ☑ **AMIABLE RELDET** (`amiable-reldet`)
-    - *VERSEMENT RÉCENT* :
-      - `verse-oui` — **OUI**
-        - *inputs* : ecritures(textarea)
-        - *RAISON* :
-          - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
-            - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>{{phrase-frustratoires}} - Pas d'ANV car {{versements-nom}} - Tentative de recouvrement à l'a … »
-          - `raison-insolvable` — **INSOLVABLE**
-            - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite {{versements-suite}} -  … »
-          - `raison-pv-659` — **PV 659**
-            - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée - Pas d'AN … »
-          - `raison-md-psa` — **MD PSA**
-            - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative  … »
-      - `verse-non` — **NON**
-        - *RAISON* :
-          - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
-            - [simple] `watt-frustr-sans-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{phrase-frustratoires}} - Pas d'ANV car aucun justificatif - Tentative de recouvrement à l'amiable {{phrase-reldet}} »
+  - ☑ **VERSEMENT RÉCENT** (`amiable-reldet`)
+    - *inputs* : ecritures(textarea)
+    - *RAISON* :
+      - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
+        - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
+          - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>{{phrase-frustratoires}} - Pas d'ANV car {{versements-nom}} - Tentative de recouvrement à l'a … »
+      - `raison-insolvable` — **INSOLVABLE**
+        - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
+          - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite {{versements-suite}} -  … »
+      - `raison-pv-659` — **PV 659**
+        - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
+          - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée - Pas d'AN … »
+      - `raison-md-psa` — **MD PSA**
+        - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
+          - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative  … »
     - *topQuestions* : COMPTE EN LIGNE OU MAIL ? (`compte-en-ligne`)
   - ☑ **DETTE NON EXIGIBLE** (`dette-non-exigible`)
     - *TYPE* :
@@ -348,8 +341,8 @@
 ## Stats
 
 - Catégories : 4
-- Choix totaux (tous niveaux) : 39
+- Choix totaux (tous niveaux) : 36
 - Inputs : 7
 - Toggles : 2
 - TopQuestions : 3
-- Résultats (blocs texte) : 105
+- Résultats (blocs texte) : 104

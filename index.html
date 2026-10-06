@@ -3270,6 +3270,7 @@
           if (inlineRootNode && Array.isArray(inlineRootNode.toggles)) {
             inlineRootNode.toggles.forEach((toggle) => {
               if (activeToggleStack.some((e) => e.toggle.id === toggle.id)) return;
+              if (toggle.cache) return; // ouvert seulement par un bouton de la checklist
               // Activation : push dans le stack et swap inlineRootNode
               const card = buildToggleCard(toggle, false, () => activateToggle(toggle));
               togglesContainer.appendChild(card);

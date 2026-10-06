@@ -214,8 +214,8 @@ const anv12LeafConfig = {
 // ============================================================================
 
 // Helper interne : feuille pour un cas "VERSEMENTS RÉCENTS = OUI" + raison.
-// L'input ÉCRITURES est défini au niveau parent (verse-oui.suite) pour qu'il
-// apparaisse dès le clic sur OUI, sans attendre la sélection de la raison.
+// L'input ÉCRITURES est défini au niveau du bouton VERSEMENT RÉCENT pour qu'il
+// apparaisse avant même la sélection de la raison.
 function makeVersementsLeaf(phraseFin) {
   return {
     resultats: [
@@ -237,7 +237,7 @@ function makeVersementsLeaf(phraseFin) {
 }
 
 // Input ÉCRITURES (textarea avec nettoyage auto au paste).
-// Réutilisé au niveau verse-oui pour qu'il apparaisse dès la sélection OUI.
+// Affiché dès l'ouverture de VERSEMENT RÉCENT, avant le choix de la raison.
 const ecrituresInput = {
   id: "ecritures",
   label: "ÉCRITURES",
@@ -245,23 +245,6 @@ const ecrituresInput = {
   transform: "ecritures-compte",
   placeholder: "Coller les écritures du compte (Ctrl+V) — sera nettoyé automatiquement",
 };
-
-// Helper interne : feuille pour le cas FRAIS FRUSTRATOIRES sans versements.
-// Pas de textarea, tout sur une ligne (ni "plusieurs versements récents",
-// ni double saut avant la phrase finale — collé dans le préambule).
-function makeFrustrSansVersementsLeaf() {
-  return {
-    resultats: [
-      {
-        id: "watt-frustr-sans-versements",
-        label: "COMMENTAIRE AFFAIRE WATT",
-        type: "simple",
-        texte:
-          "Compte {{compte-display}} - Pas de risque de prescription - {{phrase-frustratoires}} - Pas d'ANV car aucun justificatif - Tentative de recouvrement à l'amiable {{phrase-reldet}}",
-      },
-    ],
-  };
-}
 
 // ============================================================================
 // Configurations pour le MOTIF 13 (DCD - Décédé), 2 sous-motifs : 1ÈRE ENQUÊTE
@@ -761,57 +744,29 @@ const raisonChoixAvecVersements = [
   },
 ];
 
-// Sous-niveau RAISON quand VERSEMENT = NON : seul FRAIS FRUSTRATOIRES est
-// applicable dans ce cas (les autres raisons impliquent des versements).
-const raisonChoixSansVersements = [
-  {
-    id: "raison-frustratoires",
-    label: "FRAIS FRUSTRATOIRES",
-    description: "",
-    suite: makeFrustrSansVersementsLeaf(),
-  },
-];
-
-// AMIABLE RELDET = toggle indépendant au-dessus du parcours ANV.
+// VERSEMENT RÉCENT (ex « AMIABLE RELDET ») = toggle au-dessus du parcours ANV,
+// ouvert aussi par le bouton FAIRE RELDET du mode opératoire.
 // Quand DÉSACTIVÉ (défaut) : parcours normal DATE + MOTIF.
-// Quand ACTIVÉ : on entre dans la sous-cascade VERSEMENT RÉCENT > RAISON.
+// Quand ACTIVÉ : ÉCRITURES + RAISON (le versement récent est acquis).
 // Implémenté via le champ "toggles" sur anvBranch.suite (cf moteur dans index.html).
 const amiableReldetToggle = {
   id: "amiable-reldet",
-  label: "AMIABLE RELDET",
+  label: "VERSEMENT RÉCENT",
   whenOn: {
-    choicesTitle: "VERSEMENT RÉCENT",
-    choix: [
-      {
-        id: "verse-oui",
-        label: "OUI",
-        description: "",
-        suite: {
-          // Le textarea ÉCRITURES apparaît dès la sélection OUI,
-          // pour que l'utilisateur puisse coller pendant qu'il choisit la raison.
-          inputs: [ecrituresInput],
-          choicesTitle: "RAISON",
-          choix: raisonChoixAvecVersements,
-        },
-      },
-      {
-        id: "verse-non",
-        label: "NON",
-        description: "",
-        suite: {
-          choicesTitle: "RAISON",
-          choix: raisonChoixSansVersements,
-        },
-      },
-    ],
+    // Plus de question OUI / NON : ce bouton = versement récent.
+    // ÉCRITURES à coller, puis la RAISON.
+    inputs: [ecrituresInput],
+    choicesTitle: "RAISON",
+    choix: raisonChoixAvecVersements,
   },
 };
 
 anvBranch.suite.toggles = [amiableReldetToggle];
 
-// Arrivée depuis la vérification « versement récent » de l'ANV : en activant
-// AMIABLE RELDET, VERSEMENT RÉCENT = OUI est déjà choisi (recliquable).
-amiableReldetToggle.whenOn.autoChoix = { id: "verse-oui", if: { "versement-recent": ["oui"] } };
+// Plus de boutons en haut de l'ANV : on suit le mode opératoire, qui ouvre ces
+// parcours avec ses boutons « FAIRE RELDET » (cache : pas affiché en haut).
+amiableReldetToggle.cache = true;
+
 
 // ============================================================================
 // MODE OPÉRATOIRE ANV, de A à Z (même moteur que la DCD).
@@ -890,7 +845,7 @@ anvBranch.suite.checklist = {
           niveau: "danger",
           stop: true,
           if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
-          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE RELDET » juste au-dessus (VERSEMENT RÉCENT = OUI sera déjà choisi).",
+          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE RELDET » juste au-dessus.",
         },
         {
           type: "alerte",
@@ -1201,6 +1156,7 @@ const detteNonExigibleToggle = {
 
 // DETTE NON EXIGIBLE : bouton à part en haut de l'ANV (plus dans AMIABLE RELDET).
 anvBranch.suite.toggles.push(detteNonExigibleToggle);
+detteNonExigibleToggle.cache = true;
 
 // Question optionnelle "COMPTE EN LIGNE OU MAIL ?" affichée dans la rangée des toggles,
 // entre AMIABLE RELDET et DETTE NON EXIGIBLE. Par défaut non répondue (= comportement
