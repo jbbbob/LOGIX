@@ -5102,7 +5102,11 @@
               line.appendChild(tag);
             }
             const link = makeChecklistLink(item.lien);
-            if (link) line.appendChild(link);
+            // lienAvant : le bouton du site vient en premier (« OUVRIR LE SITE ↗ puis … »).
+            if (link && item.lienAvant) {
+              line.insertBefore(link, lbl);
+              lbl.textContent = "puis " + lbl.textContent;
+            } else if (link) line.appendChild(link);
             body.appendChild(line);
             if (item.aide) body.appendChild(makeChecklistAide(fillPlain(item.aide, vars)));
             if (Array.isArray(item.champs) && item.champs.length > 0) {
