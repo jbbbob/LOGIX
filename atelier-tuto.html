@@ -51,6 +51,7 @@
   .btn.red { color: #b4232f; }
   .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .tools .wide { grid-column: span 2; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
   .kbd { display: inline-block; margin-left: 4px; padding: 0 4px; border-radius: 3px; border: 1px solid var(--border); font-size: 7.5pt; color: var(--muted); letter-spacing: 0; }
   .tools3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .sides { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
@@ -110,6 +111,12 @@
         </div>
         <label class="lbl" for="taille">Taille des repères : <span id="tailleVal"></span></label>
         <input type="range" id="taille" min="40" max="160" step="5" value="100">
+        <label class="lbl">Couleur des repères</label>
+        <div class="tools3" id="couleurs">
+          <button class="btn on" data-color="rouge"><span class="sw" style="background:#e11d48"></span>Rouge</button>
+          <button class="btn" data-color="bleu"><span class="sw" style="background:#2563eb"></span>Bleu</button>
+          <button class="btn" data-color="jaune"><span class="sw" style="background:#eab308"></span>Jaune</button>
+        </div>
         <label class="lbl" for="label">Étiquette du cadre / cercle</label>
         <input type="text" id="label" placeholder="ex : CLIQUER SUR CO">
         <div class="presets" id="presets"></div>
@@ -182,6 +189,14 @@
 (function () {
   "use strict";
   const RED = "#e11d48";
+  // Couleurs des repères : trait / texte de l'étiquette / texte sur pastille.
+  const COULEURS = {
+    rouge: { main: "#e11d48", text: "#b4122f", on: "#ffffff" },
+    bleu: { main: "#2563eb", text: "#1e40af", on: "#ffffff" },
+    jaune: { main: "#eab308", text: "#7a5200", on: "#3d2a00" },
+  };
+  const coul = (a) => COULEURS[(a && a.color) || "rouge"] || COULEURS.rouge;
+  let couleur = "rouge";
   const PRESETS = ["CLIQUER ICI", "CLIQUER SUR …", "VALIDER", "ONGLET …", "SAISIR …", "COCHER", "SÉLECTIONNER …", "COPIER …", "RECHERCHER …"];
 
   // ------------------------------------------------------------------
@@ -258,6 +273,7 @@
     zones = JSON.parse(JSON.stringify(p.zones || []));
     annots = p.withAnnots ? JSON.parse(JSON.stringify(p.annots || [])) : [];
     withAnnotsIn.checked = !!p.withAnnots;
+    if (p.taille) { tailleIn.value = p.taille; store.set("atelier-taille", p.taille); tailleLabel(); }
     history = []; sel = null; hover = null; dirty = false;
     showModelState();
   }
@@ -268,6 +284,7 @@
       zones: JSON.parse(JSON.stringify(zones)),
       annots: withAnnotsIn.checked ? JSON.parse(JSON.stringify(annots)) : [],
       withAnnots: withAnnotsIn.checked,
+      taille: +tailleIn.value,          // taille des repères propre à ce modèle
     };
     store.set("atelier-profils", profiles);
     store.set("atelier-profil-courant", current);
@@ -281,7 +298,7 @@
     if (!box) return;
     box.innerHTML = dirty
       ? "<div class='model-state is-dirty'>● Changements non validés pour « " + current + " »</div>"
-      : "<div class='model-state is-ok'>✓ Modèle « " + current + " » : " + nz + " zone(s)" + (p.withAnnots ? ", " + na + " repère(s)" : ", floutage seul") + "</div>";
+      : "<div class='model-state is-ok'>✓ Modèle « " + current + " » : " + nz + " zone(s)" + (p.withAnnots ? ", " + na + " repère(s)" : ", floutage seul") + (p.taille ? ", repères " + (p.taille < 75 ? "petits" : p.taille <= 120 ? "moyens" : "grands") : "") + "</div>";
   }
   profSel.addEventListener("change", () => {
     current = profSel.value; store.set("atelier-profil-courant", current);
@@ -298,7 +315,6 @@
   document.getElementById("validateModel").addEventListener("click", validateModel);
   document.getElementById("applyModel").addEventListener("click", () => { loadProfile(); draw(); toast("MODÈLE « " + current + " » RÉAPPLIQUÉ"); });
   withAnnotsIn.addEventListener("change", () => { dirty = true; showModelState(); });
-  renderProfiles(); loadProfile();
 
   // ------------------------------------------------------------------
   // Flou
@@ -307,8 +323,10 @@
   tailleIn.value = store.get("atelier-taille", 100);
   const tailleVal = document.getElementById("tailleVal");
   function tailleLabel() { const t = +tailleIn.value; tailleVal.textContent = t < 75 ? "PETIT" : t <= 120 ? "MOYEN" : "GRAND"; }
-  tailleIn.addEventListener("input", () => { store.set("atelier-taille", +tailleIn.value); tailleLabel(); draw(); });
+  tailleIn.addEventListener("input", () => { store.set("atelier-taille", +tailleIn.value); tailleLabel(); saveProfile(); draw(); });
   tailleLabel();
+  // Chargement du modèle choisi (après le curseur de taille, qu'il peut régler).
+  renderProfiles(); loadProfile();
 
   const forceIn = document.getElementById("force");
   forceIn.value = store.get("atelier-force", 16);
@@ -339,9 +357,9 @@
   function U() { return img.width / 1000 * (+tailleIn.value / 100); }
   function px(r) { return { x: r.x * img.width, y: r.y * img.height, w: r.w * img.width, h: r.h * img.height }; }
 
-  function arrow(c, x1, y1, x2, y2, u, head) {
+  function arrow(c, x1, y1, x2, y2, u, head, col) {
     const ang = Math.atan2(y2 - y1, x2 - x1), hl = head * u;
-    c.strokeStyle = RED; c.fillStyle = RED; c.lineWidth = 4 * u; c.lineCap = "round";
+    c.strokeStyle = col || RED; c.fillStyle = col || RED; c.lineWidth = 4 * u; c.lineCap = "round";
     c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(ang) * hl * 0.8, y2 - Math.sin(ang) * hl * 0.8); c.stroke();
     c.beginPath(); c.moveTo(x2, y2);
     c.lineTo(x2 - hl * Math.cos(ang - 0.45), y2 - hl * Math.sin(ang - 0.45));
@@ -377,10 +395,11 @@
     else if (s === "bottom") { from = { x: lc.x, y: by }; to = { x: r.x + r.w / 2, y: r.y + r.h + 4 * u }; }
     else if (s === "left") { from = { x: bx + bw, y: lc.y }; to = { x: r.x - 4 * u, y: r.y + r.h / 2 }; }
     else { from = { x: bx, y: lc.y }; to = { x: r.x + r.w + 4 * u, y: r.y + r.h / 2 }; }
-    arrow(c, from.x, from.y, to.x, to.y, u, 18);
-    c.fillStyle = "#ffffff"; c.strokeStyle = RED; c.lineWidth = 3 * u;
+    const k = coul(a);
+    arrow(c, from.x, from.y, to.x, to.y, u, 18, k.main);
+    c.fillStyle = "#ffffff"; c.strokeStyle = k.main; c.lineWidth = 3 * u;
     c.beginPath(); c.rect(bx, by, bw, bh); c.fill(); c.stroke();
-    c.fillStyle = "#b4122f"; c.textBaseline = "middle";
+    c.fillStyle = k.text; c.textBaseline = "middle";
     c.fillText(text, bx + pad, by + bh / 2 + 1);
     c.textBaseline = "alphabetic";
     return { x: bx, y: by, w: bw, h: bh };
@@ -444,19 +463,19 @@
       let lb = null;
       if (a.kind === "rect" || a.kind === "ellipse") {
         const r = px(a);
-        c.strokeStyle = RED; c.lineWidth = 4 * u;
+        c.strokeStyle = coul(a).main; c.lineWidth = 4 * u;
         c.beginPath();
         if (a.kind === "rect") c.rect(r.x, r.y, r.w, r.h);
         else c.ellipse(r.x + r.w / 2, r.y + r.h / 2, Math.max(1, r.w / 2), Math.max(1, r.h / 2), 0, 0, Math.PI * 2);
         c.stroke();
         lb = drawLabel(c, a, r, u);
       } else if (a.kind === "arrow") {
-        arrow(c, a.x1 * img.width, a.y1 * img.height, a.x2 * img.width, a.y2 * img.height, u, 24);
+        arrow(c, a.x1 * img.width, a.y1 * img.height, a.x2 * img.width, a.y2 * img.height, u, 24, coul(a).main);
       } else if (a.kind === "num") {
         const x = a.x * img.width, y = a.y * img.height, rad = 20 * u;
-        c.fillStyle = RED; c.beginPath(); c.arc(x, y, rad, 0, Math.PI * 2); c.fill();
+        c.fillStyle = coul(a).main; c.beginPath(); c.arc(x, y, rad, 0, Math.PI * 2); c.fill();
         c.strokeStyle = "#ffffff"; c.lineWidth = 3 * u; c.stroke();
-        c.fillStyle = "#ffffff"; c.font = "bold " + Math.round(24 * u) + "px Arial"; c.textAlign = "center"; c.textBaseline = "middle";
+        c.fillStyle = coul(a).on; c.font = "bold " + Math.round(24 * u) + "px Arial"; c.textAlign = "center"; c.textBaseline = "middle";
         c.fillText(String(a.n), x, y + 1); c.textAlign = "left"; c.textBaseline = "alphabetic";
       }
       labels.push(lb);
@@ -475,11 +494,11 @@
     if (drag) {
       const u = U();
       if (drag.kind === "arrow") {
-        arrow(ctx, drag.x1 * img.width, drag.y1 * img.height, drag.x2 * img.width, drag.y2 * img.height, u, 24);
+        arrow(ctx, drag.x1 * img.width, drag.y1 * img.height, drag.x2 * img.width, drag.y2 * img.height, u, 24, COULEURS[couleur].main);
       } else {
         const r = px(drag);
         ctx.setLineDash([6 * u, 4 * u]); ctx.lineWidth = 2 * u;
-        ctx.strokeStyle = drag.kind === "blur" ? "#b45309" : drag.kind === "clear" ? "#0f766e" : RED;
+        ctx.strokeStyle = drag.kind === "blur" ? "#b45309" : drag.kind === "clear" ? "#0f766e" : COULEURS[couleur].main;
         if (drag.kind === "ellipse") { ctx.beginPath(); ctx.ellipse(r.x + r.w / 2, r.y + r.h / 2, Math.max(1, r.w / 2), Math.max(1, r.h / 2), 0, 0, Math.PI * 2); ctx.stroke(); }
         else ctx.strokeRect(r.x, r.y, r.w, r.h);
         ctx.setLineDash([]);
@@ -549,6 +568,15 @@
     const a = selAnnot();
     if (a && (a.kind === "rect" || a.kind === "ellipse")) { a.text = labelIn.value; saveProfile(); draw(); }
   });
+  function setCouleur(c) {
+    couleur = c;
+    document.querySelectorAll("[data-color]").forEach((x) => x.classList.toggle("on", x.dataset.color === c));
+  }
+  document.querySelectorAll("[data-color]").forEach((b) => b.addEventListener("click", () => {
+    setCouleur(b.dataset.color);
+    const a = selAnnot();
+    if (a) { a.color = couleur; saveProfile(); draw(); }
+  }));
   const presetsBox = document.getElementById("presets");
   PRESETS.forEach((p) => {
     const b = document.createElement("button");
@@ -576,6 +604,7 @@
   function choose(o) {
     sel = o;
     const a = selAnnot();
+    if (a) setCouleur(a.color || "rouge");
     if (a && (a.kind === "rect" || a.kind === "ellipse")) { labelIn.value = a.text || ""; setSide(a.side || "auto"); }
     draw();
   }
@@ -626,7 +655,7 @@
     }
     if (tool === "num") {
       const n = annots.filter((a) => a.kind === "num").length + 1;
-      annots.push({ kind: "num", x: p.x, y: p.y, n });
+      annots.push({ kind: "num", x: p.x, y: p.y, n, color: couleur });
       history.push("annot"); choose({ t: "a", i: annots.length - 1 }); saveProfile(); return;
     }
     // Clic à côté de l'objet choisi (hors poignée) : on le désélectionne,
@@ -696,12 +725,12 @@
       return;
     }
     if (d.kind === "arrow") {
-      if (Math.hypot(d.x2 - d.x1, d.y2 - d.y1) > 0.01) { annots.push(d); history.push("annot"); sel = { t: "a", i: annots.length - 1 }; }
+      if (Math.hypot(d.x2 - d.x1, d.y2 - d.y1) > 0.01) { d.color = couleur; annots.push(d); history.push("annot"); sel = { t: "a", i: annots.length - 1 }; }
     } else if (d.w > 0.005 && d.h > 0.005) {
       if (d.kind === "clear" || d.kind === "blur") {
         zones.push({ type: d.kind, x: d.x, y: d.y, w: d.w, h: d.h }); history.push("zone"); sel = { t: "z", i: zones.length - 1 };
       } else {
-        annots.push({ kind: d.kind, x: d.x, y: d.y, w: d.w, h: d.h, text: labelIn.value, side }); history.push("annot"); sel = { t: "a", i: annots.length - 1 };
+        annots.push({ kind: d.kind, x: d.x, y: d.y, w: d.w, h: d.h, text: labelIn.value, side, color: couleur }); history.push("annot"); sel = { t: "a", i: annots.length - 1 };
       }
     }
     saveProfile(); draw();
