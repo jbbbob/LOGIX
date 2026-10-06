@@ -2568,6 +2568,7 @@
 
         function saveNodeInputValue(inputId, value) {
           nodeInputs[inputId] = value;
+          noterHeure("input-" + inputId, String(value || "").trim() !== "");
         }
 
         function saveNodeSelection(selectionKey, value) {
@@ -3401,15 +3402,16 @@
             const items = [];
             visibles(whenOn.etapes).forEach((it) => items.push(it));
             (whenOn.topQuestions || []).forEach((q) =>
-              items.push({ type: "info", label: q.label, reponse: String(topAnswers[q.id] || "").toUpperCase() }));
+              items.push({ type: "info", label: q.label, reponse: String(topAnswers[q.id] || "").toUpperCase(), tKey: "top-" + q.id }));
             visibles(whenOn.etapesApres).forEach((it) => items.push(it));
             (whenOn.inputs || []).forEach((inp) => {
               const v = String(nodeInputs[inp.id] || "").trim();
-              if (v) items.push({ type: "info", label: inp.label, reponse: v });
+              if (v) items.push({ type: "info", label: inp.label, reponse: v, tKey: "input-" + inp.id });
             });
             inlineChain.forEach((c, i) => {
               const parent = i === 0 ? inlineRootNode : inlineChain[i - 1].node;
-              items.push({ type: "info", label: (parent && parent.choicesTitle) || "CHOIX", reponse: c.label });
+              items.push({ type: "info", label: (parent && parent.choicesTitle) || "CHOIX", reponse: c.label,
+                tKey: "choix-" + ((parent && parent.choicesTitle) || i) });
             });
             visibles(whenOn.etapesFin).forEach((it) => items.push(it));
             const sections = avant.concat([{ id: "parcours", titre: entry.toggle.label, items }]);
@@ -3578,6 +3580,7 @@
               } else {
                 topAnswers[q.id] = val;
               }
+              noterHeure("top-" + q.id, topAnswers[q.id] != null);
               render();
             });
             content.appendChild(btn);
@@ -3809,6 +3812,7 @@
               applyDefaultInputs(option);
 
               if (isInline) {
+                noterHeure("choix-" + (levelNode.choicesTitle || levelIdx), true);
                 const nextNode = option.suite && typeof option.suite === "object" ? option.suite : null;
                 inlineChain = inlineChain.slice(0, levelIdx).concat([{ id: option.id, label: option.label, option: option, node: nextNode }]);
                 render();
@@ -5240,9 +5244,10 @@
             }
             if (item.type === "info") {
               // Choix ou saisie hors checklist (raison, écritures…) : pas d'heure.
+              const hi = item.tKey ? heureDe(item.tKey) : "";
               rows.push("<tr><td>" + escapeHtml(item.label) + "</td><td>" +
-                escapeHtml(item.reponse).replace(/\n/g, "<br>") + "</td><td></td></tr>");
-              lignes.push(item.label + " | " + item.reponse);
+                escapeHtml(item.reponse).replace(/\n/g, "<br>") + "</td><td>" + escapeHtml(hi) + "</td></tr>");
+              lignes.push(item.label + " | " + item.reponse + " | " + hi);
               return;
             }
             if (item.type !== "check" && item.type !== "question") return;
