@@ -595,6 +595,7 @@
       #leafQuestionsContainer,
       #checklistContainer,
       #checklistContainerBas,
+      #checklistContainerFin,
       .result-card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -608,7 +609,8 @@
       #cascadeFlow:empty,
       #leafQuestionsContainer:empty,
       #checklistContainer:empty,
-      #checklistContainerBas:empty {
+      #checklistContainerBas:empty,
+      #checklistContainerFin:empty {
         display: none;
       }
 
@@ -1313,8 +1315,14 @@
       /* Même carte que le reste. Une section = un titre discret + des lignes.
          Ligne cochée : texte grisé et barré, rien ne bouge (couleurs seules). */
       #checklistContainer,
-      #checklistContainerBas {
+      #checklistContainerBas,
+      #checklistContainerFin {
         gap: 0;
+      }
+
+      /* Textes à copier DANS le bloc ANV : un peu d'air autour des cartes. */
+      #processBloc > #resultsContainer:not(:empty) {
+        padding: 10px 13px;
       }
 
       /* ANV : une seule carte pour tout le process (étapes, motifs, fin). */
@@ -2406,6 +2414,10 @@
         // Bloc unique du mode opératoire ANV (créé une fois, inséré au besoin).
         const processBloc = document.createElement("div");
         processBloc.id = "processBloc";
+        // Sections « fin: true » : après les textes à copier, dans le bloc.
+        const checklistFin = document.createElement("section");
+        checklistFin.id = "checklistContainerFin";
+        checklistFin.className = "stack";
         const checklistContainer = document.getElementById("checklistContainer");
         const pathPanel = document.getElementById("pathPanel");
         const pathCount = document.getElementById("pathCount");
@@ -4227,6 +4239,7 @@
             (section.items || []).forEach((item) => {
               if (stopped) return;
               if (item.if && !contextMatches(item.if, vars)) return;
+              if (item.sauf && contextMatches(item.sauf, vars)) return; // ex : pas pour le motif 16
               if (item.type === "chambres") {
                 items.push(...buildChambresItems(cl, vars));
               } else if (item.type === "liste") {
@@ -4236,7 +4249,7 @@
               }
               if (item.type === "alerte" && item.stop) stopped = true;
             });
-            if (items.length > 0) sections.push({ id: section.id, titre: section.titre, bas: !!section.bas, items });
+            if (items.length > 0) sections.push({ id: section.id, titre: section.titre, bas: !!section.bas, fin: !!section.fin, items });
           });
           sections.stopped = stopped;
           return sections;
@@ -4717,9 +4730,11 @@
           setTimeout(() => el.classList.remove("is-flash"), 1400);
         }
 
+        let resultsHome = null; // place d'origine des résultats (hors bloc ANV)
         function drawChecklist() {
           checklistContainer.innerHTML = "";
           checklistBas.innerHTML = "";
+          checklistFin.innerHTML = "";
           syncAutoChecks();
           const leaf = getChecklistNode();
           // Checklist de la racine (position "haut", ANV) : UN SEUL BLOC qui
@@ -4728,10 +4743,13 @@
           // dans le bloc (et on les remet à leur place pour les autres catégories).
           const enHaut = !!(leaf && leaf.checklist.position === "haut");
           if (enHaut && checklistContainer.parentElement !== processBloc) {
+            if (!resultsHome) resultsHome = { parent: resultsContainer.parentElement, next: resultsContainer.nextSibling };
             cascadeFlow.before(processBloc);
-            processBloc.append(checklistContainer, cascadeFlow, leafQuestionsContainer, checklistBas);
+            processBloc.append(checklistContainer, cascadeFlow, leafQuestionsContainer, checklistBas, resultsContainer, checklistFin);
           } else if (!enHaut && checklistContainer.parentElement === processBloc) {
             processBloc.replaceWith(cascadeFlow, leafQuestionsContainer, checklistContainer, checklistBas);
+            resultsHome.parent.insertBefore(resultsContainer, resultsHome.next);
+            checklistFin.innerHTML = "";
           }
           if (!leaf) return;
 
@@ -4780,8 +4798,12 @@
               sec.appendChild(st);
             }
             section.items.forEach((item) => renderChecklistItem(item, vars, sec, section.id));
-            if (section.bas) {
-              // Sous le motif : carte à part, même style que celle du haut.
+            if (section.fin) {
+              // Après les textes à copier (double vérification, clôture…).
+              checklistFin.appendChild(sec);
+              zoneFin = checklistFin;
+            } else if (section.bas) {
+              // Sous le motif.
               checklistBas.appendChild(sec);
               zoneFin = checklistBas;
             } else {

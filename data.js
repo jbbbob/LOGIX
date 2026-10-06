@@ -836,7 +836,9 @@ amiableReldetToggle.whenOn.autoChoix = { id: "verse-oui", if: { "versement-recen
 // MODE OPÉRATOIRE ANV, de A à Z (même moteur que la DCD).
 // Section « anv-debut » EN HAUT (position: "haut") : compte, statut, justificatif ;
 // puis MOTIF / SOUS-MOTIF ; puis section « anv-suite » (bas: true) : versement,
-// prescription, crédit, contraintes ; puis les textes à copier.
+// prescription, crédit, contraintes, codification + post-it / WATT ; puis les
+// textes à copier ; puis section « anv-fin » (fin: true) : double vérification,
+// seuil de 25 000 €, manager ou clôture.
 // - les champs "date" écrivent dans {{date}} (même variable que les textes ANV) ;
 // - versement récent + pas de prescription imminente = pas d'ANV : bandeau rouge,
 //   motifs et résultats masqués (stopIf), il faut passer par AMIABLE RELDET.
@@ -863,11 +865,19 @@ anvBranch.suite.checklist = {
           label: "Statut : {{statut-affiche}}",
         },
         {
+          // sauf : masquée pour le motif 16 (créance < seuil : pas de justificatif).
           type: "check",
           id: "anv-justificatif",
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
           champsObligatoires: true, // impossible à cocher sans la date
           label: "Trouver un justificatif permettant de passer l'ANV",
           champs: [{ id: "date", label: "DATE DU JUSTIFICATIF TROUVÉ", placeholder: "JJ/MM/AA" }],
+        },
+        {
+          type: "check",
+          id: "anv-justificatif-pdf",
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
+          label: "Imprimer le justificatif en PDF et le rattacher à l'affaire",
         },
       ],
     },
@@ -956,6 +966,116 @@ anvBranch.suite.checklist = {
               copie: [{ label: "POST-IT", texte: "DRETAF CO {{co-{n}}} POUR PASSER ANV" }],
             },
           ],
+        },
+
+        // ---------- Codification + textes (A/C) ----------
+        {
+          type: "check",
+          id: "anv-stade-in-cra",
+          if: { statut: ["A/C", ""] },
+          label: "Codifier l'ANV au stade IN CRA",
+        },
+        {
+          type: "check",
+          id: "anv-postit-ac",
+          if: { statut: ["A/C", ""] },
+          label: "Ajouter en post-it le texte POST-IT généré ci-dessous",
+        },
+
+        // ---------- Codification + textes (PL) ----------
+        {
+          type: "question",
+          id: "anv-tc08",
+          if: { statut: ["PL"] },
+          label: "ANV créée par TC08 ou RC08 ?",
+        },
+        {
+          type: "check",
+          id: "anv-stade-repris",
+          if: { statut: ["PL"], "anv-tc08": ["oui"] },
+          label: "Codifier l'ANV au stade REPRIS",
+        },
+        {
+          type: "check",
+          id: "anv-stade-demand",
+          if: { statut: ["PL"], "anv-tc08": ["non"] },
+          label: "Codifier l'ANV au stade DEMAND",
+        },
+        {
+          type: "check",
+          id: "anv-esdc",
+          if: { statut: ["PL"] },
+          label: "Mettre en ESDC, avec le code ANV, le post-it généré ci-dessous",
+        },
+        {
+          type: "check",
+          id: "anv-watt",
+          label: "Mettre le COMMENTAIRE AFFAIRE WATT généré ci-dessous",
+        },
+      ],
+    },
+    {
+      // fin : affichée APRÈS les textes à copier (post-it, WATT).
+      id: "anv-fin",
+      titre: "",
+      fin: true,
+      items: [
+        {
+          type: "check",
+          id: "anv-double-check-ac",
+          if: { statut: ["A/C", ""] },
+          label: "Double vérification : le post-it est bien enregistré",
+        },
+        {
+          type: "check",
+          id: "anv-double-check-pl",
+          if: { statut: ["PL"] },
+          label: "Double vérification : le post-it ESDC est bien enregistré",
+        },
+        // A/C : plus de 25 000 € → manager, sinon clôture.
+        {
+          type: "question",
+          id: "anv-25k-ac",
+          if: { statut: ["A/C", ""] },
+          label: "ANV supérieure à 25 000 € ?",
+        },
+        {
+          type: "check",
+          id: "anv-manager-ac",
+          if: { statut: ["A/C", ""], "anv-25k-ac": ["oui"] },
+          label: "Soumettre au manager",
+        },
+        {
+          type: "check",
+          id: "anv-cloture-ac",
+          if: { statut: ["A/C", ""], "anv-25k-ac": ["non"] },
+          label: "Clôturer l'affaire",
+        },
+        // PL créée par TC08 / RC08 : même règle des 25 000 €.
+        {
+          type: "question",
+          id: "anv-25k-pl",
+          if: { statut: ["PL"], "anv-tc08": ["oui"] },
+          label: "ANV supérieure à 25 000 € ?",
+        },
+        {
+          type: "check",
+          id: "anv-manager-pl",
+          if: { statut: ["PL"], "anv-tc08": ["oui"], "anv-25k-pl": ["oui"] },
+          label: "Soumettre au manager",
+        },
+        {
+          type: "check",
+          id: "anv-cloture-pl",
+          if: { statut: ["PL"], "anv-tc08": ["oui"], "anv-25k-pl": ["non"] },
+          label: "Clôturer l'affaire",
+        },
+        // PL pas créée par TC08 / RC08 : manager quoi qu'il arrive.
+        {
+          type: "check",
+          id: "anv-manager-pl-demand",
+          if: { statut: ["PL"], "anv-tc08": ["non"] },
+          label: "Soumettre au manager (ANV non créée par TC08 / RC08 : toujours, quel que soit le montant)",
         },
       ],
     },
