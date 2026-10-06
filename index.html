@@ -2969,6 +2969,8 @@
           const visit = (it) => {
             if (Array.isArray(it.items)) it.items.forEach(visit);
             if (it.autoCoche) checkState[it.id] = !!globalSelections[it.autoCoche];
+            // Champ obligatoire vidé après coup : la case se décoche.
+            if (it.champsObligatoires && checkState[it.id] === true && !champsRemplis(it)) checkState[it.id] = false;
           };
           n.checklist.sections.forEach((sec) => (sec.items || []).forEach(visit));
         }
@@ -4479,6 +4481,15 @@
               box.title = "Se coche tout seul selon le CONTEXTE à gauche";
             }
             box.addEventListener("change", () => {
+              // Champs obligatoires (ex : DATE DU JUSTIFICATIF) : pas de coche sans eux.
+              if (box.checked && item.champsObligatoires && !champsRemplis(item)) {
+                box.checked = false;
+                const vide = item.champs.find((c) => String(nodeInputs[c.id] || "").trim() === "");
+                showToast("REMPLIS D'ABORD : " + vide.label, 2600);
+                const f = document.querySelector(`#chk-row-${item.id} [data-input-id="${vide.id}"]`);
+                if (f) f.focus();
+                return;
+              }
               if (box.checked && openTutoKey === (item.tuto || item.id)) closeTutos();
               checkState[item.id] = box.checked;
               render();
@@ -4587,6 +4598,7 @@
 
         function drawChecklist() {
           checklistContainer.innerHTML = "";
+          syncAutoChecks();
           const leaf = getChecklistNode();
           // Vérifications de la racine (position "haut") : avant les motifs.
           const enHaut = !!(leaf && leaf.checklist.position === "haut");

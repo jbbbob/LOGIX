@@ -902,6 +902,7 @@ anvBranch.suite.checklist = {
         {
           type: "check",
           id: "anv-justificatif",
+          champsObligatoires: true, // impossible à cocher sans la date
           label: "Trouver un justificatif permettant de passer l'ANV",
           champs: [{ id: "date", label: "DATE DU JUSTIFICATIF TROUVÉ", placeholder: "JJ/MM/AA" }],
         },
