@@ -74,6 +74,19 @@
   .check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; flex: 0 0 auto; }
   pre { white-space: pre-wrap; background: var(--input); border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px; font-size: 9pt; margin: 6px 0 0; max-height: 220px; overflow: auto; font-family: Consolas, monospace !important; }
   .toast { position: fixed; left: 50%; bottom: 22px; margin-left: -190px; width: 380px; text-align: center; background: var(--strong); color: #fff; padding: 10px 16px; border-radius: var(--r-lg); font-weight: 700; letter-spacing: 0.06em; font-size: 10pt; z-index: 50; }
+  /* Fenêtre d'aperçu */
+  .modal-bg { position: fixed; inset: 0; z-index: 80; background: rgba(20,15,5,0.55); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 40px 16px; }
+  .modal { background: var(--surface); border-radius: 10px; padding: 16px 18px; max-width: 760px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+  .modal h3 { margin: 0 0 4px; font-size: 11pt; letter-spacing: var(--ls-wide); color: var(--accent-strong); text-transform: uppercase; }
+  .modal .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+  .modal .cols { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin-top: 10px; }
+  /* Copie fidèle du panneau tuto de LOGIX */
+  .tuto-panel { width: 360px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--r-lg); box-shadow: 0 12px 30px rgba(0,0,0,0.2); padding: 12px 12px 14px; }
+  .tuto-title { font-size: var(--fs-micro); font-weight: 700; letter-spacing: var(--ls-wide); color: var(--accent-strong); text-transform: uppercase; margin-bottom: 4px; }
+  .tuto-step { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; }
+  .tuto-n { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-content: center; font-weight: 700; font-size: 11px; }
+  .tuto-shot { display: block; width: 300px; height: auto; border-radius: 4px; border: 1px solid var(--border); background: #fff; }
+  .tuto-cap { margin-top: 4px; font-size: var(--fs-label); line-height: 1.35; }
   .steps-done { font-size: 9.5pt; line-height: 1.5; }
 </style>
 </head>
@@ -171,7 +184,11 @@
         <button class="btn" id="pickDir" style="width:100%">📁 Choisir le dossier tutos</button>
         <div class="hint" id="dirInfo">Choisis une fois le dossier <b>LOGIX\tutos</b> : l'image et <b>tutos.js</b> y seront enregistrés directement. Sinon, l'image ira dans Téléchargements.</div>
         <label class="check"><input type="checkbox" id="verif"> <span>J'ai regardé l'image en entier : <b>aucune donnée réelle n'est lisible</b>.</span></label>
-        <button class="btn main" id="save" style="width:100%;margin-top:8px" disabled>Enregistrer cette étape</button>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="preview" style="flex:1" title="L'image telle qu'elle sera enregistrée, à la taille du panneau tuto de LOGIX">👁 Aperçu</button>
+          <button class="btn" id="previewTuto" style="flex:1" title="Tous les écrans déjà enregistrés pour cette clé">📖 Tuto complet</button>
+        </div>
+        <button class="btn main" id="save" style="width:100%;margin-top:8px" disabled>Enregistrer cet écran</button>
         <div id="saveOut"></div>
       </div>
     </aside>
@@ -568,6 +585,16 @@
     const a = selAnnot();
     if (a && (a.kind === "rect" || a.kind === "ellipse")) { a.text = labelIn.value; saveProfile(); draw(); }
   });
+  // Les pastilles se numérotent PAR COULEUR : rouge 1, 2… et bleu 1, 2…
+  function renumeroter() {
+    const compte = {};
+    annots.forEach((a) => {
+      if (a.kind !== "num") return;
+      const c = a.color || "rouge";
+      compte[c] = (compte[c] || 0) + 1;
+      a.n = compte[c];
+    });
+  }
   function setCouleur(c) {
     couleur = c;
     document.querySelectorAll("[data-color]").forEach((x) => x.classList.toggle("on", x.dataset.color === c));
@@ -575,7 +602,7 @@
   document.querySelectorAll("[data-color]").forEach((b) => b.addEventListener("click", () => {
     setCouleur(b.dataset.color);
     const a = selAnnot();
-    if (a) { a.color = couleur; saveProfile(); draw(); }
+    if (a) { a.color = couleur; renumeroter(); saveProfile(); draw(); }
   }));
   const presetsBox = document.getElementById("presets");
   PRESETS.forEach((p) => {
@@ -654,7 +681,7 @@
       return;
     }
     if (tool === "num") {
-      const n = annots.filter((a) => a.kind === "num").length + 1;
+      const n = annots.filter((a) => a.kind === "num" && (a.color || "rouge") === couleur).length + 1;
       annots.push({ kind: "num", x: p.x, y: p.y, n, color: couleur });
       history.push("annot"); choose({ t: "a", i: annots.length - 1 }); saveProfile(); return;
     }
@@ -782,14 +809,14 @@
     if (sel.t === "z") zones.splice(sel.i, 1);
     else {
       annots.splice(sel.i, 1);
-      let n = 0; annots.forEach((a) => { if (a.kind === "num") a.n = ++n; });   // garde 1, 2, 3…
+      renumeroter();
     }
     sel = null; hover = null; history = []; saveProfile(); draw();
   }
   function undo() {
     const last = history.pop();
     if (last === "zone") zones.pop();
-    else if (last === "annot") annots.pop();
+    else if (last === "annot") { annots.pop(); renumeroter(); }
     else if (annots.length) annots.pop(); else zones.pop();
     sel = null; hover = null; saveProfile(); draw();
   }
@@ -913,6 +940,11 @@
     render(out, true);
     const blob = await new Promise((r) => out.toBlob(r, "image/png"));
     const etape = { image: fileName, texte: texteIn.value.trim() };
+    // Mémoire de session (aperçu du tuto complet même sans accès au dossier).
+    const ss = session[key] || (session[key] = { titre: titreIn.value.trim() || key.toUpperCase(), etapes: [] });
+    if (titreIn.value.trim()) ss.titre = titreIn.value.trim();
+    ss.etapes = ss.etapes.filter((e) => e.image !== fileName).concat([{ image: fileName, texte: etape.texte, url: URL.createObjectURL(blob) }]);
+    ss.etapes.sort((a, b) => (parseInt(a.image.split("-").pop()) || 0) - (parseInt(b.image.split("-").pop()) || 0));
     const box = document.getElementById("saveOut");
 
     if (dirHandle) {
@@ -941,8 +973,140 @@
     numIn.value = String((parseInt(n) || 1) + 1);
     store.set("atelier-num", numIn.value);
     texteIn.value = ""; verif.checked = false; updateSave(); showDone();
-    toast("ÉTAPE ENREGISTRÉE — COLLE LA CAPTURE SUIVANTE");
+    apresEnregistrement(key, n);
   });
+
+  // ------------------------------------------------------------------
+  // Aperçus et suite après enregistrement
+  // ------------------------------------------------------------------
+  // Écrans enregistrés pendant cette session (pour l'aperçu du tuto complet
+  // quand le navigateur ne peut pas relire le dossier tutos).
+  const session = {};   // clé → { titre, etapes: [{ image, texte, url }] }
+
+  function fermerModal() { document.querySelectorAll(".modal-bg").forEach((m) => m.remove()); }
+  function ouvrirModal(contenu) {
+    fermerModal();
+    const bg = document.createElement("div");
+    bg.className = "modal-bg";
+    const m = document.createElement("div");
+    m.className = "modal";
+    m.appendChild(contenu);
+    bg.appendChild(m);
+    bg.addEventListener("mousedown", (e) => { if (e.target === bg) fermerModal(); });
+    document.body.appendChild(bg);
+    return m;
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") fermerModal(); });
+
+  // Panneau identique à celui de LOGIX : titre + écrans numérotés (300 px).
+  function panneau(titre, etapes) {
+    const p = document.createElement("div");
+    p.className = "tuto-panel";
+    const t = document.createElement("div");
+    t.className = "tuto-title"; t.textContent = titre || "TUTO";
+    p.appendChild(t);
+    etapes.forEach((e, i) => {
+      const st = document.createElement("div"); st.className = "tuto-step";
+      const n = document.createElement("span"); n.className = "tuto-n"; n.textContent = String(i + 1);
+      const box = document.createElement("div");
+      const im = document.createElement("img"); im.className = "tuto-shot"; im.src = e.url; im.alt = e.texte || "";
+      const cap = document.createElement("div"); cap.className = "tuto-cap"; cap.textContent = e.texte || "";
+      box.appendChild(im); box.appendChild(cap);
+      st.appendChild(n); st.appendChild(box);
+      p.appendChild(st);
+    });
+    return p;
+  }
+  function bouton(texte, principal, action) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "btn" + (principal ? " main" : ""); b.textContent = texte;
+    b.addEventListener("click", action);
+    return b;
+  }
+  function imageFinale() {
+    const out = document.createElement("canvas");
+    render(out, true);
+    return out;
+  }
+
+  // 👁 Aperçu de l'écran en cours, tel qu'il sera enregistré.
+  document.getElementById("preview").addEventListener("click", () => {
+    if (!img) { toast("COLLE D'ABORD UNE CAPTURE"); return; }
+    const c = document.createElement("div");
+    c.innerHTML = "<h3>Aperçu de l'écran " + (numIn.value || "1") + "</h3><div class='hint'>Exactement comme il sera enregistré (sans pointillés ni poignées), à la taille du panneau tuto de LOGIX.</div>";
+    const cols = document.createElement("div"); cols.className = "cols";
+    cols.appendChild(panneau(titreIn.value.trim() || cleanKey(keyIn.value).toUpperCase() || "TUTO", [{ url: imageFinale().toDataURL("image/png"), texte: texteIn.value.trim() }]));
+    const conseil = document.createElement("div");
+    conseil.className = "hint"; conseil.style.maxWidth = "300px";
+    conseil.innerHTML = "<b>À vérifier :</b><br>• aucune donnée réelle lisible ;<br>• l'étiquette se lit bien à cette taille (sinon : curseur « taille des repères ») ;<br>• le cadre est bien sur le bon bouton.";
+    cols.appendChild(conseil);
+    c.appendChild(cols);
+    const act = document.createElement("div"); act.className = "actions";
+    act.appendChild(bouton("Fermer", false, fermerModal));
+    c.appendChild(act);
+    ouvrirModal(c);
+  });
+
+  // Écrans enregistrés d'un tuto : relus dans le dossier si possible, sinon ceux de la session.
+  async function ecransDuTuto(key) {
+    if (dirHandle) {
+      const tutos = await readDirTutos();
+      const t = tutos && tutos[key];
+      if (t) {
+        const etapes = [];
+        for (const e of t.etapes) {
+          try { const f = await (await dirHandle.getFileHandle(e.image)).getFile(); etapes.push({ texte: e.texte, url: URL.createObjectURL(f) }); }
+          catch (err) { etapes.push({ texte: e.texte + " (image introuvable : " + e.image + ")", url: "" }); }
+        }
+        return { titre: t.titre, etapes };
+      }
+    }
+    return session[key] || null;
+  }
+  async function voirTuto(key, apresFin) {
+    const t = await ecransDuTuto(key);
+    const c = document.createElement("div");
+    if (!t || !t.etapes.length) {
+      c.innerHTML = "<h3>Tuto « " + key + " »</h3><div class='hint'>Aucun écran enregistré pour cette clé pour l'instant.</div>";
+    } else {
+      c.innerHTML = "<h3>Tuto complet : " + t.etapes.length + " écran(s)</h3><div class='hint'>Voilà ce qui s'affichera dans LOGIX en cliquant sur le « i » de « " + key + " » (après Ctrl+F5).</div>";
+      const cols = document.createElement("div"); cols.className = "cols";
+      cols.appendChild(panneau(t.titre, t.etapes));
+      c.appendChild(cols);
+    }
+    const act = document.createElement("div"); act.className = "actions";
+    if (apresFin) {
+      act.appendChild(bouton("➕ Ajouter encore un écran", false, () => { fermerModal(); toast("COLLE LA CAPTURE DE L'ÉCRAN " + numIn.value); }));
+      act.appendChild(bouton("Commencer un nouveau tuto", true, () => {
+        fermerModal();
+        keyIn.value = ""; titreIn.value = ""; numIn.value = "1"; texteIn.value = "";
+        store.set("atelier-cle", ""); store.set("atelier-titre", ""); store.set("atelier-num", "1");
+        showDone(); updateSave(); keyIn.focus();
+        toast("NOUVEAU TUTO : CHOISIS LA CLÉ PUIS COLLE LA 1ʳᵉ CAPTURE");
+      }));
+    } else act.appendChild(bouton("Fermer", true, fermerModal));
+    c.appendChild(act);
+    ouvrirModal(c);
+  }
+  document.getElementById("previewTuto").addEventListener("click", () => {
+    const key = cleanKey(keyIn.value);
+    if (!key) { toast("REMPLIS D'ABORD LA CLÉ DU TUTO"); return; }
+    voirTuto(key, false);
+  });
+
+  // Après un enregistrement : écran suivant (mêmes réglages) ou tuto terminé.
+  function apresEnregistrement(key, n) {
+    const c = document.createElement("div");
+    c.innerHTML = "<h3>✓ Écran " + n + " enregistré</h3><div class='hint'>Clé « " + key + " ». La suite ?</div>";
+    const act = document.createElement("div"); act.className = "actions";
+    act.appendChild(bouton("✓ Le tuto est fini : le voir en entier", false, () => voirTuto(key, true)));
+    act.appendChild(bouton("➕ Faire l'écran " + (parseInt(n) + 1) + " (mêmes réglages)", true, () => {
+      fermerModal();
+      toast("COLLE LA CAPTURE DE L'ÉCRAN " + (parseInt(n) + 1) + " — MODÈLE « " + current + " » GARDÉ");
+    }));
+    c.appendChild(act);
+    ouvrirModal(c);
+  }
 
   setTool("clear");
 })();
