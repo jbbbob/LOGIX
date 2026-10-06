@@ -1861,7 +1861,7 @@
         position: fixed;
         inset: 0;
         z-index: 70;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.78);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1871,11 +1871,130 @@
         display: none;
       }
 
+      .tuto-big-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        max-width: 86vw;
+      }
+
       .tuto-big img {
-        max-width: 92vw;
-        max-height: 86vh;
+        max-width: 86vw;
+        max-height: 74vh;
         border-radius: var(--r-md);
         background: #ffffff;
+      }
+
+      .tuto-big-count {
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--accent-ink);
+        font-size: var(--fs-micro);
+        font-weight: 800;
+        letter-spacing: 0.12em;
+      }
+
+      .tuto-big-cap {
+        max-width: 70vw;
+        padding: 8px 14px;
+        border-radius: var(--r-md);
+        background: var(--surface);
+        color: var(--ink);
+        font-weight: 700;
+        text-align: center;
+      }
+
+      /* Flèches haut / bas, colonne à droite. */
+      .tuto-big-nav {
+        position: fixed;
+        right: 22px;
+        top: 50%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: -54px;
+      }
+
+      .tuto-big-nav button {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--accent);
+        background: var(--surface);
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .tuto-big-nav button:hover {
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+
+      .tuto-big-nav button:disabled {
+        opacity: 0.35;
+        cursor: default;
+        background: var(--surface);
+        color: var(--accent);
+      }
+
+      .tuto-big-hint {
+        position: fixed;
+        bottom: 14px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: #ffffff;
+        font-size: var(--fs-micro);
+        letter-spacing: 0.12em;
+        opacity: 0.8;
+      }
+
+      /* Page de fin. */
+      .tuto-big-end {
+        min-width: 340px;
+        padding: 30px 34px;
+        border-radius: var(--r-lg);
+        background: var(--surface);
+        border: 2px solid var(--accent);
+        text-align: center;
+        color: var(--ink);
+      }
+
+      .tuto-big-end .ok {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 12px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--accent-ink);
+        font-size: 34px;
+        line-height: 64px;
+        font-weight: 800;
+      }
+
+      .tuto-big-end .t1 {
+        font-size: var(--fs-title);
+        font-weight: 800;
+        letter-spacing: 0.12em;
+      }
+
+      .tuto-big-end .t2 {
+        margin: 6px 0 18px;
+        color: var(--muted);
+      }
+
+      .tuto-big-end .row {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .tuto-shot {
+        cursor: zoom-in;
       }
 
       .tuto-big-x {
@@ -3590,10 +3709,75 @@
         // Grande image (bouton ⤢) : une seule fenêtre, créée une fois.
         const tutoBig = document.createElement("div");
         tutoBig.className = "tuto-big hidden";
-        tutoBig.innerHTML = '<button type="button" class="tuto-x tuto-big-x">✕ FERMER</button><img alt="">';
+        tutoBig.innerHTML = '<button type="button" class="tuto-x tuto-big-x">✕ FERMER</button>' +
+          '<div class="tuto-big-box"></div>' +
+          '<div class="tuto-big-nav"><button type="button" data-go="-1" title="Étape précédente (↑)">▲</button>' +
+          '<button type="button" data-go="1" title="Étape suivante (↓)">▼</button></div>' +
+          '<div class="tuto-big-hint">MOLETTE OU FLÈCHES ↑ ↓ POUR CHANGER D’ÉTAPE · ÉCHAP POUR FERMER</div>';
         document.body.appendChild(tutoBig);
+        const tutoBigBox = tutoBig.querySelector(".tuto-big-box");
+        // Visionneuse : les écrans du tuto ouvert, un par un, puis une page de fin.
+        let bigEtapes = [], bigIdx = 0, bigWheelAt = 0;
+
+        function closeBig() { tutoBig.classList.add("hidden"); }
+
+        function showBig(i) {
+          bigIdx = Math.max(0, Math.min(i, bigEtapes.length));
+          tutoBigBox.innerHTML = "";
+          if (bigIdx === bigEtapes.length) {
+            const end = document.createElement("div");
+            end.className = "tuto-big-end";
+            end.innerHTML = '<div class="ok">✓</div><div class="t1">C’EST BON !</div>' +
+              '<div class="t2">Tu as vu les ' + bigEtapes.length + ' étape(s) de ce tuto.</div>' +
+              '<div class="row"><button type="button" class="tuto-x" data-act="debut">↺ REVOIR DEPUIS LE DÉBUT</button>' +
+              '<button type="button" class="tuto-x" data-act="fin">✓ FERMER</button></div>';
+            tutoBigBox.appendChild(end);
+          } else {
+            const e = bigEtapes[bigIdx];
+            const count = document.createElement("div");
+            count.className = "tuto-big-count";
+            count.textContent = "ÉTAPE " + (bigIdx + 1) + " / " + bigEtapes.length;
+            const img = document.createElement("img");
+            img.src = e.src;
+            img.alt = e.texte || "";
+            tutoBigBox.appendChild(count);
+            tutoBigBox.appendChild(img);
+            if (e.texte) {
+              const cap = document.createElement("div");
+              cap.className = "tuto-big-cap";
+              cap.textContent = e.texte;
+              tutoBigBox.appendChild(cap);
+            }
+          }
+          tutoBig.querySelector('[data-go="-1"]').disabled = bigIdx === 0;
+          tutoBig.querySelector('[data-go="1"]').disabled = bigIdx === bigEtapes.length;
+        }
+
+        function openBig(etapes, i) {
+          bigEtapes = etapes;
+          tutoBig.classList.remove("hidden");
+          showBig(i);
+        }
+
         tutoBig.addEventListener("click", (e) => {
-          if (e.target === tutoBig || e.target.classList.contains("tuto-big-x")) tutoBig.classList.add("hidden");
+          const go = e.target.closest("[data-go]");
+          const act = e.target.closest("[data-act]");
+          if (go) showBig(bigIdx + Number(go.dataset.go));
+          else if (act && act.dataset.act === "debut") showBig(0);
+          else if (act || e.target === tutoBig || e.target.classList.contains("tuto-big-x")) closeBig();
+        });
+        // Molette : un geste = une étape (on ignore la suite du même geste).
+        tutoBig.addEventListener("wheel", (e) => {
+          e.preventDefault();
+          const now = Date.now();
+          if (now - bigWheelAt < 450 || Math.abs(e.deltaY) < 4) return;
+          bigWheelAt = now;
+          showBig(bigIdx + (e.deltaY > 0 ? 1 : -1));
+        }, { passive: false });
+        document.addEventListener("keydown", (e) => {
+          if (tutoBig.classList.contains("hidden")) return;
+          if (["ArrowDown", "ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); showBig(bigIdx + 1); }
+          else if (["ArrowUp", "ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); showBig(bigIdx - 1); }
         });
 
         let tutoWrap = null;
@@ -3647,6 +3831,8 @@
           x.addEventListener("click", (e) => { e.stopPropagation(); closeTutos(); });
           head.appendChild(x);
           panel.appendChild(head);
+          const etapesBig = t.etapes.filter((e) => e.image).map((e) => ({ src: "tutos/" + e.image, texte: e.texte || "" }));
+          let nImg = 0;
           t.etapes.forEach((etape, i) => {
             const step = document.createElement("div");
             step.className = "tuto-step";
@@ -3662,6 +3848,9 @@
               img.className = "tuto-shot";
               img.alt = etape.texte || "";
               img.src = "tutos/" + etape.image;
+              const pos = nImg++;
+              img.title = "Cliquer pour agrandir";
+              img.addEventListener("click", (e) => { e.stopPropagation(); openBig(etapesBig, pos); });
               sw.appendChild(img);
               const zoom = document.createElement("button");
               zoom.type = "button";
@@ -3670,8 +3859,7 @@
               zoom.title = "Voir en grand";
               zoom.addEventListener("click", (e) => {
                 e.stopPropagation();
-                tutoBig.querySelector("img").src = img.src;
-                tutoBig.classList.remove("hidden");
+                openBig(etapesBig, pos);
               });
               sw.appendChild(zoom);
               box.appendChild(sw);
@@ -3725,7 +3913,7 @@
 
         document.addEventListener("keydown", (e) => {
           if (e.key !== "Escape") return;
-          if (!tutoBig.classList.contains("hidden")) tutoBig.classList.add("hidden");
+          if (!tutoBig.classList.contains("hidden")) closeBig();
           else if (openTutoKey) closeTutos();
         });
 
