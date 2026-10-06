@@ -2873,6 +2873,11 @@
           vars["phrase-eopps"] = (checkState.ficoba || topAnswers["ficoba"]) === "non"
             ? "ET RECH EOPPS RECENTE"
             : "ET RECH EOPPS + FICOBA RECENTE";
+          // PL (motif 12) : la mention n'est ajoutée que si la recherche EOPPS est faite.
+          //   « + FICOBA » seulement si la recherche FICOBA est cochée aussi.
+          vars["phrase-eopps-pl"] = checkState["psa-eopps"] !== true ? ""
+            : checkState["psa-ficoba"] === true ? " ET RECH EOPPS + FICOBA RECENTE"
+            : " ET RECH EOPPS RECENTE";
 
           // Phrase "frais frustratoires" centralisée : en ACTIF (et par défaut) on
           // précise qu'on attend d'autres contraintes pour une réexécution groupée ;

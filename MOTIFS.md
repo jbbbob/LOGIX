@@ -80,7 +80,7 @@
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -97,7 +97,7 @@
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -114,7 +114,7 @@
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -131,7 +131,7 @@
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -148,7 +148,7 @@
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*

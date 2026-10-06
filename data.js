@@ -169,7 +169,9 @@ const anv12LeafConfig = {
       blocs: [
         {
           id: "carence-pl-12",
-          texte: "{{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}",
+          // {{phrase-eopps-pl}} : « ET RECH EOPPS [+ FICOBA] RECENTE » seulement si
+          // la recherche EOPPS est cochée dans le mode opératoire (vide sinon).
+          texte: "{{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}}",
         },
         {
           id: "dretaf-line-pl-12",
