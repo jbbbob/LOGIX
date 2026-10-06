@@ -2882,6 +2882,9 @@
           //        premières étapes cochées toutes seules.
           vars["compte-affiche"] = vars.compte || "à choisir à gauche";
           vars["statut-affiche"] = vars.statut || "à choisir à gauche";
+          // ANV SUSPEN ne concerne que les comptes radiés : une réponse donnée
+          // avant de repasser en ACTIF ne doit pas rester dans les textes.
+          if (vars.compte !== "RADIÉ") vars.suspen = "";
 
           // 1 bis. ANV : une ligne de post-it « DRETAF CO … pour passer ANV » par
           //        contrainte saisie dans les vérifications (au moins une).

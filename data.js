@@ -38,14 +38,7 @@ const globalContextOptions = [
 //   {{date}}, {{suspen}} = saisis par l'utilisateur ; {{dretaf}} et {{dretaf-postits}}
 //   viennent des VÉRIFICATIONS AVANT L'ANV (une ligne par contrainte)
 const anvLeafConfig = {
-  leafQuestions: [
-    {
-      // ANV SUSPEN : uniquement si COMPTE = RADIÉ
-      id: "suspen",
-      label: "ANV SUSPEN",
-      conditions: { compte: ["RADIÉ"] },
-    },
-  ],
+  // ANV SUSPEN : maintenant une étape du mode opératoire (question "suspen").
   resultats: [
     // ============================================================
     // STATUT A/C : POST-IT PORTAIL TI + COMMENTAIRE AFFAIRE WATT
@@ -127,13 +120,7 @@ const anvLeafConfig = {
 // - PL  → "ANV[PARTIELLE]12 : RECHERCHES NEGATIVES - CONSTAT DU {date} - [abbrev]"
 //   (note : pas d'espace entre préfixe et code en PL, comme pour le motif 11)
 const anv12LeafConfig = {
-  leafQuestions: [
-    {
-      id: "suspen",
-      label: "ANV SUSPEN",
-      conditions: { compte: ["RADIÉ"] },
-    },
-  ],
+  // ANV SUSPEN : maintenant une étape du mode opératoire (question "suspen").
   resultats: [
     // A/C : POST-IT PORTAIL TI + COMMENTAIRE AFFAIRE WATT
     {
@@ -419,13 +406,7 @@ const anv13_relanceLeaf = {
 // - PL  → "ANV[PARTIELLE]16 : CREANCE < AU SEUIL - CONSTAT DU {date}"
 // ============================================================================
 const anv16LeafConfig = {
-  leafQuestions: [
-    {
-      id: "suspen",
-      label: "ANV SUSPEN",
-      conditions: { compte: ["RADIÉ"] },
-    },
-  ],
+  // ANV SUSPEN : maintenant une étape du mode opératoire (question "suspen").
   resultats: [
     // A/C : POST-IT PORTAIL TI + COMMENTAIRE AFFAIRE WATT
     {
@@ -1010,6 +991,26 @@ anvBranch.suite.checklist = {
           montre: "anv-postit",
           label: "Mettre en ESDC, avec le code ANV, le post-it",
         },
+        // ---------- ANV SUSPEN (compte radié) ----------
+        {
+          type: "question",
+          id: "suspen",
+          if: { compte: ["RADIÉ"] },
+          label: "ANV SUSPEN nécessaire ?",
+        },
+        {
+          type: "check",
+          id: "anv-suspen-codif",
+          if: { compte: ["RADIÉ"], suspen: ["oui"] },
+          label: "Codifier l'ANV SUSPEN",
+        },
+        {
+          type: "check",
+          id: "anv-suspen-postit",
+          if: { compte: ["RADIÉ"], suspen: ["oui"] },
+          label: "Ajouter le post-it de l'ANV SUSPEN",
+          copie: [{ label: "POST-IT", texte: "ANV SUSPEN pour exigibilité inférieure à un an" }],
+        },
         {
           type: "check",
           id: "anv-watt",
@@ -1095,7 +1096,8 @@ anvBranch.suite.checklist = {
   (node.resultats || []).forEach((r) => {
     if (/^POST-IT/.test(r.label || "")) r.etape = "anv-postit";
     else if (r.label === "COMMENTAIRE AFFAIRE WATT") r.etape = "anv-watt";
-    (r.blocs || []).forEach((b) => { if (/^dretaf-line/.test(b.id || "")) b.horsEtape = true; });
+    // DRETAF et SUSPEN ont leurs propres étapes : pas répétés dans le post-it.
+    (r.blocs || []).forEach((b) => { if (/^(dretaf|suspen)-line/.test(b.id || "")) b.horsEtape = true; });
   });
   (node.choix || []).forEach((c) => rangerTextesAnv(c.suite));
 })(anvBranch.suite);
