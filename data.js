@@ -1015,18 +1015,28 @@ anvBranch.suite.checklist = {
           type: "question",
           id: "anv-25k-ac",
           if: { statut: ["A/C", ""] },
+          sauf: { "motif-id": ["motif-16-creance-seuil"] }, // motif 16 : toujours < 201 €, pas de question
           label: "ANV supérieure à 25 000 € ?",
         },
         {
           type: "check",
           id: "anv-manager-ac",
           if: { statut: ["A/C", ""], "anv-25k-ac": ["oui"] },
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
           label: "Soumettre au manager",
         },
         {
           type: "check",
           id: "anv-cloture-ac",
           if: { statut: ["A/C", ""], "anv-25k-ac": ["non"] },
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
+          label: "Clôturer l'affaire",
+        },
+        {
+          // Motif 16 (créance < seuil) : clôture directe, sans question 25 000 €.
+          type: "check",
+          id: "anv-cloture-ac-16",
+          if: { statut: ["A/C", ""], "motif-id": ["motif-16-creance-seuil"] },
           label: "Clôturer l'affaire",
         },
         // PL créée par TC08 / RC08 : même règle des 25 000 €.
@@ -1034,18 +1044,27 @@ anvBranch.suite.checklist = {
           type: "question",
           id: "anv-25k-pl",
           if: { statut: ["PL"], "anv-tc08": ["oui"] },
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
           label: "ANV supérieure à 25 000 € ?",
         },
         {
           type: "check",
           id: "anv-manager-pl",
           if: { statut: ["PL"], "anv-tc08": ["oui"], "anv-25k-pl": ["oui"] },
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
           label: "Soumettre au manager",
         },
         {
           type: "check",
           id: "anv-cloture-pl",
           if: { statut: ["PL"], "anv-tc08": ["oui"], "anv-25k-pl": ["non"] },
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
+          label: "Clôturer l'affaire",
+        },
+        {
+          type: "check",
+          id: "anv-cloture-pl-16",
+          if: { statut: ["PL"], "anv-tc08": ["oui"], "motif-id": ["motif-16-creance-seuil"] },
           label: "Clôturer l'affaire",
         },
         // PL pas créée par TC08 / RC08 : manager quoi qu'il arrive.
