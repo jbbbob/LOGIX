@@ -66,7 +66,8 @@ Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dos
   - `--fs-micro: 9.5pt` (labels du panneau CHEMIN, badges, pastilles)
   - `--fs-label: 10.5pt` (libellés des card-rows, titres de résultat)
   - `--fs-choice: 12pt` (boutons de choix, taille de base du `body`)
-  - `--fs-body: 13pt` → **taille historique, appliquée aux `.result-content`. Ne pas y toucher.**
+  - `--fs-body: 13pt` → **taille historique, appliquée aux `.result-content` des COURRIERS. Ne pas y toucher.**
+- **Blocs résultat, deux rendus (visuel seulement, la copie garde toujours le texte d'origine)** : les **courriers** (titre contenant `COURRIER` ou commençant par `OBJET` → classe `is-courrier`) gardent le rendu fidèle à Word (casse d'origine, 13pt, graisse normale) ; **tous les autres** (commentaires WATT, post-it, ESDC… → classe `is-note`) prennent le style de la page (majuscules, `--ls-mid`, `--fs-label`, gras). Idem pour les textes à copier de la checklist (`.chk-copy-text`).
   - `--fs-title: 14pt`, `--fs-brand: 17pt`
 - **Deux thèmes, bouton ☾ NUIT / ☀ JOUR dans l'en-tête** (`#themeBtn`), choix retenu dans `localStorage` (clé `logix-theme`, seule donnée stockée — une préférence d'affichage) :
   - **JOUR (défaut)** — « papier crème + vert canard » : fond crème `#f1ebe0`, cartes blanches `#fffdf8`, boutons crème `#f4ede1`, accent vert canard `#0f766e`. Jetons dans `:root`.
@@ -413,7 +414,7 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - [ ] IDs DOM et classes CSS custom préservés (y compris `.hidden`)
 - [ ] Aucune URL externe réintroduite (l'appli doit marcher Wi-Fi coupé)
 - [ ] Aucune animation de déplacement / taille / apparition ajoutée
-- [ ] Les blocs résultat sont toujours en 13pt et gardent leur casse d'origine
+- [ ] Les blocs COURRIER / OBJET sont toujours en 13pt avec leur casse d'origine ; les autres blocs (WATT, post-it) au style de la page
 - [ ] Taper dans un champ ne fait pas perdre le focus
 - [ ] Le panneau CHEMIN reflète bien les étapes réelles
 - [ ] RETOUR recule d'un seul niveau, RECOMMENCER garde COMPTE/STATUT

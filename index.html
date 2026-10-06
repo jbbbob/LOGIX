@@ -1217,6 +1217,22 @@
         font-weight: 400;
       }
 
+      /* Blocs « note » (commentaires WATT, post-it, ESDC…) : même style que
+         le reste de la page (majuscules, lettres espacées, gras). Seulement à
+         l'affichage : le texte copié garde sa casse d'origine. Les courriers
+         (TEXTE DU COURRIER, OBJET) gardent le rendu fidèle à Word ci-dessus. */
+      .result-card.is-note .result-content,
+      .result-card.is-note .result-content * {
+        text-transform: uppercase !important;
+        letter-spacing: var(--ls-mid) !important;
+        font-size: var(--fs-label);
+      }
+
+      .result-card.is-note .result-content {
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
       /* Styles natifs des balises de mise en forme dans l'aperçu, pour qu'il
          ressemble visuellement au rendu Word. */
       .result-content p {
@@ -1650,11 +1666,16 @@
         color: var(--muted);
       }
 
+      /* Textes à copier de la checklist : même style que la page (visuel
+         seulement, la copie garde le texte d'origine). */
       .chk-copy-text {
         flex: 1 1 auto;
         min-width: 0;
-        text-transform: none;
-        letter-spacing: normal;
+        text-transform: uppercase;
+        letter-spacing: var(--ls-mid);
+        font-size: var(--fs-label);
+        font-weight: 700;
+        line-height: 1.5;
         color: var(--ink);
         overflow-wrap: anywhere;
       }
@@ -4066,7 +4087,11 @@
 
           resultBlocks.forEach((rb) => {
             const card = document.createElement("article");
-            card.className = "result-card";
+            // Courrier (TEXTE DU COURRIER, OBJET) = rendu fidèle à Word.
+            // Tout le reste (commentaires WATT, post-it…) = style de la page.
+            // Purement visuel : COPIER colle toujours le texte d'origine.
+            const estCourrier = /COURRIER|^OBJET/.test(rb.label || "");
+            card.className = "result-card " + (estCourrier ? "is-courrier" : "is-note");
 
             const header = document.createElement("div");
             header.className = "result-header";
