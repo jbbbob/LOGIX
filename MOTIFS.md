@@ -156,7 +156,6 @@
           - appendFragments: ficoba-line-12
         - [fragment] `ficoba-line-12` — **** *[si ficoba=non]*
           - fragment : « (Pas de FICOBA car site KO) »
-    - *topQuestions* : FICOBA DISPONIBLE ? (`ficoba`)
   - `motif-13-decede` — **13 - DÉCÉDÉ**
     - *SOUS-MOTIF* :
       - `sous-motif-13-1ere-enquete` — **1ÈRE ENQUÊTE**
@@ -344,5 +343,5 @@
 - Choix totaux (tous niveaux) : 36
 - Inputs : 7
 - Toggles : 2
-- TopQuestions : 3
+- TopQuestions : 2
 - Résultats (blocs texte) : 104

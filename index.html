@@ -2870,7 +2870,7 @@
 
           // Phrase "ET RECH EOPPS [+ FICOBA] RECENTE" centralisée : sans le "+ FICOBA"
           // si la topQuestion FICOBA est répondue NON (motif 12 A/C). Source unique.
-          vars["phrase-eopps"] = topAnswers["ficoba"] === "non"
+          vars["phrase-eopps"] = (checkState.ficoba || topAnswers["ficoba"]) === "non"
             ? "ET RECH EOPPS RECENTE"
             : "ET RECH EOPPS + FICOBA RECENTE";
 

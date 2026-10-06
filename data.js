@@ -553,12 +553,8 @@ const anvBranch = {
           // Question optionnelle : si FICOBA = NON, le bloc principal devient
           // "ET RECH EOPPS RECENTE" (sans "+ FICOBA") et on ajoute un bloc
           // "(Pas de FICOBA car site KO)" à la fin du COMMENTAIRE WATT.
-          topQuestions: [
-            {
-              id: "ficoba",
-              label: "FICOBA DISPONIBLE ?",
-            },
-          ],
+          // FICOBA DISPONIBLE ? est maintenant une étape du mode opératoire ANV
+          // (question "ficoba", même variable {{ficoba}} pour les textes).
           choicesTitle: "SOUS-MOTIF",
           choix: [
             // Sous-motifs visibles uniquement en A/C (avec code)
@@ -881,6 +877,69 @@ anvBranch.suite.checklist = {
       titre: "",
       bas: true,
       items: [
+        // ---------- Motif 12 PSA (sous-motifs 20 / 22 / 25) : adresses ----------
+        {
+          type: "question",
+          id: "psa-adresses-exploitees",
+          if: { "sous-motif-id": ["sous-motif-12-20-pv-659", "sous-motif-12-22-2-rar-pnd-psa", "sous-motif-12-25-enq-psa"] },
+          label: "Toutes les adresses connues par nos services ont été exploitées ?",
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          stop: true,
+          if: { "psa-adresses-exploitees": ["non"] },
+          texte: "PAS D'ANV : FAIRE LA RÉEXÉCUTION À LA NOUVELLE ADRESSE.",
+        },
+        {
+          type: "check",
+          id: "psa-eopps",
+          if: { "sous-motif-id": ["sous-motif-12-20-pv-659", "sous-motif-12-22-2-rar-pnd-psa", "sous-motif-12-25-enq-psa"] },
+          label: "recherche EOPPS faite",
+          lien: { label: "OUVRIR EOPPS", url: "https://www.eopps.fr/#/tableau-de-bord" },
+          lienAvant: true,
+          aide: "Si la page ne s'ouvre pas tout de suite, c'est normal : c'est la bonne adresse.",
+        },
+        {
+          type: "question",
+          id: "psa-eopps-adresse",
+          if: { "sous-motif-id": ["sous-motif-12-20-pv-659", "sous-motif-12-22-2-rar-pnd-psa", "sous-motif-12-25-enq-psa"] },
+          label: "Nouvelle adresse trouvée sur EOPPS ?",
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          stop: true,
+          if: { "psa-eopps-adresse": ["oui"] },
+          texte: "PAS D'ANV : FAIRE LA RÉEXÉCUTION À LA NOUVELLE ADRESSE TROUVÉE SUR EOPPS.",
+        },
+        {
+          // Motif 12 (tous sous-motifs) : change les textes ({{phrase-eopps}}).
+          type: "question",
+          id: "ficoba",
+          if: { "motif-id": ["motif-12-psa"] },
+          label: "FICOBA disponible ?",
+        },
+        {
+          type: "check",
+          id: "psa-ficoba",
+          if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"] },
+          label: "Recherche FICOBA faite",
+          tag: "LIEN À AJOUTER", // TODO : site en maintenance, adresse à mettre ici
+        },
+        {
+          type: "question",
+          id: "psa-ficoba-adresse",
+          if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"] },
+          label: "Nouvelle adresse trouvée sur FICOBA ?",
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          stop: true,
+          if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["oui"] },
+          texte: "PAS D'ANV : FAIRE LA RÉEXÉCUTION À LA NOUVELLE ADRESSE TROUVÉE SUR FICOBA.",
+        },
         {
           type: "question",
           id: "versement-recent",
