@@ -192,6 +192,8 @@
         </div>
         <button class="btn" id="applyModel" style="width:100%;margin-top:6px" title="Remet le floutage enregistré dans ce modèle (annule les changements non validés)">↺ Réappliquer le modèle</button>
         <div class="hint">Quand le floutage te convient, clique <b>Valider</b> : à la prochaine capture du même écran (même modèle choisi), il sera refait tout seul.</div>
+        <div id="memoireInfo"></div>
+        <button class="btn" id="saveReglages" style="width:100%;margin-top:6px" title="Écrit tous tes modèles et réglages dans tutos/atelier-reglages.js : ils reviennent même si le navigateur oublie tout">🗂 Sauver mes réglages dans un fichier</button>
       </div>
 
       <div class="card">
@@ -232,6 +234,7 @@
   </div>
 
 <script src="./tutos/tutos.js" onerror="window.logixTutos = window.logixTutos || {}"></script>
+<script src="./tutos/atelier-reglages.js" onerror="window.atelierReglages = window.atelierReglages || null"></script>
 <script src="./data.js"></script>
 <script>
 (function () {
@@ -265,9 +268,34 @@
   let labelBoxes = []; // boîte de l'étiquette de chaque repère (pixels image), recalculée au dessin
   let dirHandle = null;
 
+  // Mémoire du navigateur (localStorage). Firefox peut la bloquer (navigation
+  // privée, « effacer les données à la fermeture ») : on le détecte, on garde
+  // alors tout en mémoire de la page, et le fichier tutos/atelier-reglages.js
+  // (bouton « Sauver mes réglages dans un fichier ») sert de secours.
+  const memoireOk = (() => { try { localStorage.setItem("atelier-test", "1"); const ok = localStorage.getItem("atelier-test") === "1"; localStorage.removeItem("atelier-test"); return ok; } catch (e) { return false; } })();
+  const memoirePage = {};
+  const fichierReglages = window.atelierReglages || null;
   const store = {
-    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* rien */ } },
+    get(k, d) {
+      try {
+        const v = memoireOk ? localStorage.getItem(k) : memoirePage[k];
+        if (v) return JSON.parse(v);
+      } catch (e) { /* on passe au fichier */ }
+      return fichierReglages && k in fichierReglages ? fichierReglages[k] : d;
+    },
+    set(k, v) {
+      const t = JSON.stringify(v);
+      memoirePage[k] = t;
+      if (memoireOk) { try { localStorage.setItem(k, t); } catch (e) { /* rien */ } }
+    },
+    // Tous les réglages de l'atelier, pour le fichier de secours.
+    tout() {
+      const o = Object.assign({}, fichierReglages || {});
+      const cles = new Set(Object.keys(memoirePage));
+      if (memoireOk) { try { for (let i = 0; i < localStorage.length; i++) cles.add(localStorage.key(i)); } catch (e) { /* rien */ } }
+      cles.forEach((k) => { if (k.startsWith("atelier-") && k !== "atelier-test") { const v = this.get(k, undefined); if (v !== undefined) o[k] = v; } });
+      return o;
+    },
   };
   let profiles = store.get("atelier-profils", { "ÉCRAN PAR DÉFAUT": { zones: [], annots: [] } });
   let current = store.get("atelier-profil-courant", "ÉCRAN PAR DÉFAUT");
@@ -363,7 +391,7 @@
     validateModel();            // le nouveau modèle part du floutage actuel
     renderProfiles();
   });
-  document.getElementById("validateModel").addEventListener("click", validateModel);
+  document.getElementById("validateModel").addEventListener("click", () => { validateModel(); if (window.__sauverReglagesAuto) window.__sauverReglagesAuto(); });
   document.getElementById("renameModel").addEventListener("click", () => {
     const n = (prompt("Nouveau nom pour le modèle « " + current + " » :", current) || "").trim().toUpperCase();
     if (!n || n === current) return;
@@ -1164,6 +1192,43 @@
       return obj;
     } catch (e) { return {}; }
   }
+
+  // Fichier de secours des réglages : tutos/atelier-reglages.js
+  function reglagesTexte() {
+    return "// Réglages de l'atelier tuto (modèles d'écran, taille, force du flou…).\n" +
+      "// Écrit par le bouton « Sauver mes réglages dans un fichier ». Relu au démarrage\n" +
+      "// si le navigateur a oublié ses réglages. Reste sur le PC (dossier tutos/ ignoré par Git).\n" +
+      "window.atelierReglages = " + JSON.stringify(store.tout(), null, 1) + ";\n";
+  }
+  async function sauverReglages(silencieux) {
+    if (dirHandle) {
+      try {
+        const w = await (await dirHandle.getFileHandle("atelier-reglages.js", { create: true })).createWritable();
+        await w.write(reglagesTexte()); await w.close();
+        if (!silencieux) toast("RÉGLAGES ÉCRITS DANS tutos/atelier-reglages.js");
+        return;
+      } catch (e) { if (silencieux) return; }
+    }
+    if (silencieux) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([reglagesTexte()], { type: "text/javascript" }));
+    a.download = "atelier-reglages.js";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast("atelier-reglages.js TÉLÉCHARGÉ — METS-LE DANS LOGIX\\tutos");
+  }
+  document.getElementById("saveReglages").addEventListener("click", () => sauverReglages(false));
+  window.__sauverReglagesAuto = () => sauverReglages(true);
+  (function infoMemoire() {
+    const box = document.getElementById("memoireInfo");
+    if (!memoireOk) {
+      box.innerHTML = "<div class='model-state is-dirty'>⚠️ Ce navigateur n'a pas le droit de garder tes réglages (navigation privée ou « effacer les données à la fermeture »). " +
+        (fichierReglages ? "Réglages relus depuis tutos/atelier-reglages.js. " : "") +
+        "Pense à cliquer « Sauver mes réglages dans un fichier » après chaque modèle validé.</div>";
+    } else if (fichierReglages && !localStorage.getItem("atelier-profils")) {
+      box.innerHTML = "<div class='model-state is-ok'>✓ Réglages repris depuis tutos/atelier-reglages.js.</div>";
+    }
+  })();
 
   const pickBtn = document.getElementById("pickDir");
   if (!window.showDirectoryPicker) {
