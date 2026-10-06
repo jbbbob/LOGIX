@@ -2227,6 +2227,13 @@
         padding-left: 2px;
       }
 
+      /* Liste de points (double vérification) : un point par ligne. */
+      .chk-sous.chk-sous-liste {
+        flex-direction: column;
+        gap: 5px;
+        padding: 4px 0 2px 2px;
+      }
+
       .chk-sous-item {
         display: inline-flex;
         align-items: center;
@@ -3109,6 +3116,22 @@
             vars["double-check"] = parts.length > 1
               ? parts.slice(0, -1).join(", ") + " et " + parts[parts.length - 1]
               : parts[0];
+            // Même contenu en liste (une ligne par point) pour l'étape.
+            const L = [{ k: "anv", l: "ANV codifiée" }];
+            if (suspenOui) L.push({ k: "suspen", l: "ANV SUSPEN codifiée" });
+            if (nbCo) L.push({ k: "dretaf", l: nbCo > 1 ? nbCo + " DRETAF codifiés" : "DRETAF codifié" });
+            if (pl) {
+              L.push({ k: "esdc", l: suspenOui ? "ESDC renseignés (codes ANV et INCX)" : "ESDC renseigné (code ANV)" });
+              if (nbCo) L.push({ k: "postit-dretaf", l: nbCo > 1 ? nbCo + " post-its DRETAF renseignés" : "Post-it DRETAF renseigné" });
+            } else {
+              const nbPostits = 1 + (suspenOui ? 1 : 0) + nbCo;
+              L.push({ k: "postit", l: nbPostits > 1 ? nbPostits + " post-its renseignés" : "Post-it renseigné" });
+            }
+            if (docs.includes("justificatif")) L.push({ k: "doc-justif", l: "Justificatif (PDF) rattaché à l'affaire" });
+            if (docs.includes("page EOPPS")) L.push({ k: "doc-eopps", l: "Page EOPPS (PDF) rattachée à l'affaire" });
+            if (docs.includes("page FICOBA")) L.push({ k: "doc-ficoba", l: "Page FICOBA (PDF) rattachée à l'affaire" });
+            L.push({ k: "watt", l: "Commentaire affaire WATT renseigné" });
+            vars["dc-liste-anv"] = L;
           }
 
           // 1 sexies. Parcours RELDET (VERSEMENT RÉCENT / DETTE NON EXIGIBLE) :
@@ -3125,6 +3148,14 @@
             }
             p.push("le commentaire WATT bien renseigné");
             vars["double-check-reldet"] = p.length > 1 ? p.slice(0, -1).join(", ") + " et " + p[p.length - 1] : p[0];
+            const L = [];
+            if (enLigne === "oui") L.push({ k: "scribe", l: "Relevé de dette envoyé par SCRIBE" });
+            if (enLigne === "non") L.push({ k: "v2", l: "RELDET codifié en V2" });
+            if (parcours === "amiable-reldet" && vars.compte === "RADIÉ") {
+              L.push({ k: "suspen", l: "ANV SUSPEN codifiée" }, { k: "suspen-postit", l: "Post-it ANV SUSPEN renseigné" });
+            }
+            L.push({ k: "watt", l: "Commentaire affaire WATT renseigné" });
+            vars["dc-liste-reldet"] = L;
           }
 
           // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
@@ -3245,6 +3276,17 @@
             p.push("les documents bien rattachés à l'affaire (" + docs.join(", ") + ")");
             p.push("l'ESDC, l'ENQ et l'ADM NV bien codifiés", "le commentaire WATT bien renseigné");
             vars["double-check-dcd"] = p.slice(0, -1).join(", ") + " et " + p[p.length - 1];
+            const L = [];
+            if (vars.statut === "A/C") L.push({ k: "arret", l: "Arrêt début motif 25 positionné" });
+            if (vars.statut === "PL") L.push({ k: "top06", l: "Transaction CPTS TOP 06 faite" });
+            L.push({ k: "heritiers", l: "Courrier aux héritiers envoyé" });
+            if (vars["dcd-acte-ged"] !== "oui") L.push({ k: "mairie", l: "Demande d'acte à la mairie envoyée" });
+            if (nbChambres) L.push({ k: "chambres", l: nbChambres > 1 ? "Demandes aux " + nbChambres + " chambres des notaires envoyées" : "Demande à la chambre des notaires envoyée" });
+            L.push({ k: "doc-sngi", l: "Page SNGI (PDF) rattachée à l'affaire" });
+            if (nbChambresForm) L.push({ k: "doc-chambres", l: nbChambresForm > 1 ? "PDF des formulaires des chambres rattachés" : "PDF du formulaire de la chambre rattaché" });
+            if (vars["deces-plus-6-mois"] !== "non") L.push({ k: "doc-succession", l: "Recherche succession vacante (PDF) rattachée" });
+            L.push({ k: "codifs", l: "ESDC, ENQ et ADM NV codifiés" }, { k: "watt", l: "Commentaire affaire WATT renseigné" });
+            vars["dc-liste-dcd"] = L;
           }
 
           // 7. Phrase WATT : uniquement les départements réellement interrogés,
@@ -4869,6 +4911,17 @@
           return wrap;
         }
 
+        // Petites cases d'une étape : sousCoches fixes + sousListe (liste calculée
+        // dans les variables, ex. points de la double vérification).
+        function sousCochesDe(item, vars) {
+          const fixes = (item.sousCoches || []).filter((sc) =>
+            (!sc.if || contextMatches(sc.if, vars)) && !(sc.sauf && contextMatches(sc.sauf, vars)));
+          const liste = item.sousListe && Array.isArray(vars[item.sousListe])
+            ? vars[item.sousListe].map((x) => ({ id: "dc-" + item.id + "-" + x.k, label: x.l }))
+            : [];
+          return fixes.concat(liste);
+        }
+
         // Textes générés (post-it, WATT…) affichés dans une étape « montre ».
         function makeEtapeTextes(item, vars) {
           const wrap = document.createElement("div");
@@ -5203,11 +5256,10 @@
               body.appendChild(tools);
             }
             // sousCoches : petites cases de contrôle (non comptées) sous l'étape.
-            const sous = (item.sousCoches || []).filter((sc) =>
-              (!sc.if || contextMatches(sc.if, vars)) && !(sc.sauf && contextMatches(sc.sauf, vars)));
+            const sous = sousCochesDe(item, vars);
             if (sous.length) {
               const box = document.createElement("div");
-              box.className = "chk-sous";
+              box.className = "chk-sous" + (item.sousListe ? " chk-sous-liste" : "");
               sous.forEach((sc) => {
                 const lab = document.createElement("label");
                 lab.className = "chk-sous-item" + (checkState[sc.id] === true ? " is-on" : "");
@@ -5494,8 +5546,7 @@
             const details = [];
             (item.champs || []).forEach((c) => details.push(c.label + " : " + String(nodeInputs[c.id] || "").trim()));
             textesEtape(item).forEach((t) => details.push("Texte : " + t));
-            (item.sousCoches || []).filter((sc) =>
-              (!sc.if || contextMatches(sc.if, vars)) && !(sc.sauf && contextMatches(sc.sauf, vars)))
+            sousCochesDe(item, vars)
               .forEach((sc) => details.push(sc.label + " : " + (checkState[sc.id] === true ? "✓ " + heureDe(sc.id) : "—")));
             const h = heureDe(item.id);
             rows.push("<tr><td>" + escapeHtml(label) +

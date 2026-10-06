@@ -1140,25 +1140,19 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-double-check-ac",
           if: { statut: ["A/C", ""] },
-          label: "Double vérification : {{double-check}}",
-          // Petites cases de contrôle (non obligatoires) : chaque document à rattacher.
-          sousCoches: [
-            { id: "dc-doc-justif", label: "Justificatif (PDF)", sauf: { "motif-id": ["motif-16-creance-seuil"] } },
-            { id: "dc-doc-eopps", label: "Page EOPPS (PDF)", if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] } },
-            { id: "dc-doc-ficoba", label: "Page FICOBA (PDF)", if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] } },
-          ],
+          label: "Double vérification",
+          // Liste des points à revoir (petites cases non obligatoires), calculée
+          // selon le dossier dans addChecklistVars() : {{dc-liste-anv}}.
+          sousListe: "dc-liste-anv",
         },
         {
           type: "check",
           id: "anv-double-check-pl",
           if: { statut: ["PL"] },
-          label: "Double vérification : {{double-check}}",
-          // Petites cases de contrôle (non obligatoires) : chaque document à rattacher.
-          sousCoches: [
-            { id: "dc-doc-justif", label: "Justificatif (PDF)", sauf: { "motif-id": ["motif-16-creance-seuil"] } },
-            { id: "dc-doc-eopps", label: "Page EOPPS (PDF)", if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] } },
-            { id: "dc-doc-ficoba", label: "Page FICOBA (PDF)", if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] } },
-          ],
+          label: "Double vérification",
+          // Liste des points à revoir (petites cases non obligatoires), calculée
+          // selon le dossier dans addChecklistVars() : {{dc-liste-anv}}.
+          sousListe: "dc-liste-anv",
         },
         // A/C : plus de 25 000 € → manager, sinon clôture.
         {
@@ -1333,14 +1327,8 @@ const etapesReldetFin = [
     // Phrase selon le parcours : SCRIBE ou V2, ANV SUSPEN (radié), WATT.
     type: "check",
     id: "reldet-double-check",
-    label: "Double vérification : {{double-check-reldet}}",
-    sousCoches: [
-      { id: "dc-rel-scribe", label: "Relevé de dette envoyé par SCRIBE", if: { "compte-en-ligne": ["oui"] } },
-      { id: "dc-rel-v2", label: "RELDET codifié en V2", if: { "compte-en-ligne": ["non"] } },
-      { id: "dc-rel-suspen", label: "ANV SUSPEN codifiée", if: { "parcours-reldet": ["amiable-reldet"], compte: ["RADIÉ"] } },
-      { id: "dc-rel-suspen-postit", label: "Post-it ANV SUSPEN", if: { "parcours-reldet": ["amiable-reldet"], compte: ["RADIÉ"] } },
-      { id: "dc-rel-watt", label: "Commentaire WATT" },
-    ],
+    label: "Double vérification",
+    sousListe: "dc-liste-reldet",
   },
 ];
 amiableReldetToggle.whenOn.etapesFin = etapesReldetFin;
@@ -2317,13 +2305,8 @@ const dcd1ereEnqueteInconnusLeaf = {
             // Phrase selon les choix (statut, mairie, chambres, succession).
             type: "check",
             id: "dcd-double-check",
-            label: "DOUBLE VÉRIFICATION : {{double-check-dcd}}",
-            // Petites cases (non obligatoires) : chaque document à rattacher.
-            sousCoches: [
-              { id: "dc-dcd-sngi", label: "Page SNGI (PDF)" },
-              { id: "dc-dcd-chambres", label: "PDF formulaire(s) des chambres", if: { "dcd-docs-chambres": ["oui"] } },
-              { id: "dc-dcd-succession", label: "Recherche succession vacante (PDF)", if: { "deces-plus-6-mois": ["oui", ""] } },
-            ],
+            label: "DOUBLE VÉRIFICATION",
+            sousListe: "dc-liste-dcd",
           },
         ],
       },
