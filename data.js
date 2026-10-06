@@ -877,11 +877,11 @@ anvBranch.suite.checklist = {
       titre: "",
       bas: true,
       items: [
-        // ---------- Motif 12 PSA (sous-motifs 20 / 22 / 25) : adresses ----------
+        // ---------- Motif 12 PSA (tous sous-motifs, A/C et PL) : adresses ----------
         {
           type: "question",
           id: "psa-adresses-exploitees",
-          if: { "sous-motif-id": ["sous-motif-12-20-pv-659", "sous-motif-12-22-2-rar-pnd-psa", "sous-motif-12-25-enq-psa"] },
+          if: { "motif-id": ["motif-12-psa"] },
           label: "Toutes les adresses connues par nos services ont été exploitées ?",
         },
         {
@@ -894,7 +894,7 @@ anvBranch.suite.checklist = {
         {
           type: "check",
           id: "psa-eopps",
-          if: { "sous-motif-id": ["sous-motif-12-20-pv-659", "sous-motif-12-22-2-rar-pnd-psa", "sous-motif-12-25-enq-psa"] },
+          if: { "motif-id": ["motif-12-psa"] },
           label: "recherche EOPPS faite",
           lien: { label: "OUVRIR EOPPS", url: "https://www.eopps.fr/#/tableau-de-bord" },
           lienAvant: true,
@@ -903,7 +903,7 @@ anvBranch.suite.checklist = {
         {
           type: "question",
           id: "psa-eopps-adresse",
-          if: { "sous-motif-id": ["sous-motif-12-20-pv-659", "sous-motif-12-22-2-rar-pnd-psa", "sous-motif-12-25-enq-psa"] },
+          if: { "motif-id": ["motif-12-psa"] },
           label: "Nouvelle adresse trouvée sur EOPPS ?",
         },
         {
