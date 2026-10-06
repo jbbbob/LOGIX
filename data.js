@@ -1000,11 +1000,20 @@ anvBranch.suite.checklist = {
           type: "question",
           id: "dette-exigible",
           label: "Vérifier les dates d'exigibilité de l'ANV : dette exigible ?",
+          // Rappel du calendrier ANV (prive/calendrier-anv.js) : période en cours
+          // et prochaine validation des listes DG-DCF selon A/C ou PL.
+          aide: "{{info-dgdcf}}",
           action: {
             label: "FAIRE RELDET →",
             toggle: "dette-non-exigible",
             if: { "dette-exigible": ["non"] },
           },
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          if: { "dgdcf-tc18-aujourdhui": ["oui"] },
+          texte: "AUJOURD'HUI = JOUR TC18 : NE PAS CODIFIER D'ANV.",
         },
         {
           type: "alerte",

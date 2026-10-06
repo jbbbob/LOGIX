@@ -2568,6 +2568,8 @@
     <!-- Tutos en images : dossier tutos/ gardé sur le PC (jamais envoyé sur
          GitHub, voir .gitignore). S'il n'existe pas, aucun « i » n'apparaît. -->
     <script src="./tutos/tutos.js" onerror="window.logixTutos = window.logixTutos || {}"></script>
+    <!-- Calendrier ANV (fichier local, dossier prive/ non publié). -->
+    <script src="./prive/calendrier-anv.js" onerror="window.logixCalendrierANV = window.logixCalendrierANV || null"></script>
     <script>
       (function () {
         if (!window.treeData) {
@@ -3156,6 +3158,28 @@
             }
             L.push({ k: "watt", l: "Commentaire affaire WATT renseigné" });
             vars["dc-liste-reldet"] = L;
+          }
+
+          // 1 septies. Calendrier ANV (prive/calendrier-anv.js) : période qui
+          //   contient aujourd'hui (sinon la prochaine) selon A/C ou PL, et sa
+          //   date de validation des listes DG-DCF ; en PL, le jour TC18.
+          {
+            const cal = window.logixCalendrierANV;
+            const pl = vars.statut === "PL";
+            const liste = cal ? (pl ? cal.pl : cal.ac) || [] : [];
+            const iso = (dt) => dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+            const fr = (x) => { const [a, m, j] = x.split("-"); return j + "/" + m + "/" + a; };
+            const auj = iso(new Date());
+            const per = liste.find((p) => p.debut <= auj && auj <= p.fin) || liste.find((p) => p.debut > auj);
+            vars["dgdcf-tc18-aujourdhui"] = per && per.tc18 === auj ? "oui" : "non";
+            if (!cal) vars["info-dgdcf"] = "Calendrier ANV non chargé (fichier prive/calendrier-anv.js absent).";
+            else if (!vars.statut) vars["info-dgdcf"] = "Choisis le statut (A/C ou PL) pour voir la prochaine validation DG-DCF.";
+            else if (!per) vars["info-dgdcf"] = "⚠ Calendrier ANV " + (pl ? "PL" : "A/C") + " terminé : ajouter les dates suivantes dans prive/calendrier-anv.js.";
+            else {
+              vars["info-dgdcf"] = (pl ? "PL" : "A/C") + " — période du " + fr(per.debut) + " au " + fr(per.fin) +
+                " : validation des listes DG-DCF le " + fr(per.validation) +
+                (per.tc18 ? " (TC18 le " + fr(per.tc18) + " : ne pas codifier d'ANV ce jour-là)" : "") + ".";
+            }
           }
 
           // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
@@ -5176,7 +5200,7 @@
               line.appendChild(ab);
             }
             body.appendChild(line);
-            if (item.aide) body.appendChild(makeChecklistAide(item.aide));
+            if (item.aide) body.appendChild(makeChecklistAide(fillPlain(item.aide, vars)));
             row.appendChild(body);
             parent.appendChild(row);
             return;
