@@ -64,6 +64,7 @@
   .warn { color: var(--todo); font-weight: 700; }
   .sel-info { font-size: 9.5pt; margin-top: 6px; padding: 5px 8px; border-radius: var(--r-md); background: var(--wash); color: var(--accent-strong); font-weight: 700; }
   input[type=range] { width: 100%; accent-color: var(--accent); }
+  .inline-edit { position: absolute; z-index: 20; min-width: 160px; height: 2.1rem; padding: 0 8px; border: 2px solid var(--red); border-radius: 4px; background: #fff; color: #b4122f; font-weight: 700; font-size: 11pt; text-transform: uppercase; box-shadow: 0 6px 18px rgba(0,0,0,0.25); outline: none; }
   .stage { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 10px; min-height: 420px; display: flex; align-items: center; justify-content: center; position: sticky; top: 10px; }
   .drop { text-align: center; color: var(--muted); }
   .drop b { color: var(--accent-strong); font-size: 13pt; letter-spacing: 0.1em; }
@@ -107,6 +108,8 @@
           <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③ (touche N)">① Numéro <span class="kbd">N</span></button>
           <button class="btn red" id="delAnnot" title="Efface la zone ou le repère choisi (ou touche Suppr)">🗑 Effacer</button>
         </div>
+        <label class="lbl" for="taille">Taille des repères : <span id="tailleVal"></span></label>
+        <input type="range" id="taille" min="40" max="160" step="5" value="100">
         <label class="lbl" for="label">Étiquette du cadre / cercle</label>
         <input type="text" id="label" placeholder="ex : CLIQUER SUR CO">
         <div class="presets" id="presets"></div>
@@ -123,7 +126,7 @@
           <button class="btn" id="undo" style="flex:1" title="Annule le dernier ajout (Ctrl+Z)">↶ Annuler</button>
           <button class="btn red" id="resetAnnots" style="flex:1">Effacer les repères</button>
         </div>
-        <div class="hint"><b>Astuce :</b> avec n'importe quel outil, clique sur un cadre ou une étiquette pour le <b>déplacer</b> ; un simple clic sur une zone de flou la <b>sélectionne</b> (poignées pour la redimensionner).</div>
+        <div class="hint"><b>Astuce :</b> <b>double-clic</b> sur une étiquette pour changer son texte ; avec n'importe quel outil, clique sur un cadre ou une étiquette pour le <b>déplacer</b> ; un simple clic sur une zone de flou la <b>sélectionne</b> (poignées pour la redimensionner).</div>
         <div class="hint"><b>Clavier :</b> lettres sur les boutons pour changer d'outil ; avec un objet choisi, <b>flèches</b> = décaler (Maj = plus vite), <b>Suppr</b> = effacer, <b>Ctrl+Z</b> = annuler, <b>Échap</b> = désélectionner.</div>
         <div class="hint">Un cadre ou un cercle reçoit l'étiquette tapée ci-dessus, reliée par une flèche automatique. Plusieurs actions sur le même écran ? Utilise plutôt les <b>numéros ①②③</b> et explique-les dans la phrase.</div>
       </div>
@@ -300,6 +303,13 @@
   // ------------------------------------------------------------------
   // Flou
   // ------------------------------------------------------------------
+  const tailleIn = document.getElementById("taille");
+  tailleIn.value = store.get("atelier-taille", 100);
+  const tailleVal = document.getElementById("tailleVal");
+  function tailleLabel() { const t = +tailleIn.value; tailleVal.textContent = t < 75 ? "PETIT" : t <= 120 ? "MOYEN" : "GRAND"; }
+  tailleIn.addEventListener("input", () => { store.set("atelier-taille", +tailleIn.value); tailleLabel(); draw(); });
+  tailleLabel();
+
   const forceIn = document.getElementById("force");
   forceIn.value = store.get("atelier-force", 16);
   const forceVal = document.getElementById("forceVal");
@@ -325,7 +335,8 @@
   // Unité de taille : proportionnelle à la largeur de la capture, pour que
   // traits, flèches et textes restent lisibles une fois l'image réduite
   // dans le panneau tuto (≈ 300 px de large).
-  function U() { return img.width / 1000; }
+  // × réglage « taille des repères » (40 % à 160 %, 100 % = moyen).
+  function U() { return img.width / 1000 * (+tailleIn.value / 100); }
   function px(r) { return { x: r.x * img.width, y: r.y * img.height, w: r.w * img.width, h: r.h * img.height }; }
 
   function arrow(c, x1, y1, x2, y2, u, head) {
@@ -696,6 +707,41 @@
     saveProfile(); draw();
   });
   view.addEventListener("mouseleave", () => { if (hover) { hover = null; draw(); } });
+
+  // Double-clic sur un cadre / cercle / son étiquette : champ de texte posé
+  // dessus. Entrée ou clic ailleurs = valider, Échap = annuler.
+  view.addEventListener("dblclick", (e) => {
+    if (!img) return;
+    const o = hitTest(pos(e));
+    if (!o || o.t !== "a") return;
+    const a = annots[o.i];
+    if (a.kind !== "rect" && a.kind !== "ellipse") return;
+    choose(o);
+    const b = labelBoxes[o.i] || boundsOf(o);
+    const vr = view.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    const k = vr.width / img.width;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "inline-edit";
+    input.value = a.text || "";
+    input.style.left = (vr.left - sr.left + b.x * k) + "px";
+    input.style.top = (vr.top - sr.top + b.y * k) + "px";
+    input.style.width = Math.max(160, b.w * k + 40) + "px";
+    stage.appendChild(input);
+    input.focus(); input.select();
+    let fini = false;
+    const fin = (garder) => {
+      if (fini) return; fini = true;
+      if (garder) { a.text = input.value; labelIn.value = input.value; saveProfile(); }
+      input.remove(); draw();
+    };
+    input.addEventListener("keydown", (ev) => {
+      ev.stopPropagation();                       // pas de raccourci d'outil pendant la frappe
+      if (ev.key === "Enter") fin(true);
+      if (ev.key === "Escape") fin(false);
+    });
+    input.addEventListener("blur", () => fin(true));
+  });
   // Clic sur le fond de la page (hors image et hors colonne d'outils) : désélection.
   document.addEventListener("mousedown", (e) => {
     if (!sel || e.target === view || e.target.closest("aside")) return;
