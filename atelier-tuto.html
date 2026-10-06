@@ -8,8 +8,10 @@
   ATELIER TUTO — fabrique les images des tutos de LOGIX (bouton « i »).
   - Tout est en local : aucune image n'est envoyée nulle part.
   - Les images et tutos/tutos.js restent sur le PC (dossier tutos/ ignoré par Git).
-  - Principe de sécurité : TOUT est flouté par défaut, on ne dégage que ce
-    que le tuto doit montrer. Les zones sont mémorisées par « type d'écran ».
+  - Sécurité : TOUT est flouté par défaut, on ne dégage que ce que le tuto
+    doit montrer. Zones de flou ET repères sont mémorisés par « type d'écran ».
+  - Repères : cadre / cercle avec étiquette accrochée (flèche automatique),
+    flèche libre, pastille numérotée. Tailles proportionnelles à la capture.
 -->
 <style>
   :root {
@@ -17,8 +19,8 @@
     --ink: #2b2419; --muted: #7a6c58; --strong: #1a140c;
     --accent: #0f766e; --accent-strong: #0b5e58; --accent-ink: #ffffff; --wash: rgba(15,118,110,0.08); --wash2: #dbe9e3;
     --border: rgba(80,60,30,0.2); --hair: rgba(80,60,30,0.11);
-    --todo: #b45309; --todo-wash: rgba(180,83,9,0.08); --danger: #c53030; --ok: #2f855a;
-    --fs-micro: 9.5pt; --fs-label: 10.5pt; --ls-wide: 0.18em; --ls-mid: 0.13em; --r-md: 6px; --r-lg: 8px;
+    --todo: #b45309; --todo-wash: rgba(180,83,9,0.08); --red: #e11d48; --ok: #2f855a;
+    --fs-micro: 9.5pt; --fs-label: 10.5pt; --ls-wide: 0.18em; --r-md: 6px; --r-lg: 8px;
   }
   * { box-sizing: border-box; }
   body, body * { font-family: Aptos, Calibri, Arial, sans-serif !important; }
@@ -26,38 +28,46 @@
   .top { display: flex; align-items: center; gap: 12px; padding: 12px 20px; }
   .brand { font-size: 16pt; font-weight: 700; letter-spacing: 0.26em; color: var(--strong); }
   .sub { font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--muted); font-weight: 700; border-left: 1px solid var(--border); padding-left: 12px; }
-  .layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 14px; padding: 0 20px 30px; align-items: start; }
+  .layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 14px; padding: 0 20px 30px; align-items: start; }
   @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px 13px; margin-bottom: 12px; }
   .title { font-size: var(--fs-micro); font-weight: 700; letter-spacing: var(--ls-wide); color: var(--accent-strong); text-transform: uppercase; margin-bottom: 9px; padding-bottom: 7px; border-bottom: 1px solid var(--hair); }
-  .lbl { display: block; font-size: var(--fs-micro); font-weight: 700; letter-spacing: var(--ls-wide); color: var(--muted); text-transform: uppercase; margin: 8px 0 4px; }
+  .lbl { display: block; font-size: var(--fs-micro); font-weight: 700; letter-spacing: var(--ls-wide); color: var(--muted); text-transform: uppercase; margin: 9px 0 4px; }
   input[type=text], select, textarea { width: 100%; height: 2.3rem; padding: 0 0.6rem; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--input); color: var(--ink); font-size: 10.5pt; }
   textarea { height: 3.4rem; padding: 0.4rem 0.6rem; resize: vertical; }
-  .btn { height: 2.3rem; padding: 0 0.8rem; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--raised); color: var(--ink); font-weight: 700; letter-spacing: 0.1em; font-size: 9pt; text-transform: uppercase; cursor: pointer; }
+  .btn { height: 2.2rem; padding: 0 0.7rem; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--raised); color: var(--ink); font-weight: 700; letter-spacing: 0.08em; font-size: 8.8pt; text-transform: uppercase; cursor: pointer; }
   .btn:hover { background: var(--hover); }
   .btn.on { background: var(--wash2); border-color: var(--accent); color: var(--accent-strong); box-shadow: inset 0 0 0 1px var(--accent); }
   .btn.main { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .btn.main:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn.red { color: #b4232f; }
   .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .tools .wide { grid-column: span 2; }
+  .tools3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .sides { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .sides .btn { padding: 0 0.2rem; font-size: 8pt; }
+  .presets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .presets button { border: 1px solid var(--border); background: var(--input); border-radius: 12px; padding: 3px 8px; font-size: 8.5pt; font-weight: 700; cursor: pointer; color: var(--ink); }
+  .presets button:hover { border-color: var(--accent); color: var(--accent-strong); }
   .row { display: flex; gap: 6px; align-items: center; }
   .hint { font-size: 9.5pt; color: var(--muted); line-height: 1.4; margin-top: 6px; }
   .ok { color: var(--ok); font-weight: 700; }
   .warn { color: var(--todo); font-weight: 700; }
+  .sel-info { font-size: 9.5pt; margin-top: 6px; padding: 5px 8px; border-radius: var(--r-md); background: var(--wash); color: var(--accent-strong); font-weight: 700; }
   input[type=range] { width: 100%; accent-color: var(--accent); }
-  .stage { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 10px; min-height: 420px; display: flex; align-items: center; justify-content: center; position: relative; }
+  .stage { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 10px; min-height: 420px; display: flex; align-items: center; justify-content: center; position: sticky; top: 10px; }
   .drop { text-align: center; color: var(--muted); }
   .drop b { color: var(--accent-strong); font-size: 13pt; letter-spacing: 0.1em; }
-  canvas#view { max-width: 100%; height: auto; display: none; cursor: crosshair; border-radius: 4px; }
+  canvas#view { max-width: 100%; max-height: calc(100vh - 40px); height: auto; display: none; cursor: crosshair; border-radius: 4px; }
   .check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 8px; border-radius: var(--r-md); background: var(--todo-wash); border: 1px solid var(--todo); font-size: 10pt; }
   .check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; flex: 0 0 auto; }
   pre { white-space: pre-wrap; background: var(--input); border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px; font-size: 9pt; margin: 6px 0 0; max-height: 220px; overflow: auto; font-family: Consolas, monospace !important; }
-  .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--strong); color: #fff; padding: 10px 16px; border-radius: var(--r-lg); font-weight: 700; letter-spacing: 0.08em; font-size: 10pt; z-index: 50; }
+  .toast { position: fixed; left: 50%; bottom: 22px; margin-left: -190px; width: 380px; text-align: center; background: var(--strong); color: #fff; padding: 10px 16px; border-radius: var(--r-lg); font-weight: 700; letter-spacing: 0.06em; font-size: 10pt; z-index: 50; }
   .steps-done { font-size: 9.5pt; line-height: 1.5; }
 </style>
 </head>
 <body>
-  <div class="top"><span class="brand">● LOGIX</span><span class="sub">ATELIER TUTO — IMAGES FLOUTÉES</span></div>
+  <div class="top"><span class="brand">● LOGIX</span><span class="sub">ATELIER TUTO — IMAGES FLOUTÉES ET ANNOTÉES</span></div>
 
   <div class="layout">
     <aside>
@@ -71,27 +81,54 @@
         <div class="tools">
           <button class="btn on" data-tool="clear" title="Tracer un rectangle : la zone redevient nette">⬚ Déflouter</button>
           <button class="btn" data-tool="blur" title="Tracer un rectangle : la zone est floutée à nouveau">▦ Reflouter</button>
-          <button class="btn" data-tool="circle" title="Cliquer : pose le cercle rouge ICI (re-cliquer le déplace)">◯ Cercle ICI</button>
-          <button class="btn" id="undo" title="Annule la dernière zone">↶ Annuler</button>
-          <button class="btn wide" id="reset" title="Retire toutes les zones : toute l'image floutée">Tout reflouter</button>
+          <button class="btn wide" id="resetZones" title="Retire toutes les zones : toute l'image floutée">Tout reflouter</button>
         </div>
         <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
         <input type="range" id="force" min="6" max="40" step="1" value="16">
-        <div class="hint">Le flou est une <b>pixelisation</b> : le texte devient illisible et on ne peut pas le retrouver.</div>
+        <div class="hint">Le flou est une <b>pixelisation</b> : le texte devient illisible et on ne peut pas le retrouver.<br>Une zone trop grande ? Outil <b>↖ Modifier</b> : clique dessus, puis glisse-la ou tire ses poignées.</div>
       </div>
 
       <div class="card">
-        <div class="title">3. Type d'écran (zones mémorisées)</div>
+        <div class="title">3. Repères (où cliquer)</div>
+        <div class="tools3">
+          <button class="btn" data-tool="rect" title="Tracer un cadre autour du bouton / champ / onglet">▭ Cadre</button>
+          <button class="btn" data-tool="ellipse" title="Tracer un cercle autour d'une petite icône">◯ Cercle</button>
+          <button class="btn" data-tool="arrow" title="Tracer une flèche libre (du début vers la pointe)">➜ Flèche</button>
+          <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③">① Numéro</button>
+          <button class="btn" data-tool="select" title="Cliquer sur une zone ou un repère : le glisser pour le déplacer, tirer les poignées pour le redimensionner">↖ Modifier</button>
+          <button class="btn red" id="delAnnot" title="Efface la zone ou le repère choisi (ou touche Suppr)">🗑 Effacer</button>
+        </div>
+        <label class="lbl" for="label">Étiquette du cadre / cercle</label>
+        <input type="text" id="label" placeholder="ex : CLIQUER SUR CO">
+        <div class="presets" id="presets"></div>
+        <label class="lbl">Côté de l'étiquette</label>
+        <div class="sides" id="sides">
+          <button class="btn on" data-side="auto">Auto</button>
+          <button class="btn" data-side="top">Haut</button>
+          <button class="btn" data-side="bottom">Bas</button>
+          <button class="btn" data-side="left">Gauche</button>
+          <button class="btn" data-side="right">Droite</button>
+        </div>
+        <div id="selInfo"></div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="undo" style="flex:1" title="Annule le dernier ajout (Ctrl+Z)">↶ Annuler</button>
+          <button class="btn red" id="resetAnnots" style="flex:1">Effacer les repères</button>
+        </div>
+        <div class="hint">Un cadre ou un cercle reçoit l'étiquette tapée ci-dessus, reliée par une flèche automatique. Plusieurs actions sur le même écran ? Utilise plutôt les <b>numéros ①②③</b> et explique-les dans la phrase.</div>
+      </div>
+
+      <div class="card">
+        <div class="title">4. Type d'écran (mémorisé)</div>
         <select id="profile"></select>
         <div class="row" style="margin-top:6px">
           <input type="text" id="newProfile" placeholder="Nouveau type d'écran (ex : PORTAIL TI)">
           <button class="btn" id="addProfile">+</button>
         </div>
-        <div class="hint">Les zones déflouées / refloutées et le cercle sont <b>retenus pour ce type d'écran</b> : à la capture suivante du même écran, tout se refait tout seul.</div>
+        <div class="hint">Zones de flou <b>et</b> repères sont retenus pour ce type d'écran : à la capture suivante du même écran, tout se refait tout seul.</div>
       </div>
 
       <div class="card">
-        <div class="title">4. Étape du tuto</div>
+        <div class="title">5. Étape du tuto</div>
         <label class="lbl" for="key">Clé de l'étape LOGIX</label>
         <input type="text" id="key" list="keys" placeholder="ex : dretaf, dcd-scribe-ouvrir, compte-actif">
         <datalist id="keys"></datalist>
@@ -105,7 +142,7 @@
       </div>
 
       <div class="card">
-        <div class="title">5. Enregistrer</div>
+        <div class="title">6. Enregistrer</div>
         <button class="btn" id="pickDir" style="width:100%">📁 Choisir le dossier tutos</button>
         <div class="hint" id="dirInfo">Choisis une fois le dossier <b>LOGIX\tutos</b> : l'image et <b>tutos.js</b> y seront enregistrés directement. Sinon, l'image ira dans Téléchargements.</div>
         <label class="check"><input type="checkbox" id="verif"> <span>J'ai regardé l'image en entier : <b>aucune donnée réelle n'est lisible</b>.</span></label>
@@ -116,7 +153,7 @@
 
     <main>
       <div class="stage" id="stage">
-        <div class="drop" id="drop"><b>CTRL+V POUR COLLER UNE CAPTURE</b><br><br>Toute l'image sera floutée d'office.<br>Ensuite, trace des rectangles pour <b>déflouter</b> ce que le tuto doit montrer.</div>
+        <div class="drop" id="drop"><b>CTRL+V POUR COLLER UNE CAPTURE</b><br><br>Toute l'image sera floutée d'office.<br>Ensuite, <b>déflouter</b> ce que le tuto doit montrer, puis poser un <b>cadre</b> avec son étiquette.</div>
         <canvas id="view"></canvas>
       </div>
     </main>
@@ -126,35 +163,44 @@
 <script>
 (function () {
   "use strict";
+  const RED = "#e11d48";
+  const PRESETS = ["CLIQUER ICI", "CLIQUER SUR …", "VALIDER", "ONGLET …", "SAISIR …", "COCHER", "SÉLECTIONNER …", "COPIER …", "RECHERCHER …"];
+
   // ------------------------------------------------------------------
   // État
   // ------------------------------------------------------------------
   const view = document.getElementById("view");
   const ctx = view.getContext("2d");
-  let img = null;                 // capture originale (canvas)
-  let blurred = null;             // capture entièrement floutée (canvas)
+  let img = null, blurred = null;
   let tool = "clear";
-  let zones = [];                 // [{ type: "clear"|"blur", x, y, w, h }] en fractions 0..1
-  let circle = null;              // { x, y } en fractions 0..1
-  let drag = null;                // rectangle en cours de tracé
-  let dirHandle = null;           // dossier tutos choisi (si le navigateur le permet)
+  let side = "auto";
+  let zones = [];      // [{ type: "clear"|"blur", x, y, w, h }]       (fractions 0..1)
+  let annots = [];     // [{ kind: "rect"|"ellipse", x, y, w, h, text, side } | { kind: "arrow", x1, y1, x2, y2 } | { kind: "num", x, y, n }]
+  let history = [];    // ordre des ajouts, pour Annuler : "zone" | "annot"
+  let sel = null;      // objet choisi : { t: "z" (zone) | "a" (repère), i }
+  let hover = null;    // objet survolé (outil Modifier)
+  let edit = null;     // déplacement / redimensionnement en cours
+  let drag = null, start = null;
+  let labelBoxes = []; // boîte de l'étiquette de chaque repère (pixels image), recalculée au dessin
+  let dirHandle = null;
 
   const store = {
     get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* rien */ } },
   };
-  let profiles = store.get("atelier-profils", { "ÉCRAN PAR DÉFAUT": { zones: [], circle: null } });
+  let profiles = store.get("atelier-profils", { "ÉCRAN PAR DÉFAUT": { zones: [], annots: [] } });
   let current = store.get("atelier-profil-courant", "ÉCRAN PAR DÉFAUT");
   if (!profiles[current]) current = Object.keys(profiles)[0];
 
   function toast(msg) {
+    document.querySelectorAll(".toast").forEach((t) => t.remove());
     const t = document.createElement("div");
     t.className = "toast"; t.textContent = msg;
     document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
   }
 
   // ------------------------------------------------------------------
-  // Clés connues (lues dans data.js) pour aider à remplir « clé »
+  // Clés connues (lues dans data.js)
   // ------------------------------------------------------------------
   (function fillKeys() {
     const keys = new Set();
@@ -175,7 +221,7 @@
   })();
 
   // ------------------------------------------------------------------
-  // Types d'écran (profils de zones)
+  // Types d'écran
   // ------------------------------------------------------------------
   const profSel = document.getElementById("profile");
   function renderProfiles() {
@@ -184,12 +230,13 @@
     profSel.value = current;
   }
   function loadProfile() {
-    const p = profiles[current] || { zones: [], circle: null };
+    const p = profiles[current] || {};
     zones = JSON.parse(JSON.stringify(p.zones || []));
-    circle = p.circle ? { ...p.circle } : null;
+    annots = JSON.parse(JSON.stringify(p.annots || []));
+    history = []; sel = null; hover = null;
   }
   function saveProfile() {
-    profiles[current] = { zones, circle };
+    profiles[current] = { zones, annots };
     store.set("atelier-profils", profiles);
     store.set("atelier-profil-courant", current);
   }
@@ -197,7 +244,7 @@
   document.getElementById("addProfile").addEventListener("click", () => {
     const n = document.getElementById("newProfile").value.trim().toUpperCase();
     if (!n) return;
-    if (!profiles[n]) profiles[n] = { zones: [], circle: null };
+    if (!profiles[n]) profiles[n] = { zones: [], annots: [] };
     current = n; document.getElementById("newProfile").value = "";
     saveProfile(); renderProfiles(); loadProfile(); draw();
     toast("TYPE D'ÉCRAN « " + n + " » CRÉÉ");
@@ -205,7 +252,7 @@
   renderProfiles(); loadProfile();
 
   // ------------------------------------------------------------------
-  // Flou (pixelisation) et dessin
+  // Flou
   // ------------------------------------------------------------------
   const forceIn = document.getElementById("force");
   forceIn.value = store.get("atelier-force", 16);
@@ -216,44 +263,152 @@
 
   function makeBlurred() {
     if (!img) return;
-    // Taille des « pixels » proportionnelle à la largeur de l'image.
     const block = Math.max(4, Math.round(img.width * (+forceIn.value) / 1600));
     const sw = Math.max(1, Math.ceil(img.width / block)), sh = Math.max(1, Math.ceil(img.height / block));
     const small = document.createElement("canvas"); small.width = sw; small.height = sh;
-    const sctx = small.getContext("2d");
-    sctx.imageSmoothingEnabled = true;
-    sctx.drawImage(img, 0, 0, sw, sh);
+    small.getContext("2d").drawImage(img, 0, 0, sw, sh);
     blurred = document.createElement("canvas"); blurred.width = img.width; blurred.height = img.height;
-    const bctx = blurred.getContext("2d");
-    bctx.imageSmoothingEnabled = false;
-    bctx.drawImage(small, 0, 0, img.width, img.height);
+    const b = blurred.getContext("2d");
+    b.imageSmoothingEnabled = false;
+    b.drawImage(small, 0, 0, img.width, img.height);
   }
 
-  function px(z) { return { x: z.x * img.width, y: z.y * img.height, w: z.w * img.width, h: z.h * img.height }; }
+  // ------------------------------------------------------------------
+  // Dessin
+  // ------------------------------------------------------------------
+  // Unité de taille : proportionnelle à la largeur de la capture, pour que
+  // traits, flèches et textes restent lisibles une fois l'image réduite
+  // dans le panneau tuto (≈ 300 px de large).
+  function U() { return img.width / 1000; }
+  function px(r) { return { x: r.x * img.width, y: r.y * img.height, w: r.w * img.width, h: r.h * img.height }; }
 
-  // Rend l'image finale dans un canvas donné (sans les contours d'aide si final).
+  function arrow(c, x1, y1, x2, y2, u, head) {
+    const ang = Math.atan2(y2 - y1, x2 - x1), hl = head * u;
+    c.strokeStyle = RED; c.fillStyle = RED; c.lineWidth = 4 * u; c.lineCap = "round";
+    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(ang) * hl * 0.8, y2 - Math.sin(ang) * hl * 0.8); c.stroke();
+    c.beginPath(); c.moveTo(x2, y2);
+    c.lineTo(x2 - hl * Math.cos(ang - 0.45), y2 - hl * Math.sin(ang - 0.45));
+    c.lineTo(x2 - hl * Math.cos(ang + 0.45), y2 - hl * Math.sin(ang + 0.45));
+    c.closePath(); c.fill();
+  }
+
+  // Étiquette accrochée à un cadre/cercle : boîte blanche bordée de rouge,
+  // placée du côté choisi (ou le plus dégagé en « auto »), flèche vers le repère.
+  function drawLabel(c, a, r, u) {
+    const text = String(a.text || "").trim().toUpperCase();
+    if (!text) return null;
+    const fs = Math.round(22 * u), pad = 9 * u, gap = 46 * u;
+    c.font = "bold " + fs + "px Arial";
+    const tw = c.measureText(text).width, bw = tw + pad * 2, bh = fs + pad * 2;
+    const W = img.width, H = img.height;
+    let s = a.side || "auto";
+    if (s === "auto") {
+      const room = { right: W - (r.x + r.w), left: r.x, bottom: H - (r.y + r.h), top: r.y };
+      s = Object.keys(room).sort((p, q) => room[q] - room[p])[0];
+    }
+    let bx, by;
+    if (s === "top") { bx = r.x + r.w / 2 - bw / 2; by = r.y - gap - bh; }
+    else if (s === "bottom") { bx = r.x + r.w / 2 - bw / 2; by = r.y + r.h + gap; }
+    else if (s === "left") { bx = r.x - gap - bw; by = r.y + r.h / 2 - bh / 2; }
+    else { bx = r.x + r.w + gap; by = r.y + r.h / 2 - bh / 2; }
+    bx = Math.max(4 * u, Math.min(W - bw - 4 * u, bx));
+    by = Math.max(4 * u, Math.min(H - bh - 4 * u, by));
+    // flèche : du bord de l'étiquette vers le bord du repère
+    const lc = { x: bx + bw / 2, y: by + bh / 2 };
+    let from, to;
+    if (s === "top") { from = { x: lc.x, y: by + bh }; to = { x: r.x + r.w / 2, y: r.y - 4 * u }; }
+    else if (s === "bottom") { from = { x: lc.x, y: by }; to = { x: r.x + r.w / 2, y: r.y + r.h + 4 * u }; }
+    else if (s === "left") { from = { x: bx + bw, y: lc.y }; to = { x: r.x - 4 * u, y: r.y + r.h / 2 }; }
+    else { from = { x: bx, y: lc.y }; to = { x: r.x + r.w + 4 * u, y: r.y + r.h / 2 }; }
+    arrow(c, from.x, from.y, to.x, to.y, u, 18);
+    c.fillStyle = "#ffffff"; c.strokeStyle = RED; c.lineWidth = 3 * u;
+    c.beginPath(); c.rect(bx, by, bw, bh); c.fill(); c.stroke();
+    c.fillStyle = "#b4122f"; c.textBaseline = "middle";
+    c.fillText(text, bx + pad, by + bh / 2 + 1);
+    c.textBaseline = "alphabetic";
+    return { x: bx, y: by, w: bw, h: bh };
+  }
+
+  // Objet (zone ou repère) → rectangle en pixels image.
+  function itemOf(o) { return o ? (o.t === "z" ? zones[o.i] : annots[o.i]) : null; }
+  function boundsOf(o) {
+    const it = itemOf(o);
+    if (!it) return null;
+    const u = U();
+    if (o.t === "z" || it.kind === "rect" || it.kind === "ellipse") return px(it);
+    if (it.kind === "arrow") {
+      const x1 = it.x1 * img.width, y1 = it.y1 * img.height, x2 = it.x2 * img.width, y2 = it.y2 * img.height;
+      return { x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1) };
+    }
+    const r = 20 * u;
+    return { x: it.x * img.width - r, y: it.y * img.height - r, w: r * 2, h: r * 2 };
+  }
+  // Poignées de l'objet choisi : 8 pour un rectangle, 2 pour une flèche.
+  function handlesOf(o) {
+    const it = itemOf(o);
+    if (!it) return [];
+    if (o.t === "a" && it.kind === "arrow") {
+      return [{ id: "p1", x: it.x1 * img.width, y: it.y1 * img.height }, { id: "p2", x: it.x2 * img.width, y: it.y2 * img.height }];
+    }
+    if (o.t === "a" && it.kind === "num") return [];
+    const b = boundsOf(o);
+    const xs = { w: b.x, c: b.x + b.w / 2, e: b.x + b.w }, ys = { n: b.y, m: b.y + b.h / 2, s: b.y + b.h };
+    return [
+      { id: "nw", x: xs.w, y: ys.n }, { id: "n", x: xs.c, y: ys.n }, { id: "ne", x: xs.e, y: ys.n }, { id: "e", x: xs.e, y: ys.m },
+      { id: "se", x: xs.e, y: ys.s }, { id: "s", x: xs.c, y: ys.s }, { id: "sw", x: xs.w, y: ys.s }, { id: "w", x: xs.w, y: ys.m },
+    ];
+  }
+  function outline(c, o, strong) {
+    const b = boundsOf(o), u = U();
+    if (!b) return;
+    const it = itemOf(o);
+    const col = o.t === "z" ? (it.type === "clear" ? "#0f766e" : "#b45309") : "#0f766e";
+    c.setLineDash([7 * u, 5 * u]); c.lineWidth = (strong ? 2.5 : 1.5) * u; c.strokeStyle = col;
+    const m = o.t === "z" ? 0 : 6 * u;
+    c.strokeRect(b.x - m, b.y - m, b.w + 2 * m, b.h + 2 * m);
+    c.setLineDash([]);
+    if (strong) {
+      const hs = 9 * u;
+      handlesOf(o).forEach((h) => {
+        c.fillStyle = "#ffffff"; c.strokeStyle = col; c.lineWidth = 2 * u;
+        c.fillRect(h.x - hs / 2, h.y - hs / 2, hs, hs); c.strokeRect(h.x - hs / 2, h.y - hs / 2, hs, hs);
+      });
+    }
+  }
+
   function render(target, final) {
     const c = target.getContext("2d");
     target.width = img.width; target.height = img.height;
-    c.drawImage(blurred, 0, 0);                 // tout flouté d'office
-    zones.forEach((z) => {                        // puis zones dans l'ordre
-      const r = px(z);
-      c.drawImage(z.type === "clear" ? img : blurred, r.x, r.y, r.w, r.h, r.x, r.y, r.w, r.h);
+    const u = U();
+    c.drawImage(blurred, 0, 0);
+    zones.forEach((z) => { const r = px(z); c.drawImage(z.type === "clear" ? img : blurred, r.x, r.y, r.w, r.h, r.x, r.y, r.w, r.h); });
+    const labels = [];
+    annots.forEach((a) => {
+      let lb = null;
+      if (a.kind === "rect" || a.kind === "ellipse") {
+        const r = px(a);
+        c.strokeStyle = RED; c.lineWidth = 4 * u;
+        c.beginPath();
+        if (a.kind === "rect") c.rect(r.x, r.y, r.w, r.h);
+        else c.ellipse(r.x + r.w / 2, r.y + r.h / 2, Math.max(1, r.w / 2), Math.max(1, r.h / 2), 0, 0, Math.PI * 2);
+        c.stroke();
+        lb = drawLabel(c, a, r, u);
+      } else if (a.kind === "arrow") {
+        arrow(c, a.x1 * img.width, a.y1 * img.height, a.x2 * img.width, a.y2 * img.height, u, 24);
+      } else if (a.kind === "num") {
+        const x = a.x * img.width, y = a.y * img.height, rad = 20 * u;
+        c.fillStyle = RED; c.beginPath(); c.arc(x, y, rad, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = "#ffffff"; c.lineWidth = 3 * u; c.stroke();
+        c.fillStyle = "#ffffff"; c.font = "bold " + Math.round(24 * u) + "px Arial"; c.textAlign = "center"; c.textBaseline = "middle";
+        c.fillText(String(a.n), x, y + 1); c.textAlign = "left"; c.textBaseline = "alphabetic";
+      }
+      labels.push(lb);
     });
     if (!final) {
-      zones.forEach((z) => {
-        const r = px(z);
-        c.setLineDash([8, 6]); c.lineWidth = Math.max(2, img.width / 600);
-        c.strokeStyle = z.type === "clear" ? "#0f766e" : "#b45309";
-        c.strokeRect(r.x, r.y, r.w, r.h); c.setLineDash([]);
-      });
-    }
-    if (circle) {
-      const cx = circle.x * img.width, cy = circle.y * img.height, rad = Math.max(18, img.width / 45);
-      c.lineWidth = Math.max(3, img.width / 320); c.strokeStyle = "#e11d48";
-      c.beginPath(); c.arc(cx, cy, rad, 0, Math.PI * 2); c.stroke();
-      c.fillStyle = "#e11d48"; c.font = "bold " + Math.round(rad * 0.9) + "px Arial";
-      c.fillText("ICI", cx + rad * 1.05, cy - rad * 0.75);
+      labelBoxes = labels;
+      // Pointillés seulement pour l'objet survolé (léger) et l'objet choisi (+ poignées).
+      if (hover && !(sel && hover.t === sel.t && hover.i === sel.i)) outline(c, hover, false);
+      if (sel) outline(c, sel, true);
     }
   }
 
@@ -261,11 +416,19 @@
     if (!img) return;
     render(view, false);
     if (drag) {
-      const r = px(drag);
-      ctx.setLineDash([6, 4]); ctx.lineWidth = Math.max(2, img.width / 500);
-      ctx.strokeStyle = tool === "clear" ? "#0f766e" : "#b45309";
-      ctx.strokeRect(r.x, r.y, r.w, r.h); ctx.setLineDash([]);
+      const u = U();
+      if (drag.kind === "arrow") {
+        arrow(ctx, drag.x1 * img.width, drag.y1 * img.height, drag.x2 * img.width, drag.y2 * img.height, u, 24);
+      } else {
+        const r = px(drag);
+        ctx.setLineDash([6 * u, 4 * u]); ctx.lineWidth = 2 * u;
+        ctx.strokeStyle = drag.kind === "blur" ? "#b45309" : drag.kind === "clear" ? "#0f766e" : RED;
+        if (drag.kind === "ellipse") { ctx.beginPath(); ctx.ellipse(r.x + r.w / 2, r.y + r.h / 2, Math.max(1, r.w / 2), Math.max(1, r.h / 2), 0, 0, Math.PI * 2); ctx.stroke(); }
+        else ctx.strokeRect(r.x, r.y, r.w, r.h);
+        ctx.setLineDash([]);
+      }
     }
+    showSel();
     updateSave();
   }
 
@@ -279,13 +442,12 @@
       img = document.createElement("canvas"); img.width = im.width; img.height = im.height;
       img.getContext("2d").drawImage(im, 0, 0);
       URL.revokeObjectURL(url);
-      loadProfile();            // zones du type d'écran choisi, appliquées tout de suite
-      makeBlurred();
+      loadProfile(); makeBlurred();
       document.getElementById("drop").style.display = "none";
       view.style.display = "block";
       document.getElementById("verif").checked = false;
       draw();
-      toast(zones.length ? "CAPTURE COLLÉE — ZONES « " + current + " » APPLIQUÉES" : "CAPTURE COLLÉE — TOUT EST FLOUTÉ");
+      toast(zones.length || annots.length ? "CAPTURE COLLÉE — « " + current + " » APPLIQUÉ" : "CAPTURE COLLÉE — TOUT EST FLOUTÉ");
     };
     im.src = url;
   }
@@ -302,40 +464,191 @@
   });
 
   // ------------------------------------------------------------------
-  // Outils (souris)
+  // Outils
   // ------------------------------------------------------------------
-  document.querySelectorAll("[data-tool]").forEach((b) => b.addEventListener("click", () => {
-    tool = b.dataset.tool;
-    document.querySelectorAll("[data-tool]").forEach((x) => x.classList.toggle("on", x === b));
+  function setTool(t) {
+    tool = t;
+    document.querySelectorAll("[data-tool]").forEach((x) => x.classList.toggle("on", x.dataset.tool === t));
+    if (t !== "select") hover = null;
+    view.style.cursor = t === "select" ? "default" : "crosshair";
+    draw();
+  }
+  document.querySelectorAll("[data-tool]").forEach((b) => b.addEventListener("click", () => setTool(b.dataset.tool)));
+
+  const labelIn = document.getElementById("label");
+  function selAnnot() { return sel && sel.t === "a" ? annots[sel.i] : null; }
+  function setSide(s) {
+    side = s;
+    document.querySelectorAll("[data-side]").forEach((x) => x.classList.toggle("on", x.dataset.side === s));
+  }
+  document.querySelectorAll("[data-side]").forEach((b) => b.addEventListener("click", () => {
+    setSide(b.dataset.side);
+    const a = selAnnot();
+    if (a && (a.kind === "rect" || a.kind === "ellipse")) { a.side = side; saveProfile(); draw(); }
   }));
+  labelIn.addEventListener("input", () => {
+    const a = selAnnot();
+    if (a && (a.kind === "rect" || a.kind === "ellipse")) { a.text = labelIn.value; saveProfile(); draw(); }
+  });
+  const presetsBox = document.getElementById("presets");
+  PRESETS.forEach((p) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = p;
+    b.addEventListener("click", () => {
+      // « … » = à compléter : on enlève les points et on place le curseur à la fin.
+      labelIn.value = p.replace(" …", " ");
+      labelIn.dispatchEvent(new Event("input"));
+      labelIn.focus(); labelIn.setSelectionRange(labelIn.value.length, labelIn.value.length);
+    });
+    presetsBox.appendChild(b);
+  });
+
+  function showSel() {
+    const it = itemOf(sel);
+    let name = "";
+    if (it) {
+      if (sel.t === "z") name = it.type === "clear" ? "ZONE NETTE" : "ZONE REFLOUTÉE";
+      else name = { rect: "CADRE", ellipse: "CERCLE", arrow: "FLÈCHE", num: "NUMÉRO " + it.n }[it.kind];
+    }
+    document.getElementById("selInfo").innerHTML = it
+      ? "<div class='sel-info'>Choisi : " + name + " — glisse pour déplacer, tire les poignées pour redimensionner, Suppr pour effacer</div>"
+      : "";
+  }
+  function choose(o) {
+    sel = o;
+    const a = selAnnot();
+    if (a && (a.kind === "rect" || a.kind === "ellipse")) { labelIn.value = a.text || ""; setSide(a.side || "auto"); }
+    draw();
+  }
+
   function pos(e) {
     const r = view.getBoundingClientRect();
     return { x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) };
   }
-  let start = null;
+  // Objet sous le pointeur : repères d'abord (dessus), puis zones (la plus récente d'abord).
+  function hitTest(p) {
+    const X = p.x * img.width, Y = p.y * img.height, u = U();
+    const inBox = (b, m) => b && X >= b.x - m && X <= b.x + b.w + m && Y >= b.y - m && Y <= b.y + b.h + m;
+    for (let i = annots.length - 1; i >= 0; i--) {
+      if (inBox(boundsOf({ t: "a", i }), 8 * u) || inBox(labelBoxes[i], 0)) return { t: "a", i };
+    }
+    for (let i = zones.length - 1; i >= 0; i--) if (inBox(boundsOf({ t: "z", i }), 0)) return { t: "z", i };
+    return null;
+  }
+  function handleAt(p) {
+    if (!sel) return null;
+    const X = p.x * img.width, Y = p.y * img.height, m = 12 * U();
+    return handlesOf(sel).find((h) => Math.abs(h.x - X) <= m && Math.abs(h.y - Y) <= m) || null;
+  }
+  const CURSORS = { nw: "nwse-resize", se: "nwse-resize", ne: "nesw-resize", sw: "nesw-resize", n: "ns-resize", s: "ns-resize", e: "ew-resize", w: "ew-resize", p1: "crosshair", p2: "crosshair" };
+
   view.addEventListener("mousedown", (e) => {
     if (!img) return;
     const p = pos(e);
-    if (tool === "circle") { circle = p; saveProfile(); draw(); return; }
-    start = p; drag = { type: tool, x: p.x, y: p.y, w: 0, h: 0 };
-  });
-  window.addEventListener("mousemove", (e) => {
-    if (!start) return;
-    const p = pos(e);
-    drag = { type: tool, x: Math.min(start.x, p.x), y: Math.min(start.y, p.y), w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y) };
-    draw();
-  });
-  window.addEventListener("mouseup", () => {
-    if (!start) return;
-    if (drag && drag.w > 0.005 && drag.h > 0.005) { zones.push(drag); saveProfile(); }
-    start = null; drag = null; draw();
-  });
-  document.getElementById("undo").addEventListener("click", () => { zones.pop(); saveProfile(); draw(); });
-  document.getElementById("reset").addEventListener("click", () => { zones = []; circle = null; saveProfile(); draw(); toast("TOUTE L'IMAGE EST FLOUTÉE"); });
-  document.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) {
-      e.preventDefault(); zones.pop(); saveProfile(); draw();
+    // 1) Poignée de l'objet choisi : redimensionner (quel que soit l'outil).
+    const h = handleAt(p);
+    if (h) { edit = { mode: "resize", h: h.id, start: p, orig: JSON.parse(JSON.stringify(itemOf(sel))) }; return; }
+    // 2) Outil Modifier : choisir puis déplacer.
+    if (tool === "select") {
+      const o = hitTest(p);
+      choose(o);
+      if (o) edit = { mode: "move", start: p, orig: JSON.parse(JSON.stringify(itemOf(o))) };
+      return;
     }
+    if (tool === "num") {
+      const n = annots.filter((a) => a.kind === "num").length + 1;
+      annots.push({ kind: "num", x: p.x, y: p.y, n });
+      history.push("annot"); choose({ t: "a", i: annots.length - 1 }); saveProfile(); return;
+    }
+    start = p;
+    drag = tool === "arrow" ? { kind: "arrow", x1: p.x, y1: p.y, x2: p.x, y2: p.y } : { kind: tool, x: p.x, y: p.y, w: 0, h: 0 };
+  });
+
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+  function applyEdit(p) {
+    const it = itemOf(sel), o = edit.orig;
+    const dx = p.x - edit.start.x, dy = p.y - edit.start.y;
+    if (edit.mode === "move") {
+      if ("x1" in o) { it.x1 = clamp01(o.x1 + dx); it.y1 = clamp01(o.y1 + dy); it.x2 = clamp01(o.x2 + dx); it.y2 = clamp01(o.y2 + dy); }
+      else if ("w" in o) { it.x = Math.min(1 - o.w, Math.max(0, o.x + dx)); it.y = Math.min(1 - o.h, Math.max(0, o.y + dy)); }
+      else { it.x = clamp01(o.x + dx); it.y = clamp01(o.y + dy); }
+      return;
+    }
+    // Redimensionner
+    if (edit.h === "p1") { it.x1 = p.x; it.y1 = p.y; return; }
+    if (edit.h === "p2") { it.x2 = p.x; it.y2 = p.y; return; }
+    let x1 = o.x, y1 = o.y, x2 = o.x + o.w, y2 = o.y + o.h;
+    if (edit.h.includes("w")) x1 = clamp01(o.x + dx);
+    if (edit.h.includes("e")) x2 = clamp01(o.x + o.w + dx);
+    if (edit.h.includes("n")) y1 = clamp01(o.y + dy);
+    if (edit.h === "s" || edit.h === "se" || edit.h === "sw") y2 = clamp01(o.y + o.h + dy);
+    it.x = Math.min(x1, x2); it.y = Math.min(y1, y2); it.w = Math.max(0.004, Math.abs(x2 - x1)); it.h = Math.max(0.004, Math.abs(y2 - y1));
+  }
+
+  window.addEventListener("mousemove", (e) => {
+    if (!img) return;
+    const p = pos(e);
+    if (edit) { applyEdit(p); draw(); return; }
+    if (start) {
+      if (drag.kind === "arrow") { drag.x2 = p.x; drag.y2 = p.y; }
+      else drag = { kind: drag.kind, x: Math.min(start.x, p.x), y: Math.min(start.y, p.y), w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y) };
+      draw(); return;
+    }
+    // Survol : curseur adapté + pointillés légers sur l'objet sous la souris (outil Modifier).
+    if (e.target !== view) return;
+    const h = handleAt(p);
+    if (h) { view.style.cursor = CURSORS[h.id]; return; }
+    if (tool === "select") {
+      const o = hitTest(p);
+      view.style.cursor = o ? "move" : "default";
+      const changed = JSON.stringify(o) !== JSON.stringify(hover);
+      hover = o;
+      if (changed) draw();
+    } else view.style.cursor = "crosshair";
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (edit) { edit = null; saveProfile(); draw(); return; }
+    if (!start) return;
+    const d = drag; start = null; drag = null;
+    if (d.kind === "arrow") {
+      if (Math.hypot(d.x2 - d.x1, d.y2 - d.y1) > 0.01) { annots.push(d); history.push("annot"); sel = { t: "a", i: annots.length - 1 }; }
+    } else if (d.w > 0.005 && d.h > 0.005) {
+      if (d.kind === "clear" || d.kind === "blur") {
+        zones.push({ type: d.kind, x: d.x, y: d.y, w: d.w, h: d.h }); history.push("zone"); sel = { t: "z", i: zones.length - 1 };
+      } else {
+        annots.push({ kind: d.kind, x: d.x, y: d.y, w: d.w, h: d.h, text: labelIn.value, side }); history.push("annot"); sel = { t: "a", i: annots.length - 1 };
+      }
+    }
+    saveProfile(); draw();
+  });
+  view.addEventListener("mouseleave", () => { if (hover) { hover = null; draw(); } });
+
+  function deleteSelected() {
+    if (!sel) return;
+    if (sel.t === "z") zones.splice(sel.i, 1);
+    else {
+      annots.splice(sel.i, 1);
+      let n = 0; annots.forEach((a) => { if (a.kind === "num") a.n = ++n; });   // garde 1, 2, 3…
+    }
+    sel = null; hover = null; history = []; saveProfile(); draw();
+  }
+  function undo() {
+    const last = history.pop();
+    if (last === "zone") zones.pop();
+    else if (last === "annot") annots.pop();
+    else if (annots.length) annots.pop(); else zones.pop();
+    sel = null; hover = null; saveProfile(); draw();
+  }
+  document.getElementById("delAnnot").addEventListener("click", deleteSelected);
+  document.getElementById("undo").addEventListener("click", undo);
+  document.getElementById("resetZones").addEventListener("click", () => { zones = []; if (sel && sel.t === "z") sel = null; saveProfile(); draw(); toast("TOUTE L'IMAGE EST FLOUTÉE"); });
+  document.getElementById("resetAnnots").addEventListener("click", () => { annots = []; if (sel && sel.t === "a") sel = null; saveProfile(); draw(); toast("REPÈRES EFFACÉS"); });
+  document.addEventListener("keydown", (e) => {
+    const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !typing) { e.preventDefault(); undo(); }
+    if ((e.key === "Delete" || e.key === "Backspace") && !typing && sel) { e.preventDefault(); deleteSelected(); }
+    if (e.key === "Escape") { sel = null; draw(); }
   });
 
   // ------------------------------------------------------------------
@@ -350,8 +663,7 @@
     updateSave();
   }));
   keyIn.addEventListener("change", () => {
-    // Clé déjà connue dans tutos.js : on reprend son titre et le n° suivant.
-    const t = (window.__tutosLus || {})[keyIn.value.trim()];
+    const t = (window.__tutosLus || {})[cleanKey(keyIn.value)];
     if (t) { titreIn.value = t.titre || titreIn.value; numIn.value = String((t.etapes || []).length + 1); }
     store.set("atelier-titre", titreIn.value); store.set("atelier-num", numIn.value);
     showDone();
@@ -361,12 +673,9 @@
   const verif = document.getElementById("verif"), saveBtn = document.getElementById("save");
   verif.addEventListener("change", updateSave);
   function updateSave() { saveBtn.disabled = !(img && verif.checked && cleanKey(keyIn.value) && texteIn.value.trim()); }
-
   function showDone() {
     const t = (window.__tutosLus || {})[cleanKey(keyIn.value)];
-    document.getElementById("dejaFaits").innerHTML = t
-      ? "<div class='hint'>Déjà dans tutos.js : " + t.etapes.length + " écran(s).</div>"
-      : "";
+    document.getElementById("dejaFaits").innerHTML = t ? "<div class='hint'>Déjà dans tutos.js : " + t.etapes.length + " écran(s).</div>" : "";
   }
 
   // ------------------------------------------------------------------
@@ -409,7 +718,7 @@
   const pickBtn = document.getElementById("pickDir");
   if (!window.showDirectoryPicker) {
     pickBtn.disabled = true;
-    document.getElementById("dirInfo").innerHTML = "Ce navigateur ne permet pas d'écrire dans un dossier : l'image ira dans <b>Téléchargements</b> (déplace-la dans LOGIX\\tutos) et le bloc à coller dans tutos.js s'affichera ici.";
+    document.getElementById("dirInfo").innerHTML = "Ce navigateur ne permet pas d'écrire dans un dossier : l'image ira dans <b>Téléchargements</b> (déplace-la dans LOGIX\\tutos) et la ligne à coller dans tutos.js s'affichera ici.";
   }
   pickBtn.addEventListener("click", async () => {
     try {
@@ -427,7 +736,7 @@
     const n = String(numIn.value).trim() || "1";
     const fileName = key + "-" + n + ".png";
     const out = document.createElement("canvas");
-    render(out, true);                                   // image finale, sans contours d'aide
+    render(out, true);
     const blob = await new Promise((r) => out.toBlob(r, "image/png"));
     const etape = { image: fileName, texte: texteIn.value.trim() };
     const box = document.getElementById("saveOut");
@@ -439,7 +748,7 @@
       const w = await fh.createWritable(); await w.write(blob); await w.close();
       const t = tutos[key] || { titre: titreIn.value.trim() || key.toUpperCase(), etapes: [] };
       if (titreIn.value.trim()) t.titre = titreIn.value.trim();
-      t.etapes = t.etapes.filter((e) => e.image !== fileName);  // ré-enregistrer un écran le remplace
+      t.etapes = t.etapes.filter((e) => e.image !== fileName);
       t.etapes.push(etape);
       t.etapes.sort((a, b) => (parseInt(a.image.split("-").pop()) || 0) - (parseInt(b.image.split("-").pop()) || 0));
       tutos[key] = t;
@@ -455,12 +764,13 @@
       box.innerHTML = "<div class='hint'>✓ <b>" + fileName + "</b> téléchargé : déplace-le dans <b>LOGIX\\tutos</b>, puis ajoute cette ligne dans les « etapes » de « " + key + " » dans tutos.js :</div><pre></pre>";
       box.querySelector("pre").textContent = bloc;
     }
-    // Écran suivant : n° + 1, nouvelle phrase, nouvelle vérification.
     numIn.value = String((parseInt(n) || 1) + 1);
     store.set("atelier-num", numIn.value);
     texteIn.value = ""; verif.checked = false; updateSave(); showDone();
     toast("ÉTAPE ENREGISTRÉE — COLLE LA CAPTURE SUIVANTE");
   });
+
+  setTool("clear");
 })();
 </script>
 </body>
