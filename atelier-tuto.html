@@ -29,6 +29,14 @@
   .brand { font-size: 16pt; font-weight: 700; letter-spacing: 0.26em; color: var(--strong); }
   .sub { font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--muted); font-weight: 700; border-left: 1px solid var(--border); padding-left: 12px; }
   .layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 14px; padding: 0 20px 30px; align-items: start; }
+  /* La colonne d'outils défile seule : l'image reste en place à droite. */
+  .layout > aside { position: sticky; top: 10px; max-height: calc(100vh - 20px); overflow-y: auto; padding-right: 6px; }
+  @media (max-width: 900px) { .layout > aside { position: static; max-height: none; overflow: visible; } }
+  .model-state { font-size: 9.5pt; font-weight: 700; margin-top: 8px; padding: 5px 8px; border-radius: var(--r-md); }
+  .model-state.is-ok { background: rgba(47,133,90,0.1); color: var(--ok); }
+  .model-state.is-dirty { background: var(--todo-wash); color: var(--todo); }
+  .check-line { display: flex; gap: 7px; align-items: center; margin-top: 8px; font-size: 10pt; }
+  .check-line input { width: 17px; height: 17px; accent-color: var(--accent); margin: 0; }
   @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px 13px; margin-bottom: 12px; }
   .title { font-size: var(--fs-micro); font-weight: 700; letter-spacing: var(--ls-wide); color: var(--accent-strong); text-transform: uppercase; margin-bottom: 9px; padding-bottom: 7px; border-bottom: 1px solid var(--hair); }
@@ -118,13 +126,17 @@
       </div>
 
       <div class="card">
-        <div class="title">4. Type d'écran (mémorisé)</div>
+        <div class="title">4. Modèle d'écran (à valider)</div>
         <select id="profile"></select>
-        <div class="row" style="margin-top:6px">
-          <input type="text" id="newProfile" placeholder="Nouveau type d'écran (ex : PORTAIL TI)">
-          <button class="btn" id="addProfile">+</button>
+        <label class="check-line"><input type="checkbox" id="withAnnots"> Retenir aussi les repères (cadres, flèches, textes, numéros)</label>
+        <button class="btn main" id="validateModel" style="width:100%;margin-top:8px">💾 Valider ce modèle</button>
+        <div id="modelState"></div>
+        <div class="row" style="margin-top:8px">
+          <input type="text" id="newProfile" placeholder="Nouveau modèle (ex : PORTAIL TI)">
+          <button class="btn" id="addProfile" title="Crée un nouveau modèle avec le floutage actuel">Créer</button>
         </div>
-        <div class="hint">Zones de flou <b>et</b> repères sont retenus pour ce type d'écran : à la capture suivante du même écran, tout se refait tout seul.</div>
+        <button class="btn" id="applyModel" style="width:100%;margin-top:6px" title="Remet le floutage enregistré dans ce modèle (annule les changements non validés)">↺ Réappliquer le modèle</button>
+        <div class="hint">Quand le floutage te convient, clique <b>Valider</b> : à la prochaine capture du même écran (même modèle choisi), il sera refait tout seul.</div>
       </div>
 
       <div class="card">
@@ -229,26 +241,57 @@
     Object.keys(profiles).forEach((n) => { const o = document.createElement("option"); o.value = n; o.textContent = n; profSel.appendChild(o); });
     profSel.value = current;
   }
+  // Le travail en cours (zones, repères) n'est PAS enregistré tout seul :
+  // on le mémorise dans le modèle choisi avec « Valider ce modèle ».
+  const withAnnotsIn = document.getElementById("withAnnots");
+  let dirty = false;
+
+  // Applique le modèle enregistré au travail en cours.
   function loadProfile() {
     const p = profiles[current] || {};
     zones = JSON.parse(JSON.stringify(p.zones || []));
-    annots = JSON.parse(JSON.stringify(p.annots || []));
-    history = []; sel = null; hover = null;
+    annots = p.withAnnots ? JSON.parse(JSON.stringify(p.annots || [])) : [];
+    withAnnotsIn.checked = !!p.withAnnots;
+    history = []; sel = null; hover = null; dirty = false;
+    showModelState();
   }
-  function saveProfile() {
-    profiles[current] = { zones, annots };
+  // Une modification a été faite : le modèle n'est plus à jour.
+  function saveProfile() { dirty = true; showModelState(); }
+  function validateModel() {
+    profiles[current] = {
+      zones: JSON.parse(JSON.stringify(zones)),
+      annots: withAnnotsIn.checked ? JSON.parse(JSON.stringify(annots)) : [],
+      withAnnots: withAnnotsIn.checked,
+    };
     store.set("atelier-profils", profiles);
     store.set("atelier-profil-courant", current);
+    dirty = false; showModelState();
+    toast("MODÈLE « " + current + " » VALIDÉ" + (withAnnotsIn.checked ? " (AVEC REPÈRES)" : " (FLOUTAGE SEUL)"));
   }
-  profSel.addEventListener("change", () => { current = profSel.value; store.set("atelier-profil-courant", current); loadProfile(); draw(); });
+  function showModelState() {
+    const p = profiles[current] || {};
+    const nz = (p.zones || []).length, na = (p.annots || []).length;
+    const box = document.getElementById("modelState");
+    if (!box) return;
+    box.innerHTML = dirty
+      ? "<div class='model-state is-dirty'>● Changements non validés pour « " + current + " »</div>"
+      : "<div class='model-state is-ok'>✓ Modèle « " + current + " » : " + nz + " zone(s)" + (p.withAnnots ? ", " + na + " repère(s)" : ", floutage seul") + "</div>";
+  }
+  profSel.addEventListener("change", () => {
+    current = profSel.value; store.set("atelier-profil-courant", current);
+    loadProfile(); draw();
+    toast("MODÈLE « " + current + " » APPLIQUÉ");
+  });
   document.getElementById("addProfile").addEventListener("click", () => {
     const n = document.getElementById("newProfile").value.trim().toUpperCase();
     if (!n) return;
-    if (!profiles[n]) profiles[n] = { zones: [], annots: [] };
     current = n; document.getElementById("newProfile").value = "";
-    saveProfile(); renderProfiles(); loadProfile(); draw();
-    toast("TYPE D'ÉCRAN « " + n + " » CRÉÉ");
+    validateModel();            // le nouveau modèle part du floutage actuel
+    renderProfiles();
   });
+  document.getElementById("validateModel").addEventListener("click", validateModel);
+  document.getElementById("applyModel").addEventListener("click", () => { loadProfile(); draw(); toast("MODÈLE « " + current + " » RÉAPPLIQUÉ"); });
+  withAnnotsIn.addEventListener("change", () => { dirty = true; showModelState(); });
   renderProfiles(); loadProfile();
 
   // ------------------------------------------------------------------
@@ -442,12 +485,14 @@
       img = document.createElement("canvas"); img.width = im.width; img.height = im.height;
       img.getContext("2d").drawImage(im, 0, 0);
       URL.revokeObjectURL(url);
+      const perdu = dirty;      // changements non validés sur la capture précédente
       loadProfile(); makeBlurred();
       document.getElementById("drop").style.display = "none";
       view.style.display = "block";
       document.getElementById("verif").checked = false;
       draw();
-      toast(zones.length || annots.length ? "CAPTURE COLLÉE — « " + current + " » APPLIQUÉ" : "CAPTURE COLLÉE — TOUT EST FLOUTÉ");
+      toast(perdu ? "⚠️ CHANGEMENTS NON VALIDÉS PERDUS — MODÈLE « " + current + " » APPLIQUÉ"
+        : zones.length || annots.length ? "CAPTURE COLLÉE — MODÈLE « " + current + " » APPLIQUÉ" : "CAPTURE COLLÉE — TOUT EST FLOUTÉ");
     };
     im.src = url;
   }
