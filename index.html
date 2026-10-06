@@ -1732,8 +1732,7 @@
       .tuto-panel {
         position: absolute;
         z-index: 45;
-        left: calc(100% + 14px);
-        top: -14px;
+        right: 16px;
         width: 360px;
         max-height: 75vh;
         overflow: auto;
@@ -1748,31 +1747,34 @@
         text-align: left;
       }
 
-      .tuto-panel::before {
+      /* Trait qui relie le « i » au panneau (pointe vers le « i »). */
+      .tuto-link {
+        position: absolute;
+        z-index: 44;
+        height: 0;
+        border-top: 2px dashed var(--accent);
+        pointer-events: none;
+      }
+
+      .tuto-link::before {
         content: "";
         position: absolute;
-        left: -9px;
-        top: 18px;
-        width: 14px;
-        height: 14px;
-        background: var(--surface);
-        border-left: 1.5px solid var(--accent);
-        border-bottom: 1.5px solid var(--accent);
-        transform: rotate(45deg);
+        left: -2px;
+        top: -7px;
+        border: 6px solid transparent;
+        border-right: 9px solid var(--accent);
+        border-left: 0;
       }
 
-      /* Pas de place à droite : en dessous du « i ». */
-      .tuto-panel.is-below {
-        left: auto;
-        right: -14px;
-        top: calc(100% + 12px);
-      }
-
-      .tuto-panel.is-below::before {
-        left: auto;
-        right: 18px;
-        top: -9px;
-        transform: rotate(135deg);
+      .tuto-link::after {
+        content: "";
+        position: absolute;
+        right: -1px;
+        top: -5px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
       }
 
       .tuto-head {
@@ -3594,9 +3596,35 @@
           if (e.target === tutoBig || e.target.classList.contains("tuto-big-x")) tutoBig.classList.add("hidden");
         });
 
+        let tutoWrap = null;
+
+        // Panneau tout à droite de l'écran, à hauteur du « i », relié par un trait.
+        function placeTuto() {
+          const panel = document.querySelector(".tuto-panel");
+          const link = document.querySelector(".tuto-link");
+          if (!panel || !tutoWrap || !tutoWrap.isConnected) return;
+          const r = tutoWrap.getBoundingClientRect();
+          const sx = window.scrollX, sy = window.scrollY;
+          const pw = panel.offsetWidth;
+          const panelLeft = document.documentElement.clientWidth - 16 - pw;
+          if (r.right + 40 <= panelLeft) {
+            panel.style.top = Math.max(sy + 8, r.top + sy - 14) + "px";
+            link.style.display = "";
+            link.style.left = (r.right + sx + 4) + "px";
+            link.style.top = (r.top + sy + r.height / 2) + "px";
+            link.style.width = Math.max(0, panelLeft - r.right - 8) + "px";
+          } else {
+            // Écran trop étroit : le panneau passe sous le « i », sans trait.
+            panel.style.top = (r.bottom + sy + 10) + "px";
+            link.style.display = "none";
+          }
+        }
+        window.addEventListener("resize", placeTuto);
+
         function closeTutos() {
           openTutoKey = null;
-          document.querySelectorAll(".tuto-panel").forEach((p) => p.remove());
+          tutoWrap = null;
+          document.querySelectorAll(".tuto-panel, .tuto-link").forEach((p) => p.remove());
           document.querySelectorAll(".tuto-i.is-on").forEach((b) => b.classList.remove("is-on"));
         }
 
@@ -3656,10 +3684,12 @@
             panel.appendChild(step);
           });
           panel.addEventListener("click", (e) => e.stopPropagation());
-          wrap.appendChild(panel);
-          // Pas assez de place à droite → le panneau s'ouvre en dessous.
-          const r = wrap.getBoundingClientRect();
-          if (r.right + 390 > window.innerWidth) panel.classList.add("is-below");
+          document.body.appendChild(panel);
+          const link = document.createElement("div");
+          link.className = "tuto-link";
+          document.body.appendChild(link);
+          tutoWrap = wrap;
+          placeTuto();
         }
 
         // Renvoie le bouton « i » d'une clé, ou null si aucun tuto n'existe.
@@ -3688,7 +3718,7 @@
           // La page s'est redessinée alors que ce tuto était ouvert : on le rouvre.
           if (openTutoKey === key) {
             btn.classList.add("is-on");
-            setTimeout(() => { if (wrap.isConnected && !wrap.querySelector(".tuto-panel")) openTutoPanel(wrap, key); }, 0);
+            setTimeout(() => { if (wrap.isConnected && openTutoKey === key) { document.querySelectorAll(".tuto-panel, .tuto-link").forEach((p) => p.remove()); openTutoPanel(wrap, key); } }, 0);
           }
           return wrap;
         }

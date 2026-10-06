@@ -105,7 +105,8 @@
         <div class="tools">
           <button class="btn on" data-tool="clear" title="Tracer un rectangle : la zone redevient nette (touche D)">⬚ Déflouter <span class="kbd">D</span></button>
           <button class="btn" data-tool="blur" title="Tracer un rectangle : la zone est floutée à nouveau (touche F)">▦ Reflouter <span class="kbd">F</span></button>
-          <button class="btn wide" id="resetZones" title="Retire toutes les zones : toute l'image floutée">Tout reflouter</button>
+          <button class="btn" id="resetZones" title="Retire toutes les zones : toute l'image floutée">Tout reflouter</button>
+          <button class="btn" id="clearAll" title="Toute l'image redevient nette ; tu peux ensuite reflouter seulement les parties sensibles (F)">Tout déflouter</button>
         </div>
         <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
         <input type="range" id="force" min="6" max="40" step="1" value="16">
@@ -879,6 +880,13 @@
   }
   document.getElementById("delAnnot").addEventListener("click", deleteSelected);
   document.getElementById("undo").addEventListener("click", undo);
+  // Une seule zone nette sur toute l'image : on refloute ensuite au cas par cas.
+  document.getElementById("clearAll").addEventListener("click", () => {
+    if (!img) return;
+    zones = [{ type: "clear", x: 0, y: 0, w: 1, h: 1 }]; history.push("zone"); sel = null;
+    saveProfile(); draw(); setTool("blur");
+    toast("TOUTE L'IMAGE EST NETTE — OUTIL REFLOUTER (F) ACTIF POUR CACHER LES DONNÉES");
+  });
   document.getElementById("resetZones").addEventListener("click", () => { zones = []; if (sel && sel.t === "z") sel = null; saveProfile(); draw(); toast("TOUTE L'IMAGE EST FLOUTÉE"); });
   document.getElementById("resetAnnots").addEventListener("click", () => { annots = []; if (sel && sel.t === "a") sel = null; saveProfile(); draw(); toast("REPÈRES EFFACÉS"); });
   document.addEventListener("keydown", (e) => {
