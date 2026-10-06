@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LOGIX — Atelier tuto</title>
+<!--
+  ATELIER TUTO — fabrique les images des tutos de LOGIX (bouton « i »).
+  - Tout est en local : aucune image n'est envoyée nulle part.
+  - Les images et tutos/tutos.js restent sur le PC (dossier tutos/ ignoré par Git).
+  - Principe de sécurité : TOUT est flouté par défaut, on ne dégage que ce
+    que le tuto doit montrer. Les zones sont mémorisées par « type d'écran ».
+-->
+<style>
+  :root {
+    --bg-1: #f1ebe0; --surface: #fffdf8; --raised: #f4ede1; --hover: #ebe2d2; --input: #fffefb;
+    --ink: #2b2419; --muted: #7a6c58; --strong: #1a140c;
+    --accent: #0f766e; --accent-strong: #0b5e58; --accent-ink: #ffffff; --wash: rgba(15,118,110,0.08); --wash2: #dbe9e3;
+    --border: rgba(80,60,30,0.2); --hair: rgba(80,60,30,0.11);
+    --todo: #b45309; --todo-wash: rgba(180,83,9,0.08); --danger: #c53030; --ok: #2f855a;
+    --fs-micro: 9.5pt; --fs-label: 10.5pt; --ls-wide: 0.18em; --ls-mid: 0.13em; --r-md: 6px; --r-lg: 8px;
+  }
+  * { box-sizing: border-box; }
+  body, body * { font-family: Aptos, Calibri, Arial, sans-serif !important; }
+  body { margin: 0; background: var(--bg-1); color: var(--ink); font-size: 11pt; }
+  .top { display: flex; align-items: center; gap: 12px; padding: 12px 20px; }
+  .brand { font-size: 16pt; font-weight: 700; letter-spacing: 0.26em; color: var(--strong); }
+  .sub { font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--muted); font-weight: 700; border-left: 1px solid var(--border); padding-left: 12px; }
+  .layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 14px; padding: 0 20px 30px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px 13px; margin-bottom: 12px; }
+  .title { font-size: var(--fs-micro); font-weight: 700; letter-spacing: var(--ls-wide); color: var(--accent-strong); text-transform: uppercase; margin-bottom: 9px; padding-bottom: 7px; border-bottom: 1px solid var(--hair); }
+  .lbl { display: block; font-size: var(--fs-micro); font-weight: 700; letter-spacing: var(--ls-wide); color: var(--muted); text-transform: uppercase; margin: 8px 0 4px; }
+  input[type=text], select, textarea { width: 100%; height: 2.3rem; padding: 0 0.6rem; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--input); color: var(--ink); font-size: 10.5pt; }
+  textarea { height: 3.4rem; padding: 0.4rem 0.6rem; resize: vertical; }
+  .btn { height: 2.3rem; padding: 0 0.8rem; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--raised); color: var(--ink); font-weight: 700; letter-spacing: 0.1em; font-size: 9pt; text-transform: uppercase; cursor: pointer; }
+  .btn:hover { background: var(--hover); }
+  .btn.on { background: var(--wash2); border-color: var(--accent); color: var(--accent-strong); box-shadow: inset 0 0 0 1px var(--accent); }
+  .btn.main { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.main:disabled { opacity: 0.45; cursor: not-allowed; }
+  .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tools .wide { grid-column: span 2; }
+  .row { display: flex; gap: 6px; align-items: center; }
+  .hint { font-size: 9.5pt; color: var(--muted); line-height: 1.4; margin-top: 6px; }
+  .ok { color: var(--ok); font-weight: 700; }
+  .warn { color: var(--todo); font-weight: 700; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .stage { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 10px; min-height: 420px; display: flex; align-items: center; justify-content: center; position: relative; }
+  .drop { text-align: center; color: var(--muted); }
+  .drop b { color: var(--accent-strong); font-size: 13pt; letter-spacing: 0.1em; }
+  canvas#view { max-width: 100%; height: auto; display: none; cursor: crosshair; border-radius: 4px; }
+  .check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 8px; border-radius: var(--r-md); background: var(--todo-wash); border: 1px solid var(--todo); font-size: 10pt; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; flex: 0 0 auto; }
+  pre { white-space: pre-wrap; background: var(--input); border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px; font-size: 9pt; margin: 6px 0 0; max-height: 220px; overflow: auto; font-family: Consolas, monospace !important; }
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--strong); color: #fff; padding: 10px 16px; border-radius: var(--r-lg); font-weight: 700; letter-spacing: 0.08em; font-size: 10pt; z-index: 50; }
+  .steps-done { font-size: 9.5pt; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="top"><span class="brand">● LOGIX</span><span class="sub">ATELIER TUTO — IMAGES FLOUTÉES</span></div>
+
+  <div class="layout">
+    <aside>
+      <div class="card">
+        <div class="title">1. Coller la capture</div>
+        <div class="hint">Fais <b>Impr écran</b> (ou Windows + Maj + S), puis <b>Ctrl+V</b> n'importe où sur cette page. Tu peux aussi glisser un fichier image dessus.</div>
+      </div>
+
+      <div class="card">
+        <div class="title">2. Flou</div>
+        <div class="tools">
+          <button class="btn on" data-tool="clear" title="Tracer un rectangle : la zone redevient nette">⬚ Déflouter</button>
+          <button class="btn" data-tool="blur" title="Tracer un rectangle : la zone est floutée à nouveau">▦ Reflouter</button>
+          <button class="btn" data-tool="circle" title="Cliquer : pose le cercle rouge ICI (re-cliquer le déplace)">◯ Cercle ICI</button>
+          <button class="btn" id="undo" title="Annule la dernière zone">↶ Annuler</button>
+          <button class="btn wide" id="reset" title="Retire toutes les zones : toute l'image floutée">Tout reflouter</button>
+        </div>
+        <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
+        <input type="range" id="force" min="6" max="40" step="1" value="16">
+        <div class="hint">Le flou est une <b>pixelisation</b> : le texte devient illisible et on ne peut pas le retrouver.</div>
+      </div>
+
+      <div class="card">
+        <div class="title">3. Type d'écran (zones mémorisées)</div>
+        <select id="profile"></select>
+        <div class="row" style="margin-top:6px">
+          <input type="text" id="newProfile" placeholder="Nouveau type d'écran (ex : PORTAIL TI)">
+          <button class="btn" id="addProfile">+</button>
+        </div>
+        <div class="hint">Les zones déflouées / refloutées et le cercle sont <b>retenus pour ce type d'écran</b> : à la capture suivante du même écran, tout se refait tout seul.</div>
+      </div>
+
+      <div class="card">
+        <div class="title">4. Étape du tuto</div>
+        <label class="lbl" for="key">Clé de l'étape LOGIX</label>
+        <input type="text" id="key" list="keys" placeholder="ex : dretaf, dcd-scribe-ouvrir, compte-actif">
+        <datalist id="keys"></datalist>
+        <label class="lbl" for="titre">Titre du tuto</label>
+        <input type="text" id="titre" placeholder="ex : COMMENT FAIRE UNE DRETAF">
+        <label class="lbl" for="num">N° de l'écran</label>
+        <input type="text" id="num" value="1">
+        <label class="lbl" for="texte">Phrase de cet écran</label>
+        <textarea id="texte" placeholder="ex : Portail TI → onglet CO"></textarea>
+        <div id="dejaFaits" class="steps-done"></div>
+      </div>
+
+      <div class="card">
+        <div class="title">5. Enregistrer</div>
+        <button class="btn" id="pickDir" style="width:100%">📁 Choisir le dossier tutos</button>
+        <div class="hint" id="dirInfo">Choisis une fois le dossier <b>LOGIX\tutos</b> : l'image et <b>tutos.js</b> y seront enregistrés directement. Sinon, l'image ira dans Téléchargements.</div>
+        <label class="check"><input type="checkbox" id="verif"> <span>J'ai regardé l'image en entier : <b>aucune donnée réelle n'est lisible</b>.</span></label>
+        <button class="btn main" id="save" style="width:100%;margin-top:8px" disabled>Enregistrer cette étape</button>
+        <div id="saveOut"></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="stage" id="stage">
+        <div class="drop" id="drop"><b>CTRL+V POUR COLLER UNE CAPTURE</b><br><br>Toute l'image sera floutée d'office.<br>Ensuite, trace des rectangles pour <b>déflouter</b> ce que le tuto doit montrer.</div>
+        <canvas id="view"></canvas>
+      </div>
+    </main>
+  </div>
+
+<script src="./data.js"></script>
+<script>
+(function () {
+  "use strict";
+  // ------------------------------------------------------------------
+  // État
+  // ------------------------------------------------------------------
+  const view = document.getElementById("view");
+  const ctx = view.getContext("2d");
+  let img = null;                 // capture originale (canvas)
+  let blurred = null;             // capture entièrement floutée (canvas)
+  let tool = "clear";
+  let zones = [];                 // [{ type: "clear"|"blur", x, y, w, h }] en fractions 0..1
+  let circle = null;              // { x, y } en fractions 0..1
+  let drag = null;                // rectangle en cours de tracé
+  let dirHandle = null;           // dossier tutos choisi (si le navigateur le permet)
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* rien */ } },
+  };
+  let profiles = store.get("atelier-profils", { "ÉCRAN PAR DÉFAUT": { zones: [], circle: null } });
+  let current = store.get("atelier-profil-courant", "ÉCRAN PAR DÉFAUT");
+  if (!profiles[current]) current = Object.keys(profiles)[0];
+
+  function toast(msg) {
+    const t = document.createElement("div");
+    t.className = "toast"; t.textContent = msg;
+    document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
+  }
+
+  // ------------------------------------------------------------------
+  // Clés connues (lues dans data.js) pour aider à remplir « clé »
+  // ------------------------------------------------------------------
+  (function fillKeys() {
+    const keys = new Set();
+    const slug = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    (window.globalContextOptions || []).forEach((g) => (g.choix || []).forEach((v) => keys.add(slug(g.id + "-" + v))));
+    const seen = new Set();
+    (function walk(o) {
+      if (!o || typeof o !== "object" || seen.has(o)) return;
+      seen.add(o);
+      if (Array.isArray(o)) { o.forEach(walk); return; }
+      if (Array.isArray(o.leafQuestions)) o.leafQuestions.forEach((q) => q.id && keys.add(q.id));
+      if (o.type === "check" || o.type === "question") o.id && keys.add(o.id);
+      if (o.tuto) keys.add(o.tuto);
+      Object.values(o).forEach(walk);
+    })(window.treeData);
+    const dl = document.getElementById("keys");
+    [...keys].sort().forEach((k) => { const op = document.createElement("option"); op.value = k; dl.appendChild(op); });
+  })();
+
+  // ------------------------------------------------------------------
+  // Types d'écran (profils de zones)
+  // ------------------------------------------------------------------
+  const profSel = document.getElementById("profile");
+  function renderProfiles() {
+    profSel.innerHTML = "";
+    Object.keys(profiles).forEach((n) => { const o = document.createElement("option"); o.value = n; o.textContent = n; profSel.appendChild(o); });
+    profSel.value = current;
+  }
+  function loadProfile() {
+    const p = profiles[current] || { zones: [], circle: null };
+    zones = JSON.parse(JSON.stringify(p.zones || []));
+    circle = p.circle ? { ...p.circle } : null;
+  }
+  function saveProfile() {
+    profiles[current] = { zones, circle };
+    store.set("atelier-profils", profiles);
+    store.set("atelier-profil-courant", current);
+  }
+  profSel.addEventListener("change", () => { current = profSel.value; store.set("atelier-profil-courant", current); loadProfile(); draw(); });
+  document.getElementById("addProfile").addEventListener("click", () => {
+    const n = document.getElementById("newProfile").value.trim().toUpperCase();
+    if (!n) return;
+    if (!profiles[n]) profiles[n] = { zones: [], circle: null };
+    current = n; document.getElementById("newProfile").value = "";
+    saveProfile(); renderProfiles(); loadProfile(); draw();
+    toast("TYPE D'ÉCRAN « " + n + " » CRÉÉ");
+  });
+  renderProfiles(); loadProfile();
+
+  // ------------------------------------------------------------------
+  // Flou (pixelisation) et dessin
+  // ------------------------------------------------------------------
+  const forceIn = document.getElementById("force");
+  forceIn.value = store.get("atelier-force", 16);
+  const forceVal = document.getElementById("forceVal");
+  function forceLabel() { const f = +forceIn.value; forceVal.textContent = f < 12 ? "LÉGER" : f < 24 ? "MOYEN" : "FORT"; }
+  forceIn.addEventListener("input", () => { store.set("atelier-force", +forceIn.value); forceLabel(); makeBlurred(); draw(); });
+  forceLabel();
+
+  function makeBlurred() {
+    if (!img) return;
+    // Taille des « pixels » proportionnelle à la largeur de l'image.
+    const block = Math.max(4, Math.round(img.width * (+forceIn.value) / 1600));
+    const sw = Math.max(1, Math.ceil(img.width / block)), sh = Math.max(1, Math.ceil(img.height / block));
+    const small = document.createElement("canvas"); small.width = sw; small.height = sh;
+    const sctx = small.getContext("2d");
+    sctx.imageSmoothingEnabled = true;
+    sctx.drawImage(img, 0, 0, sw, sh);
+    blurred = document.createElement("canvas"); blurred.width = img.width; blurred.height = img.height;
+    const bctx = blurred.getContext("2d");
+    bctx.imageSmoothingEnabled = false;
+    bctx.drawImage(small, 0, 0, img.width, img.height);
+  }
+
+  function px(z) { return { x: z.x * img.width, y: z.y * img.height, w: z.w * img.width, h: z.h * img.height }; }
+
+  // Rend l'image finale dans un canvas donné (sans les contours d'aide si final).
+  function render(target, final) {
+    const c = target.getContext("2d");
+    target.width = img.width; target.height = img.height;
+    c.drawImage(blurred, 0, 0);                 // tout flouté d'office
+    zones.forEach((z) => {                        // puis zones dans l'ordre
+      const r = px(z);
+      c.drawImage(z.type === "clear" ? img : blurred, r.x, r.y, r.w, r.h, r.x, r.y, r.w, r.h);
+    });
+    if (!final) {
+      zones.forEach((z) => {
+        const r = px(z);
+        c.setLineDash([8, 6]); c.lineWidth = Math.max(2, img.width / 600);
+        c.strokeStyle = z.type === "clear" ? "#0f766e" : "#b45309";
+        c.strokeRect(r.x, r.y, r.w, r.h); c.setLineDash([]);
+      });
+    }
+    if (circle) {
+      const cx = circle.x * img.width, cy = circle.y * img.height, rad = Math.max(18, img.width / 45);
+      c.lineWidth = Math.max(3, img.width / 320); c.strokeStyle = "#e11d48";
+      c.beginPath(); c.arc(cx, cy, rad, 0, Math.PI * 2); c.stroke();
+      c.fillStyle = "#e11d48"; c.font = "bold " + Math.round(rad * 0.9) + "px Arial";
+      c.fillText("ICI", cx + rad * 1.05, cy - rad * 0.75);
+    }
+  }
+
+  function draw() {
+    if (!img) return;
+    render(view, false);
+    if (drag) {
+      const r = px(drag);
+      ctx.setLineDash([6, 4]); ctx.lineWidth = Math.max(2, img.width / 500);
+      ctx.strokeStyle = tool === "clear" ? "#0f766e" : "#b45309";
+      ctx.strokeRect(r.x, r.y, r.w, r.h); ctx.setLineDash([]);
+    }
+    updateSave();
+  }
+
+  // ------------------------------------------------------------------
+  // Coller / glisser une image
+  // ------------------------------------------------------------------
+  function loadImage(blob) {
+    const url = URL.createObjectURL(blob);
+    const im = new Image();
+    im.onload = () => {
+      img = document.createElement("canvas"); img.width = im.width; img.height = im.height;
+      img.getContext("2d").drawImage(im, 0, 0);
+      URL.revokeObjectURL(url);
+      loadProfile();            // zones du type d'écran choisi, appliquées tout de suite
+      makeBlurred();
+      document.getElementById("drop").style.display = "none";
+      view.style.display = "block";
+      document.getElementById("verif").checked = false;
+      draw();
+      toast(zones.length ? "CAPTURE COLLÉE — ZONES « " + current + " » APPLIQUÉES" : "CAPTURE COLLÉE — TOUT EST FLOUTÉ");
+    };
+    im.src = url;
+  }
+  document.addEventListener("paste", (e) => {
+    const items = (e.clipboardData || {}).items || [];
+    for (const it of items) if (it.type && it.type.startsWith("image/")) { e.preventDefault(); loadImage(it.getAsFile()); return; }
+  });
+  const stage = document.getElementById("stage");
+  stage.addEventListener("dragover", (e) => e.preventDefault());
+  stage.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const f = [...(e.dataTransfer.files || [])].find((x) => x.type.startsWith("image/"));
+    if (f) loadImage(f);
+  });
+
+  // ------------------------------------------------------------------
+  // Outils (souris)
+  // ------------------------------------------------------------------
+  document.querySelectorAll("[data-tool]").forEach((b) => b.addEventListener("click", () => {
+    tool = b.dataset.tool;
+    document.querySelectorAll("[data-tool]").forEach((x) => x.classList.toggle("on", x === b));
+  }));
+  function pos(e) {
+    const r = view.getBoundingClientRect();
+    return { x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) };
+  }
+  let start = null;
+  view.addEventListener("mousedown", (e) => {
+    if (!img) return;
+    const p = pos(e);
+    if (tool === "circle") { circle = p; saveProfile(); draw(); return; }
+    start = p; drag = { type: tool, x: p.x, y: p.y, w: 0, h: 0 };
+  });
+  window.addEventListener("mousemove", (e) => {
+    if (!start) return;
+    const p = pos(e);
+    drag = { type: tool, x: Math.min(start.x, p.x), y: Math.min(start.y, p.y), w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y) };
+    draw();
+  });
+  window.addEventListener("mouseup", () => {
+    if (!start) return;
+    if (drag && drag.w > 0.005 && drag.h > 0.005) { zones.push(drag); saveProfile(); }
+    start = null; drag = null; draw();
+  });
+  document.getElementById("undo").addEventListener("click", () => { zones.pop(); saveProfile(); draw(); });
+  document.getElementById("reset").addEventListener("click", () => { zones = []; circle = null; saveProfile(); draw(); toast("TOUTE L'IMAGE EST FLOUTÉE"); });
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) {
+      e.preventDefault(); zones.pop(); saveProfile(); draw();
+    }
+  });
+
+  // ------------------------------------------------------------------
+  // Étape : clé, titre, n°
+  // ------------------------------------------------------------------
+  const keyIn = document.getElementById("key"), titreIn = document.getElementById("titre"), numIn = document.getElementById("num"), texteIn = document.getElementById("texte");
+  keyIn.value = store.get("atelier-cle", "");
+  titreIn.value = store.get("atelier-titre", "");
+  numIn.value = store.get("atelier-num", "1");
+  [keyIn, titreIn, numIn, texteIn].forEach((el) => el.addEventListener("input", () => {
+    store.set("atelier-cle", keyIn.value.trim()); store.set("atelier-titre", titreIn.value); store.set("atelier-num", numIn.value);
+    updateSave();
+  }));
+  keyIn.addEventListener("change", () => {
+    // Clé déjà connue dans tutos.js : on reprend son titre et le n° suivant.
+    const t = (window.__tutosLus || {})[keyIn.value.trim()];
+    if (t) { titreIn.value = t.titre || titreIn.value; numIn.value = String((t.etapes || []).length + 1); }
+    store.set("atelier-titre", titreIn.value); store.set("atelier-num", numIn.value);
+    showDone();
+  });
+  function cleanKey(k) { return String(k || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, ""); }
+
+  const verif = document.getElementById("verif"), saveBtn = document.getElementById("save");
+  verif.addEventListener("change", updateSave);
+  function updateSave() { saveBtn.disabled = !(img && verif.checked && cleanKey(keyIn.value) && texteIn.value.trim()); }
+
+  function showDone() {
+    const t = (window.__tutosLus || {})[cleanKey(keyIn.value)];
+    document.getElementById("dejaFaits").innerHTML = t
+      ? "<div class='hint'>Déjà dans tutos.js : " + t.etapes.length + " écran(s).</div>"
+      : "";
+  }
+
+  // ------------------------------------------------------------------
+  // Dossier tutos + tutos.js
+  // ------------------------------------------------------------------
+  const HEADER = String.raw`// ============================================================================
+// tutos/tutos.js — SOMMAIRE DE TES TUTOS EN IMAGES
+// ============================================================================
+// Ce dossier "tutos" reste sur TON PC : il n'est JAMAIS envoyé sur GitHub.
+// Fichier mis à jour par l'ATELIER TUTO (atelier-tuto.html) — tu peux aussi
+// le modifier à la main : { "CLÉ": { titre, etapes: [{ image, texte }] } }.
+// Une virgule entre chaque bloc et entre chaque étape.
+// ============================================================================
+
+`;
+  function readTutosText(text) {
+    try { const w = {}; new Function("window", text)(w); return w.logixTutos || {}; } catch (e) { return null; }
+  }
+  function writeTutosText(obj) {
+    const q = (s) => JSON.stringify(String(s));
+    let out = HEADER + "window.logixTutos = {\n";
+    Object.keys(obj).forEach((k) => {
+      const t = obj[k];
+      out += "  " + q(k) + ": {\n    titre: " + q(t.titre || "") + ",\n    etapes: [\n";
+      (t.etapes || []).forEach((e) => { out += "      { image: " + q(e.image || "") + ", texte: " + q(e.texte || "") + " },\n"; });
+      out += "    ],\n  },\n\n";
+    });
+    return out + "};\n";
+  }
+  async function readDirTutos() {
+    if (!dirHandle) return {};
+    try {
+      const fh = await dirHandle.getFileHandle("tutos.js");
+      const obj = readTutosText(await (await fh.getFile()).text());
+      if (obj === null) { toast("⚠️ TUTOS.JS ILLISIBLE (VIRGULE MANQUANTE ?)"); return null; }
+      return obj;
+    } catch (e) { return {}; }
+  }
+
+  const pickBtn = document.getElementById("pickDir");
+  if (!window.showDirectoryPicker) {
+    pickBtn.disabled = true;
+    document.getElementById("dirInfo").innerHTML = "Ce navigateur ne permet pas d'écrire dans un dossier : l'image ira dans <b>Téléchargements</b> (déplace-la dans LOGIX\\tutos) et le bloc à coller dans tutos.js s'affichera ici.";
+  }
+  pickBtn.addEventListener("click", async () => {
+    try {
+      dirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+      window.__tutosLus = await readDirTutos() || {};
+      document.getElementById("dirInfo").innerHTML = "<span class='ok'>✓ Dossier « " + dirHandle.name + " » choisi.</span> " +
+        (dirHandle.name.toLowerCase() !== "tutos" ? "<span class='warn'>Attention : ce n'est pas un dossier nommé « tutos ».</span>" : "") +
+        " " + Object.keys(window.__tutosLus).length + " tuto(s) déjà présents.";
+      showDone();
+    } catch (e) { /* annulé */ }
+  });
+
+  saveBtn.addEventListener("click", async () => {
+    const key = cleanKey(keyIn.value);
+    const n = String(numIn.value).trim() || "1";
+    const fileName = key + "-" + n + ".png";
+    const out = document.createElement("canvas");
+    render(out, true);                                   // image finale, sans contours d'aide
+    const blob = await new Promise((r) => out.toBlob(r, "image/png"));
+    const etape = { image: fileName, texte: texteIn.value.trim() };
+    const box = document.getElementById("saveOut");
+
+    if (dirHandle) {
+      const tutos = await readDirTutos();
+      if (tutos === null) return;
+      const fh = await dirHandle.getFileHandle(fileName, { create: true });
+      const w = await fh.createWritable(); await w.write(blob); await w.close();
+      const t = tutos[key] || { titre: titreIn.value.trim() || key.toUpperCase(), etapes: [] };
+      if (titreIn.value.trim()) t.titre = titreIn.value.trim();
+      t.etapes = t.etapes.filter((e) => e.image !== fileName);  // ré-enregistrer un écran le remplace
+      t.etapes.push(etape);
+      t.etapes.sort((a, b) => (parseInt(a.image.split("-").pop()) || 0) - (parseInt(b.image.split("-").pop()) || 0));
+      tutos[key] = t;
+      const jh = await dirHandle.getFileHandle("tutos.js", { create: true });
+      const jw = await jh.createWritable(); await jw.write(writeTutosText(tutos)); await jw.close();
+      window.__tutosLus = tutos;
+      box.innerHTML = "<div class='hint ok'>✓ " + fileName + " enregistré et ajouté à tutos.js (" + t.etapes.length + " écran(s)). Recharge LOGIX (Ctrl+F5) pour le voir.</div>";
+    } else {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      const bloc = '{ image: "' + fileName + '", texte: ' + JSON.stringify(etape.texte) + " },";
+      box.innerHTML = "<div class='hint'>✓ <b>" + fileName + "</b> téléchargé : déplace-le dans <b>LOGIX\\tutos</b>, puis ajoute cette ligne dans les « etapes » de « " + key + " » dans tutos.js :</div><pre></pre>";
+      box.querySelector("pre").textContent = bloc;
+    }
+    // Écran suivant : n° + 1, nouvelle phrase, nouvelle vérification.
+    numIn.value = String((parseInt(n) || 1) + 1);
+    store.set("atelier-num", numIn.value);
+    texteIn.value = ""; verif.checked = false; updateSave(); showDone();
+    toast("ÉTAPE ENREGISTRÉE — COLLE LA CAPTURE SUIVANTE");
+  });
+})();
+</script>
+</body>
+</html>
