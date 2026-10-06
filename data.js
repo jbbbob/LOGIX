@@ -1007,9 +1007,17 @@ anvBranch.suite.checklist = {
         {
           type: "check",
           id: "anv-suspen-postit",
-          if: { compte: ["RADIÉ"], suspen: ["oui"] },
+          if: { compte: ["RADIÉ"], suspen: ["oui"], statut: ["A/C", ""] },
           label: "Ajouter le post-it de l'ANV SUSPEN",
           copie: [{ label: "POST-IT", texte: "ANV SUSPEN pour exigibilité inférieure à un an" }],
+        },
+        {
+          // PL : le post-it SUSPEN va en ESDC avec le code INCX.
+          type: "check",
+          id: "anv-suspen-esdc",
+          if: { compte: ["RADIÉ"], suspen: ["oui"], statut: ["PL"] },
+          label: "Mettre en ESDC, avec le code INCX, le post-it de l'ANV SUSPEN",
+          copie: [{ label: "ESDC", texte: "ANV SUSPEN pour exigibilité inférieure à un an" }],
         },
         {
           type: "check",
