@@ -3119,6 +3119,18 @@
           vars["phrase-chambres"] = phrases.join("\n");
         }
 
+        // Lignes de saisie de la cascade (ÉCRITURES, DATE…) : fond vert quand
+        // tous leurs champs sont remplis, comme un choix fait. Appelé au rendu
+        // et à chaque frappe (sans redessiner le champ, le curseur reste).
+        function marquerChampsRemplis() {
+          cascadeFlow.querySelectorAll(".card-row").forEach((row) => {
+            const champs = [...row.querySelectorAll("input[data-input-id], textarea[data-input-id]")];
+            if (!champs.length) return;
+            const remplis = champs.every((f) => String(nodeInputs[f.getAttribute("data-input-id")] || "").trim() !== "");
+            row.classList.toggle("is-done", remplis);
+          });
+        }
+
         function getDeepestNode() {
           const lastChainEntry = inlineChain[inlineChain.length - 1];
           if (lastChainEntry && lastChainEntry.node) return lastChainEntry.node;
@@ -3583,6 +3595,7 @@
           field.setAttribute("data-input-id", input.id);
           field.addEventListener("input", (event) => {
             saveNodeInputValue(input.id, event.target.value);
+            marquerChampsRemplis();
             // On ne rappelle PAS render() ici : cela reconstruirait le champ en
             // cours de saisie et ferait perdre le focus à chaque caractère.
             // On rafraîchit seulement les zones concernées (la checklist DCD
@@ -5863,6 +5876,7 @@
           renderToggles();
           renderToggleBandeaux();
           renderCascade();
+          marquerChampsRemplis();
           renderLeafQuestions();
           renderChecklist();
           renderResults(deepestNode);
