@@ -1131,7 +1131,10 @@ anvBranch.suite.checklist = {
 (function rangerTextesAnv(node) {
   if (!node || typeof node !== "object") return;
   (node.resultats || []).forEach((r) => {
-    if (/^POST-IT/.test(r.label || "")) r.etape = "anv-postit";
+    // Bloc fusionné « POST-IT … & COMMENTAIRE AFFAIRE WATT » (motif 14) :
+    // même texte dans les deux étapes.
+    if (/^POST-IT/.test(r.label || "") && /COMMENTAIRE AFFAIRE WATT/.test(r.label || "")) r.etape = ["anv-postit", "anv-watt"];
+    else if (/^POST-IT/.test(r.label || "")) r.etape = "anv-postit";
     else if (r.label === "COMMENTAIRE AFFAIRE WATT") r.etape = "anv-watt";
     // DRETAF et SUSPEN ont leurs propres étapes : pas répétés dans le post-it.
     (r.blocs || []).forEach((b) => { if (/^(dretaf|suspen)-line/.test(b.id || "")) b.horsEtape = true; });

@@ -4575,7 +4575,7 @@
         // Textes générés (post-it, WATT…) affichés dans une étape « montre ».
         function makeEtapeTextes(item, vars) {
           const wrap = document.createElement("div");
-          const blocs = computeResultBlocks(getDeepestNode(), vars).filter((rb) => rb.source.etape === item.montre);
+          const blocs = computeResultBlocks(getDeepestNode(), vars).filter((rb) => [].concat(rb.source.etape || []).includes(item.montre));
           blocs.forEach((rb) => {
             rb.subBlocs.filter((sub) => !sub.horsEtape).forEach((sub) => {
               const line = document.createElement("span");
@@ -5097,7 +5097,7 @@
             (item.copie || []).forEach((c) => out.push(stripHtmlToText(substituteTemplate(c.texte || "", vars))));
             if (item.montre) {
               computeResultBlocks(getDeepestNode(), vars)
-                .filter((rb) => rb.source.etape === item.montre)
+                .filter((rb) => [].concat(rb.source.etape || []).includes(item.montre))
                 .forEach((rb) => rb.subBlocs.filter((sb) => !sb.horsEtape).forEach((sb) => out.push(stripHtmlToText(sb.texte || ""))));
             }
             return out;
@@ -5385,7 +5385,7 @@
           resultsContainer.innerHTML = "";
           const vars = buildTemplateVars();
           const montrees = etapesMontrees();
-          const resultBlocks = computeResultBlocks(node, vars).filter((rb) => !montrees.has(rb.source.etape));
+          const resultBlocks = computeResultBlocks(node, vars).filter((rb) => ![].concat(rb.source.etape || []).some((e) => montrees.has(e)));
 
           // Fabrique un bouton COPIER pour un texte donné.
           const makeCopyButton = (texte) => {
