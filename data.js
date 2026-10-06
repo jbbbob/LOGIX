@@ -1991,7 +1991,7 @@ const dcd1ereEnqueteInconnusLeaf = {
           { type: "question", id: "dcd-acte-ged", label: "ACTE DE DÉCÈS PRÉSENT EN GED ?" },
           {
             type: "alerte",
-            niveau: "info",
+            niveau: "warning",
             if: { "dcd-acte-ged": ["oui"] },
             texte: "PAS DE DEMANDE À LA MAIRIE.",
           },
