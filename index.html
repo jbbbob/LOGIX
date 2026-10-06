@@ -3032,15 +3032,28 @@
 
         // Checklist avec stopIf vérifié (ex : ANV + versement récent) : motifs,
         // questions et résultats sont masqués, seul le bandeau rouge reste.
+        // Heure à laquelle une étape a été cochée / répondue (pour le récap PDF).
+        function noterHeure(id, fait) {
+          if (fait) checkState["@t:" + id] = Date.now();
+          else delete checkState["@t:" + id];
+        }
+
         function syncAutoChecks() {
           const n = getChecklistNode();
           if (!n || !Array.isArray(n.checklist.sections)) return;
           const visit = (it) => {
             if (Array.isArray(it.items)) it.items.forEach(visit);
             if (Array.isArray(it.modele)) for (let k = 1; k <= listeNb(it); k++) listeBloc(it, k).forEach(visit);
-            if (it.autoCoche) checkState[it.id] = !!globalSelections[it.autoCoche];
+            if (it.autoCoche) {
+              checkState[it.id] = !!globalSelections[it.autoCoche];
+              if (checkState[it.id] && !checkState["@t:" + it.id]) noterHeure(it.id, true);
+              if (!checkState[it.id]) noterHeure(it.id, false);
+            }
             // Champ obligatoire vidé après coup : la case se décoche.
-            if (it.champsObligatoires && checkState[it.id] === true && !champsRemplis(it)) checkState[it.id] = false;
+            if (it.champsObligatoires && checkState[it.id] === true && !champsRemplis(it)) {
+              checkState[it.id] = false;
+              noterHeure(it.id, false);
+            }
           };
           n.checklist.sections.forEach((sec) => (sec.items || []).forEach(visit));
         }
@@ -4611,6 +4624,7 @@
                 // Re-cliquer sur la réponse choisie l'efface (comme les topQuestions).
                 if (checkState[item.id] === val) delete checkState[item.id];
                 else checkState[item.id] = val;
+                noterHeure(item.id, checkState[item.id] != null);
                 render();
               });
               line.appendChild(btn);
@@ -4660,6 +4674,7 @@
               }
               if (box.checked && openTutoKey === (item.tuto || item.id)) closeTutos();
               checkState[item.id] = box.checked;
+              noterHeure(item.id, box.checked);
               render();
               if (box.checked && Array.isArray(item.champs) && !champsRemplis(item)) {
                 // Coché quand même : simple rappel de ce qu'il reste à saisir.
@@ -4861,6 +4876,15 @@
             ? (leaf.checklist.recapOk || "✓ TOUT EST FAIT : TU PEUX COPIER LE COMMENTAIRE WATT")
             : "IL MANQUE " + missing.length + (missing.length > 1 ? " ÉTAPES" : " ÉTAPE");
           recap.appendChild(rt);
+          if (missing.length === 0 && leaf.checklist.recapDocument) {
+            const doc = document.createElement("button");
+            doc.type = "button";
+            doc.className = "chk-recap-go";
+            doc.textContent = "📄 RÉCAP DES ÉTAPES (À ENREGISTRER EN PDF)";
+            doc.title = "Ouvre le récapitulatif daté des étapes : Ctrl+P → Enregistrer au format PDF, puis rattacher à l'affaire";
+            doc.addEventListener("click", () => ouvrirRecap(leaf, sections, vars));
+            recap.appendChild(doc);
+          }
           if (missing.length > 0) {
             const list = document.createElement("div");
             list.className = "chk-recap-list";
@@ -4881,6 +4905,112 @@
             recap.appendChild(up);
           }
           zoneFin.appendChild(recap);
+        }
+
+        // ------------------------------------------------------------------
+        // RÉCAP DES ÉTAPES (PDF à rattacher à l'affaire)
+        // Page autonome ouverte dans un nouvel onglet : date de génération,
+        // contexte, chaque étape avec sa réponse, ses saisies et l'heure à
+        // laquelle elle a été faite, les textes copiés, et une EMPREINTE
+        // (SHA-256 du contenu) : si on retouche une ligne à la main, elle ne
+        // correspond plus. Ce n'est pas une preuve absolue (tout se passe sur
+        // le PC) : ce qui fait foi, c'est la date de rattachement dans l'affaire.
+        // ------------------------------------------------------------------
+        const deux = (n) => String(n).padStart(2, "0");
+        const dateFr = (d) => deux(d.getDate()) + "/" + deux(d.getMonth() + 1) + "/" + d.getFullYear();
+        const heureFr = (d) => deux(d.getHours()) + ":" + deux(d.getMinutes()) + ":" + deux(d.getSeconds());
+
+        async function empreinte(texte) {
+          try {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texte));
+            return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+          } catch (e) {
+            // Repli sans crypto.subtle : FNV-1a (détecte aussi une retouche).
+            let h = 0x811c9dc5;
+            for (let i = 0; i < texte.length; i++) { h ^= texte.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+            return h.toString(16).padStart(8, "0");
+          }
+        }
+
+        async function ouvrirRecap(leaf, sections, vars) {
+          const now = new Date();
+          const titre = (leaf.checklist.recapDocument.titre || "Mode opératoire complété") +
+            " - " + deux(now.getDate()) + "-" + deux(now.getMonth() + 1) + "-" + now.getFullYear() +
+            " à " + deux(now.getHours()) + "h" + deux(now.getMinutes());
+          const lignes = [];   // texte brut, base de l'empreinte
+          const rows = [];     // HTML du tableau
+          const heureDe = (id) => {
+            const t = checkState["@t:" + id];
+            return t ? heureFr(new Date(t)) + " (" + dateFr(new Date(t)) + ")" : "";
+          };
+          const textesEtape = (item) => {
+            const out = [];
+            (item.copie || []).forEach((c) => out.push(stripHtmlToText(substituteTemplate(c.texte || "", vars))));
+            if (item.montre) {
+              computeResultBlocks(getDeepestNode(), vars)
+                .filter((rb) => rb.source.etape === item.montre)
+                .forEach((rb) => rb.subBlocs.filter((sb) => !sb.horsEtape).forEach((sb) => out.push(stripHtmlToText(sb.texte || ""))));
+            }
+            return out;
+          };
+          const visit = (item, groupe) => {
+            if (item.type === "groupe") {
+              rows.push('<tr class="grp"><td colspan="3">' + escapeHtml(fillPlain(item.label || "", vars)) + "</td></tr>");
+              lignes.push("== " + fillPlain(item.label || "", vars));
+              (item.items || []).forEach((it) => visit(it, true));
+              return;
+            }
+            if (item.type !== "check" && item.type !== "question") return;
+            const label = fillPlain(item.label || "", vars);
+            const val = checkState[item.id];
+            const reponse = item.type === "question"
+              ? String(((item.choix || []).find((c) => c.val === val) || {}).label || val || "").toUpperCase()
+              : (val === true ? "✓ FAIT" : "—");
+            const details = [];
+            (item.champs || []).forEach((c) => details.push(c.label + " : " + String(nodeInputs[c.id] || "").trim()));
+            textesEtape(item).forEach((t) => details.push("Texte : " + t));
+            const h = heureDe(item.id);
+            rows.push("<tr><td>" + escapeHtml(label) +
+              (details.length ? '<div class="det">' + details.map((d) => escapeHtml(d).replace(/\n/g, "<br>")).join("<br>") + "</div>" : "") +
+              "</td><td>" + escapeHtml(reponse) + "</td><td>" + escapeHtml(h) + "</td></tr>");
+            lignes.push(label + " | " + reponse + " | " + details.join(" ; ") + " | " + h);
+          };
+          sections.forEach((sec) => sec.items.forEach((it) => visit(it, false)));
+
+          const contexte = [
+            ["Compte", vars.compte || "—"],
+            ["Statut", vars.statut || "—"],
+            ["Motif", vars["motif-label"] || "—"],
+            ["Sous-motif", vars["sous-motif-label"] || "—"],
+          ];
+          const base = [titre, "Généré le " + dateFr(now) + " à " + heureFr(now)]
+            .concat(contexte.map(([k, v]) => k + " : " + v)).concat(lignes).join("\n");
+          const hash = await empreinte(base);
+          const court = hash.slice(0, 16).toUpperCase().match(/.{4}/g).join("-");
+
+          const html = "<!doctype html><html lang='fr'><head><meta charset='utf-8'><title>" + escapeHtml(titre) + "</title>" +
+            "<style>body{font-family:Aptos,Calibri,Arial,sans-serif;color:#1a140c;margin:28px;font-size:10.5pt}" +
+            "h1{font-size:15pt;letter-spacing:.08em;margin:0 0 4px}.sub{color:#7a6c58;margin-bottom:14px}" +
+            "table{border-collapse:collapse;width:100%;margin-top:10px}td,th{border:1px solid #cdbfa8;padding:5px 7px;vertical-align:top;text-align:left}" +
+            "th{background:#f1ebe0}.grp td{background:#f4ede1;font-weight:700}.det{color:#5a4d3b;font-size:9pt;margin-top:3px}" +
+            ".ctx td:first-child{width:120px;font-weight:700}.hash{margin-top:16px;font-size:9pt;color:#5a4d3b}" +
+            ".hash b{font-family:Consolas,monospace;letter-spacing:.06em;color:#1a140c}" +
+            ".btn{margin:0 0 14px;padding:8px 14px;font-weight:700;border:1.5px solid #0f766e;background:#0f766e;color:#fff;border-radius:6px;cursor:pointer}" +
+            "@media print{.btn{display:none}body{margin:10mm}}</style></head><body>" +
+            "<button class='btn' onclick='window.print()'>🖨 ENREGISTRER EN PDF (Ctrl+P → « Enregistrer au format PDF »)</button>" +
+            "<h1>" + escapeHtml(titre.toUpperCase()) + "</h1>" +
+            "<div class='sub'>Généré le " + dateFr(now) + " à " + heureFr(now) + " — LOGIX</div>" +
+            "<table class='ctx'>" + contexte.map(([k, v]) => "<tr><td>" + escapeHtml(k) + "</td><td>" + escapeHtml(v) + "</td></tr>").join("") + "</table>" +
+            "<table><tr><th>Étape</th><th>Réponse</th><th>Faite à</th></tr>" + rows.join("") + "</table>" +
+            "<div class='hash'>Empreinte de contrôle (SHA-256 du contenu) : <b>" + court + "</b><br>" +
+            "Toute modification du contenu de ce document change cette empreinte. " +
+            "La date qui fait foi est celle du rattachement à l'affaire.</div>" +
+            "</body></html>";
+          const w = window.open("", "_blank");
+          if (!w) { showToast("LE NAVIGATEUR A BLOQUÉ L'OUVERTURE : AUTORISE LES FENÊTRES POUR LOGIX", 3500); return; }
+          w.document.open();
+          w.document.write(html);
+          w.document.close();
         }
 
         // Nombre d'étapes restantes dans la checklist affichée (0 si aucune).

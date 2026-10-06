@@ -781,7 +781,10 @@ amiableReldetToggle.cache = true;
 // ============================================================================
 anvBranch.suite.checklist = {
   position: "haut",
-  recapOk: "✓ TOUT EST FAIT : TU PEUX COPIER LES TEXTES CI-DESSOUS",
+  recapOk: "✓ TOUT EST FAIT",
+  // Bouton « RÉCAP DES ÉTAPES » quand tout est fait : page à enregistrer en PDF
+  // et à rattacher à l'affaire (titre = nom du fichier proposé).
+  recapDocument: { titre: "Mode opératoire ANV complété" },
   sections: [
     {
       id: "anv-debut",
