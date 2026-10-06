@@ -538,7 +538,7 @@ const anvBranch = {
 };
 
 // ============================================================================
-// AMIABLE RELDET : sous-choix dans le niveau MOTIF de ANV (premier de la liste).
+// VERSEMENT RÉCENT (ex « AMIABLE RELDET ») : contenu du parcours RELDET.
 // Structure simplifiée en 2 niveaux :
 //   1. VERSEMENT RÉCENT (oui/non)
 //   2. RAISON (frais frustr. / insolvable / PSA)
@@ -679,7 +679,7 @@ amiableReldetToggle.cache = true;
 // seuil de 25 000 €, manager ou clôture.
 // - les champs "date" écrivent dans {{date}} (même variable que les textes ANV) ;
 // - versement récent + pas de prescription imminente = pas d'ANV : bandeau rouge,
-//   motifs et résultats masqués (stopIf), il faut passer par AMIABLE RELDET.
+//   la suite est masquée (alerte « stop »), il faut passer par VERSEMENT RÉCENT.
 // ============================================================================
 anvBranch.suite.checklist = {
   position: "haut",
@@ -1102,7 +1102,8 @@ anvBranch.suite.checklist = {
 })(anvBranch.suite);
 
 // ============================================================================
-// DETTE NON EXIGIBLE = toggle imbriqué dans AMIABLE RELDET.
+// DETTE NON EXIGIBLE = parcours caché, ouvert par le bouton « FAIRE RELDET → »
+// de l'étape « dette exigible ? » du mode opératoire ANV.
 // Quand activé, remplace VERSEMENT RÉCENT par un choix CO / MD PSA.
 // - CO → 3 raisons (FRAIS FRUSTRATOIRES / INSOLVABLE / PSA) → résultat WATT
 // - MD PSA → résultat WATT direct (pas de raison à choisir)
@@ -1173,12 +1174,12 @@ const detteNonExigibleToggle = {
   },
 };
 
-// DETTE NON EXIGIBLE : bouton à part en haut de l'ANV (plus dans AMIABLE RELDET).
+// DETTE NON EXIGIBLE : parcours à part, caché en haut (ouvert depuis le mode opératoire).
 anvBranch.suite.toggles.push(detteNonExigibleToggle);
 detteNonExigibleToggle.cache = true;
 
 // Question optionnelle "COMPTE EN LIGNE OU MAIL ?" affichée dans la rangée des toggles,
-// entre AMIABLE RELDET et DETTE NON EXIGIBLE. Par défaut non répondue (= comportement
+// du parcours VERSEMENT RÉCENT. Par défaut non répondue (= comportement
 // "OUI implicite"). Si l'utilisateur répond NON, la variable de template
 // {{phrase-reldet}} bascule sur la version V2 ("RELDET fait en v2 car pas de compte
 // en ligne ni de mail pour envoyer par SCRIBE"). Logique dans buildTemplateVars().
@@ -1228,7 +1229,7 @@ detteNonExigibleToggle.whenOn.bandeau = {
   retour: { label: "← REVENIR À L'ANV", etape: "dette-exigible" },
 };
 
-// Bandeau orange dans AMIABLE RELDET quand on y arrive depuis la vérification ANV.
+// Bandeau orange dans VERSEMENT RÉCENT quand on y arrive depuis la vérification ANV.
 amiableReldetToggle.whenOn.bandeau = {
   if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
   texte: "RELDET À FAIRE : versement récent et pas de risque de prescription imminente, donc pas d'ANV.",
