@@ -2160,6 +2160,13 @@
         border-bottom: 1px solid var(--hairline);
       }
 
+      /* Bandeau d'un toggle actif, à droite de son bouton (même ligne). */
+      .toggle-bandeau {
+        flex: 1 1 360px;
+        margin: 0;
+        padding: 6px 6px 6px 12px;
+      }
+
       .chk-ajout {
         display: flex;
         flex-wrap: wrap;
@@ -3309,8 +3316,7 @@
             const b = entry.toggle.whenOn && entry.toggle.whenOn.bandeau;
             if (!b || (b.if && !contextMatches(b.if, vars))) return;
             const el = document.createElement("div");
-            el.className = "chk-alert is-warning";
-            el.style.margin = "10px 13px";
+            el.className = "chk-alert is-warning toggle-bandeau";
             const txt = document.createElement("span");
             txt.textContent = b.texte;
             el.appendChild(txt);
@@ -3332,7 +3338,9 @@
               });
               el.appendChild(r);
             }
-            togglesContainer.appendChild(el);
+            // Sur la même ligne que le bouton du toggle, à sa droite.
+            const ligne = togglesContainer.querySelector(`[data-toggle="${entry.toggle.id}"] .card-row-content`);
+            (ligne || togglesContainer).appendChild(el);
           });
         }
 
@@ -3368,6 +3376,7 @@
               leafInputs = {};
               render();
             });
+            card.dataset.toggle = entry.toggle.id; // pour y poser son bandeau
             togglesContainer.appendChild(card);
           });
 
