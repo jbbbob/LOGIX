@@ -1342,15 +1342,24 @@
         background: transparent;
       }
 
+      /* Pas de trait entre les morceaux du bloc : les lignes se suivent
+         collées, séparées seulement par leur propre filet. */
       #processBloc > section:not(:first-child) {
-        border-top: 1px solid var(--hairline);
+        border-top: 0;
       }
 
-      /* Pas de marge autour des sections sans titre : les lignes s'enchaînent
-         sans bande vide entre deux lignes vertes. */
       #processBloc .chk-section {
-        padding: 0;
         border-bottom: 0;
+      }
+
+      /* Bandeaux de la checklist sur toute la largeur de la carte (pas un
+         encadré en retrait), comme une ligne. */
+      .chk-section > .chk-alert {
+        margin: 0;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        padding: 9px 13px;
       }
 
       /* Barre MODE OPÉRATOIRE collée sous l'en-tête (58 px) quand on défile :
@@ -1496,8 +1505,10 @@
         background: var(--accent);
       }
 
+      /* Pas de marge haut / bas : deux lignes vertes de deux sections se
+         touchent sans bande vide (le titre de section a son propre espace). */
       .chk-section {
-        padding: 4px 0 6px;
+        padding: 0;
         border-bottom: 1px solid var(--border);
       }
 
@@ -1589,6 +1600,7 @@
         --surface-input-focus: #ffffff;
         --border: rgba(15, 118, 110, 0.3);
         --hairline: rgba(15, 118, 110, 0.15);
+        --hairline-soft: rgba(15, 118, 110, 0.12);
         --accent: #0f766e;
         --accent-strong: #0b5e58;
         --accent-ink: #ffffff;

@@ -906,7 +906,7 @@ anvBranch.suite.checklist = {
         },
         {
           type: "alerte",
-          niveau: "danger",
+          niveau: "warning",
           if: { "versement-recent": ["oui"], "prescription-imminente": ["oui"] },
           texte: "Prescription imminente : on passe quand même l'ANV malgré le versement récent.",
         },
