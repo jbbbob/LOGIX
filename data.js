@@ -1968,6 +1968,8 @@ const dcd1ereEnqueteInconnusLeaf = {
             id: "dcd-radie-dcd",
             if: { "dcd-dlp-proche": ["non", ""] },
             label: "USAGER RADIÉ AU MOTIF DCD ?",
+            // OUI : COMPTE = RADIÉ est sélectionné tout seul dans le CONTEXTE.
+            fixeContexte: { oui: { compte: "RADIÉ" } },
           },
           {
             type: "question",
@@ -1997,16 +1999,24 @@ const dcd1ereEnqueteInconnusLeaf = {
         if: { "traitement-stop": ["non"] },
         items: [
           {
+            // Statut pas encore choisi : on s'arrête là (stop) jusqu'au choix.
+            type: "alerte",
+            niveau: "warning",
+            stop: true,
+            if: { statut: [""] },
+            texte: "CHOISIS LE STATUT À GAUCHE (A/C OU PL) POUR CONTINUER.",
+          },
+          {
             type: "check",
             id: "dcd-arret-25",
-            if: { statut: ["A/C", ""] },
-            label: "A/C : ARRET DEBUT MOTIF 25 POSITIONNÉ",
+            if: { statut: ["A/C"] },
+            label: "ARRET DEBUT MOTIF 25 POSITIONNÉ",
           },
           {
             type: "check",
             id: "dcd-cpts-top06",
-            if: { statut: ["PL", ""] },
-            label: "PL : TRANSACTION CPTS TOP 06 SUR LES ÉCARTS NON COMPRIS DANS L'ANV",
+            if: { statut: ["PL"] },
+            label: "TRANSACTION CPTS TOP 06 SUR LES ÉCARTS NON COMPRIS DANS L'ANV",
           },
         ],
       },

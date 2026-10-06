@@ -4963,6 +4963,10 @@
                 if (checkState[item.id] === val) delete checkState[item.id];
                 else checkState[item.id] = val;
                 noterHeure(item.id, checkState[item.id] != null);
+                // fixeContexte : la réponse choisit aussi le CONTEXTE à gauche
+                // (ex. DCD « usager radié ? » OUI → COMPTE = RADIÉ).
+                const fixe = item.fixeContexte && checkState[item.id] && item.fixeContexte[checkState[item.id]];
+                if (fixe) Object.assign(globalSelections, fixe);
                 render();
               });
               line.appendChild(btn);
