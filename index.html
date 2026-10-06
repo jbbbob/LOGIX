@@ -1545,7 +1545,9 @@
          touchent sans bande vide (le titre de section a son propre espace). */
       .chk-section {
         padding: 0;
-        border-bottom: 1px solid var(--border);
+        /* Pas de filet entre sections (il se voyait en trait sombre entre deux
+           lignes vertes en mode nuit) : les titres de section suffisent. */
+        border-bottom: 0;
       }
 
       .chk-section:last-child {
