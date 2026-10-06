@@ -845,17 +845,18 @@ anvBranch.suite.checklist = {
       titre: "",
       items: [
         {
-          // autoCoche : cochée toute seule dès que COMPTE est choisi à gauche.
-          type: "check",
+          // contexte : la réponse EST le COMPTE / STATUT du dossier (plus de
+          // colonne CONTEXTE à gauche) ; les textes en dépendent.
+          type: "question",
           id: "anv-verif-compte",
-          autoCoche: "compte",
-          label: "Compte : {{compte-affiche}}",
+          contexte: "compte",
+          label: "Compte",
         },
         {
-          type: "check",
+          type: "question",
           id: "anv-verif-statut",
-          autoCoche: "statut",
-          label: "Statut : {{statut-affiche}}",
+          contexte: "statut",
+          label: "Statut",
         },
         {
           // sauf : masquée pour le motif 16 (créance < seuil : pas de justificatif).
@@ -1999,12 +2000,19 @@ const dcd1ereEnqueteInconnusLeaf = {
         if: { "traitement-stop": ["non"] },
         items: [
           {
+            // Le STATUT du dossier se choisit ici (plus de colonne CONTEXTE).
+            type: "question",
+            id: "dcd-statut",
+            contexte: "statut",
+            label: "STATUT",
+          },
+          {
             // Statut pas encore choisi : on s'arrête là (stop) jusqu'au choix.
             type: "alerte",
             niveau: "warning",
             stop: true,
             if: { statut: [""] },
-            texte: "CHOISIS LE STATUT À GAUCHE (A/C OU PL) POUR CONTINUER.",
+            texte: "CHOISIS LE STATUT CI-DESSUS (A/C OU PL) POUR CONTINUER.",
           },
           {
             type: "check",

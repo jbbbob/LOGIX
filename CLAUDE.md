@@ -296,6 +296,14 @@ Appliqué à TOUT le résultat HTML après substitution :
 
 ## Comportements spéciaux à connaître
 
+### ⚠️ Plus de colonne de gauche (CONTEXTE + CHEMIN) — octobre 2026
+
+- La `.sidebar` est **masquée** (`display: none`, DOM gardé pour les ids protégés). Le **COMPTE / STATUT** se choisit là où il sert :
+  - ANV : premières étapes « Compte » / « Statut » = questions **`contexte: "compte" | "statut"`** (leurs boutons écrivent dans `globalSelections` via `choisirContexte()`, `syncAutoChecks()` recopie la valeur dans `checkState`) ;
+  - DCD : « usager radié au motif DCD ? » OUI → RADIÉ (`fixeContexte`) ; question STATUT dans « 1. BLOCAGE » (stop tant qu'il manque) ;
+  - DÉLAI / RÉEXÉCUTION : ligne `makeContexteRow()` « COMPTE [ACTIF][RADIÉ] STATUT [A/C][PL] » en tête de l'onglet (dans `#togglesContainer`).
+- **RECOMMENCER remet maintenant COMPTE / STATUT à zéro** (chaque dossier se vérifie) — les sections ci-dessous qui parlent de « COMPTE/STATUT conservés » et du panneau CHEMIN décrivent l'ancien comportement.
+
 ### Layout général
 
 - **Header collant** : marque LOGIX + boutons `RETOUR` et `RECOMMENCER`.

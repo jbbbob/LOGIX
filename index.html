@@ -567,7 +567,14 @@
         padding: 0 22px;
       }
 
+      /* Colonne de gauche (CONTEXTE + CHEMIN) retirée de l'écran : le compte et
+         le statut se choisissent dans les modes opératoires (ou sur la ligne
+         du haut de DÉLAI / RÉEXÉCUTION). Le DOM reste (ids protégés). */
       .sidebar {
+        display: none !important;
+      }
+
+      .sidebar-ancienne {
         width: 320px;
         flex: 0 0 320px;
         min-width: 0;
@@ -3225,12 +3232,55 @@
           else delete checkState["@t:" + id];
         }
 
+        function choisirContexte(groupId, value) {
+          if (globalSelections[groupId] === value) return;
+          globalSelections[groupId] = value;
+          pruneInlineChain();
+          render();
+        }
+
+        // Ligne COMPTE [ACTIF][RADIÉ]  STATUT [A/C][PL] en haut des onglets
+        // sans mode opératoire (DÉLAI, RÉEXÉCUTION).
+        function makeContexteRow() {
+          const card = document.createElement("section");
+          const complet = (window.globalContextOptions || []).every((g) => !!globalSelections[g.id]);
+          card.className = "card-row" + (complet ? " is-done" : "");
+          const content = document.createElement("div");
+          content.className = "card-row-content";
+          (window.globalContextOptions || []).forEach((g) => {
+            const lbl = document.createElement("span");
+            lbl.className = "leaf-input-label";
+            lbl.textContent = g.label;
+            content.appendChild(lbl);
+            g.choix.forEach((v) => {
+              const b = document.createElement("button");
+              b.type = "button";
+              b.className = "context-option pill-btn" + (globalSelections[g.id] === v ? " is-selected" : "");
+              b.textContent = v;
+              b.addEventListener("click", () => choisirContexte(g.id, v));
+              content.appendChild(b);
+            });
+          });
+          card.appendChild(content);
+          return card;
+        }
+
         function syncAutoChecks() {
           const n = getChecklistNode();
           if (!n || !Array.isArray(n.checklist.sections)) return;
           const visit = (it) => {
             if (Array.isArray(it.items)) it.items.forEach(visit);
             if (Array.isArray(it.modele)) for (let k = 1; k <= listeNb(it); k++) listeBloc(it, k).forEach(visit);
+            // Question « contexte » : sa réponse = COMPTE / STATUT du dossier.
+            if (it.contexte) {
+              const v = globalSelections[it.contexte];
+              if (v) {
+                if (checkState[it.id] !== v) { checkState[it.id] = v; noterHeure(it.id, true); }
+              } else if (checkState[it.id]) {
+                delete checkState[it.id];
+                noterHeure(it.id, false);
+              }
+            }
             if (it.autoCoche) {
               checkState[it.id] = !!globalSelections[it.autoCoche];
               if (checkState[it.id] && !checkState["@t:" + it.id]) noterHeure(it.id, true);
@@ -3520,6 +3570,8 @@
 
         function renderToggles() {
           togglesContainer.innerHTML = "";
+          const cat = buildTemplateVars().__category;
+          if (cat === "delai" || cat === "reexecution") togglesContainer.appendChild(makeContexteRow());
 
           // Helper pour créer une card-row toggle avec un seul bouton
           const buildToggleCard = (toggle, isOn, onClick) => {
@@ -4948,10 +5000,13 @@
             line.appendChild(lbl);
             const tutoQ = makeTutoButton(item.tuto || item.id);
             if (tutoQ) line.appendChild(tutoQ);
-            const current = checkState[item.id];
-            const choix = Array.isArray(item.choix) && item.choix.length > 0
-              ? item.choix
-              : [{ val: "oui", label: "OUI" }, { val: "non", label: "NON" }];
+            const groupeCtx = item.contexte && (window.globalContextOptions || []).find((g) => g.id === item.contexte);
+            const current = groupeCtx ? globalSelections[item.contexte] : checkState[item.id];
+            const choix = groupeCtx
+              ? groupeCtx.choix.map((v) => ({ val: v, label: v }))
+              : Array.isArray(item.choix) && item.choix.length > 0
+                ? item.choix
+                : [{ val: "oui", label: "OUI" }, { val: "non", label: "NON" }];
             choix.forEach(({ val, label }) => {
               const btn = document.createElement("button");
               btn.type = "button";
@@ -4959,6 +5014,7 @@
               btn.className = `context-option pill-btn ${current === val ? "is-selected" : ""}`;
               btn.setAttribute("aria-pressed", current === val ? "true" : "false");
               btn.addEventListener("click", () => {
+                if (groupeCtx) { choisirContexte(item.contexte, val); return; }
                 // Re-cliquer sur la réponse choisie l'efface (comme les topQuestions).
                 if (checkState[item.id] === val) delete checkState[item.id];
                 else checkState[item.id] = val;
@@ -6008,6 +6064,7 @@
 
         function resetDossier() {
           checkState = {};
+          globalSelections = {};
           trail = [{ label: "", node: window.treeData }];
           inlineRootNode = null;
           inlineChain = [];
@@ -6021,7 +6078,7 @@
           applyInitialInlineRoot();
           window.scrollTo(0, 0);
           render();
-          showToast("NOUVEAU DOSSIER — COMPTE ET STATUT CONSERVÉS");
+          showToast("NOUVEAU DOSSIER");
         }
 
         if (backBtn) backBtn.addEventListener("click", goBackOneStep);
