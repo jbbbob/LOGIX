@@ -1317,6 +1317,27 @@
         gap: 0;
       }
 
+      /* ANV : une seule carte pour tout le process (étapes, motifs, fin). */
+      #processBloc {
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow-card);
+      }
+
+      #processBloc > section {
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+      }
+
+      #processBloc > section:not(:first-child) {
+        border-top: 1px solid var(--hairline);
+      }
+
       /* Barre MODE OPÉRATOIRE collée sous l'en-tête (58 px) quand on défile :
          compteur et progression toujours visibles. Fond opaque (teinte posée
          sur la carte) pour que le contenu ne transparaisse pas dessous. */
@@ -2382,6 +2403,9 @@
         checklistBas.id = "checklistContainerBas";
         checklistBas.className = "stack";
         leafQuestionsContainer.after(checklistBas);
+        // Bloc unique du mode opératoire ANV (créé une fois, inséré au besoin).
+        const processBloc = document.createElement("div");
+        processBloc.id = "processBloc";
         const checklistContainer = document.getElementById("checklistContainer");
         const pathPanel = document.getElementById("pathPanel");
         const pathCount = document.getElementById("pathCount");
@@ -2841,6 +2865,11 @@
             else if (val === false) vars[id] = "non";
             else if (val != null) vars[id] = val;
           });
+
+          // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
+          //        premières étapes cochées toutes seules.
+          vars["compte-affiche"] = vars.compte || "à choisir à gauche";
+          vars["statut-affiche"] = vars.statut || "à choisir à gauche";
 
           // 1 bis. ANV : une ligne de post-it « DRETAF CO … pour passer ANV » par
           //        contrainte saisie dans les vérifications (au moins une).
@@ -4693,11 +4722,17 @@
           checklistBas.innerHTML = "";
           syncAutoChecks();
           const leaf = getChecklistNode();
-          // Vérifications de la racine (position "haut") : avant les motifs.
+          // Checklist de la racine (position "haut", ANV) : UN SEUL BLOC qui
+          // contient étapes du haut + motifs + questions de fin + étapes du bas,
+          // comme la DCD. Les sections gardent leurs ids, on les déplace juste
+          // dans le bloc (et on les remet à leur place pour les autres catégories).
           const enHaut = !!(leaf && leaf.checklist.position === "haut");
-          if (enHaut && checklistContainer.nextElementSibling !== cascadeFlow) cascadeFlow.before(checklistContainer);
-          if (!enHaut && checklistContainer.previousElementSibling !== leafQuestionsContainer) leafQuestionsContainer.after(checklistContainer);
-          if (checklistBas.previousElementSibling !== leafQuestionsContainer && checklistBas.previousElementSibling !== checklistContainer) leafQuestionsContainer.after(checklistBas);
+          if (enHaut && checklistContainer.parentElement !== processBloc) {
+            cascadeFlow.before(processBloc);
+            processBloc.append(checklistContainer, cascadeFlow, leafQuestionsContainer, checklistBas);
+          } else if (!enHaut && checklistContainer.parentElement === processBloc) {
+            processBloc.replaceWith(cascadeFlow, leafQuestionsContainer, checklistContainer, checklistBas);
+          }
           if (!leaf) return;
 
           const vars = buildTemplateVars();

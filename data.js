@@ -854,15 +854,13 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-verif-compte",
           autoCoche: "compte",
-          label: "Vérifier si le compte est ACTIF ou RADIÉ",
-          aide: "Se coche tout seul quand tu choisis à gauche, dans CONTEXTE > COMPTE.",
+          label: "Compte : {{compte-affiche}}",
         },
         {
           type: "check",
           id: "anv-verif-statut",
           autoCoche: "statut",
-          label: "Vérifier si le cotisant est A/C ou PL",
-          aide: "Se coche tout seul quand tu choisis à gauche, dans CONTEXTE > STATUT.",
+          label: "Statut : {{statut-affiche}}",
         },
         {
           type: "check",
