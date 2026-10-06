@@ -2181,7 +2181,9 @@
       .chk-group {
         margin: 0;
         border: 0;
-        border-top: 1px solid var(--hairline);
+        /* Filet vert très léger (pas le filet sombre du mode nuit) : invisible
+           entre deux blocs verts, discret ailleurs. */
+        border-top: 1px solid rgba(15, 118, 110, 0.15);
         border-radius: 0;
         background: transparent;
       }
@@ -3040,58 +3042,51 @@
           });
           const deptsAutres = [];
           const deptsInterroges = []; // départements dont la demande est cochée
+          // Autre chambre : un bloc PAR département, chacun avec son mode
+          // d'envoi (ids dcd-notaire-autre-<dépt>-envoi / -demande / -pj-acte / -ar).
+          const envoiDe = (d) => checkState["dcd-notaire-autre-" + d + "-envoi"] || "";
           chambres.forEach((ch) => { vars["chambre-" + ch.id] = "non"; });
           depts.forEach((d) => {
             const ch = chambres.find((c) => (c.depts || []).includes(d));
-            const chambreId = ch ? ch.id : "autre";
             if (ch) vars["chambre-" + ch.id] = "oui";
             else deptsAutres.push(d);
-            // (pour l'autre chambre, il faut aussi que le mode d'envoi soit choisi)
-            const demandeFaite =
-              checkState["dcd-notaire-" + chambreId + "-demande"] === true &&
-              (chambreId !== "autre" || !!checkState["dcd-notaire-autre-envoi"]);
+            // (pour une autre chambre, il faut aussi que le mode d'envoi soit choisi)
+            const demandeFaite = ch
+              ? checkState["dcd-notaire-" + ch.id + "-demande"] === true
+              : checkState["dcd-notaire-autre-" + d + "-demande"] === true && !!envoiDe(d);
             if (demandeFaite) deptsInterroges.push(d);
           });
           vars["chambre-autre"] = deptsAutres.length > 0 ? "oui" : "non";
           vars["depts-autres"] = deptsAutres.join(" ET ");
 
           // 7. Phrase WATT : uniquement les départements réellement interrogés,
-          //    avec l'accord singulier / pluriel.
+          //    regroupés par mode d'envoi, avec l'accord singulier / pluriel.
+          //    Les chambres de Paris / 77 / 91 passent toujours par leur formulaire.
           vars["dcd-notaires-demande"] = deptsInterroges.length > 0 ? "oui" : "non";
-          // Mode d'envoi à la chambre interdépartementale (« autre chambre ») :
-          // "formulaire" (en ligne), "mail" ou "courrier" (SCRIBE). Les chambres
-          // de Paris / 77 / 91 passent toujours par leur formulaire en ligne.
-          const envoiAutre = checkState["dcd-notaire-autre-envoi"] || "";
-          const parScribe = envoiAutre === "mail" || envoiAutre === "courrier";
-          const deptsScribe = parScribe ? deptsInterroges.filter((d) => deptsAutres.includes(d)) : [];
-          const deptsForm = deptsInterroges.filter((d) => !deptsScribe.includes(d));
-          // Acte de décès (GED) joint au SCRIBE : seulement par mail / courrier.
-          const pjActe =
-            parScribe &&
+          const modeDe = (d) => (deptsAutres.includes(d) ? envoiDe(d) : "formulaire");
+          const deptsForm = deptsInterroges.filter((d) => modeDe(d) === "formulaire");
+          const deptsMail = deptsInterroges.filter((d) => modeDe(d) === "mail");
+          const deptsCourrier = deptsInterroges.filter((d) => modeDe(d) === "courrier");
+          // Acte de décès (GED) joint au SCRIBE : seulement par mail / courrier,
+          // et si c'est coché pour tous les départements du groupe.
+          const pjActe = (ds) =>
             vars["dcd-acte-ged"] === "oui" &&
-            checkState["dcd-notaire-autre-pj-acte"] === true;
+            ds.every((d) => checkState["dcd-notaire-autre-" + d + "-pj-acte"] === true);
 
           const chambresDe = (depts) =>
             (depts.length > 1 ? "Chambres des notaires du " : "Chambre des notaires du ") + depts.join(" et du ");
+          const interrogees = (depts) => (depts.length > 1 ? " interrogées" : " interrogée");
           const finJustif = (depts) =>
             depts.length > 1 ? "justificatifs rattachés à l'affaire" : "justificatif rattaché à l'affaire";
           const phrases = [];
           if (deptsForm.length > 0) {
-            phrases.push(
-              chambresDe(deptsForm) +
-                (deptsForm.length > 1 ? " interrogées" : " interrogée") +
-                " via formulaire en ligne, " + finJustif(deptsForm)
-            );
+            phrases.push(chambresDe(deptsForm) + interrogees(deptsForm) + " via formulaire en ligne, " + finJustif(deptsForm));
           }
-          if (deptsScribe.length > 0) {
-            phrases.push(
-              chambresDe(deptsScribe) +
-                (deptsScribe.length > 1 ? " interrogées" : " interrogée") +
-                " par SCRIBE envoyé par " + (envoiAutre === "mail" ? "mail" : "courrier") +
-                // Par SCRIBE (mail / courrier) : pas de justificatif à rattacher.
-                (pjActe ? ", acte de décès joint" : "")
-            );
-          }
+          [[deptsMail, "mail"], [deptsCourrier, "courrier"]].forEach(([ds, mode]) => {
+            if (ds.length === 0) return;
+            // Par SCRIBE (mail / courrier) : pas de justificatif à rattacher.
+            phrases.push(chambresDe(ds) + interrogees(ds) + " par SCRIBE envoyé par " + mode + (pjActe(ds) ? ", acte de décès joint" : ""));
+          });
           // Une ligne par mode d'envoi dans le commentaire WATT (le saut de
           // ligne devient <br> à l'insertion, voir substituteTemplate).
           vars["phrase-chambres"] = phrases.join("\n");
@@ -4419,17 +4414,21 @@
               ],
             });
           });
-          if (vars["chambre-autre"] === "oui") {
-            const autre = cl.chambreAutre || {};
+          // Autres départements : un bloc par département (même procédé chacun).
+          const autre = cl.chambreAutre || {};
+          String(vars["depts-autres"] || "").split(" ET ").filter(Boolean).forEach((d) => {
+            const base = "dcd-notaire-autre-" + d;
+            const envoi = checkState[base + "-envoi"] || "";
+            const parScribe = envoi === "mail" || envoi === "courrier";
             out.push({
               type: "groupe",
-              label: "AUTRE CHAMBRE (DÉPT " + vars["depts-autres"] + ")",
+              label: "AUTRE CHAMBRE (DÉPT " + d + ")",
               lien: autre.url ? { label: "OUVRIR LE SITE CSN", url: autre.url } : null,
-              aide: "Chambre interdépartementale → département → RECHERCHER : voir son mode d'envoi.",
+              aide: "Chambre interdépartementale → département " + d + " → RECHERCHER : voir son mode d'envoi.",
               items: [
                 {
                   type: "question",
-                  id: "dcd-notaire-autre-envoi",
+                  id: base + "-envoi",
                   label: "DEMANDE FAITE PAR",
                   choix: [
                     { val: "formulaire", label: "FORMULAIRE EN LIGNE" },
@@ -4437,19 +4436,19 @@
                     { val: "courrier", label: "SCRIBE PAR COURRIER" },
                   ],
                 },
-                ...(vars["dcd-notaire-autre-envoi"] === "formulaire"
+                ...(envoi === "formulaire"
                   ? [{
                       type: "check",
-                      id: "dcd-notaire-autre-demande",
+                      id: base + "-demande",
                       label: "FORMULAIRE REMPLI, IMPRIMÉ EN PDF AVANT ENVOI, ENVOYÉ, PDF RATTACHÉ À L'AFFAIRE",
                     }]
                   : []),
-                ...(vars["dcd-notaire-autre-envoi"] === "mail" || vars["dcd-notaire-autre-envoi"] === "courrier"
+                ...(parScribe
                   ? [
                       {
                         type: "check",
-                        id: "dcd-notaire-autre-demande",
-                        label: "SCRIBE ENVOYÉ PAR " + (vars["dcd-notaire-autre-envoi"] === "mail" ? "MAIL" : "COURRIER"),
+                        id: base + "-demande",
+                        label: "SCRIBE ENVOYÉ PAR " + (envoi === "mail" ? "MAIL" : "COURRIER"),
                         copie: autre.modeleScribe
                           ? [{
                               label: "MODÈLE SCRIBE",
@@ -4462,17 +4461,17 @@
                       ...(vars["dcd-acte-ged"] === "oui"
                         ? [{
                             type: "check",
-                            id: "dcd-notaire-autre-pj-acte",
+                            id: base + "-pj-acte",
                             label: "ACTE DE DÉCÈS (GED) JOINT EN PIÈCE JOINTE DU SCRIBE",
                           }]
                         : []),
                     ]
                   : []),
                 // AR seulement pour le formulaire en ligne (pas par SCRIBE).
-                ...(vars["dcd-notaire-autre-envoi"] === "formulaire"
+                ...(envoi === "formulaire"
                   ? [{
                       type: "check",
-                      id: "dcd-notaire-autre-ar",
+                      id: base + "-ar",
                       label: "ACCUSÉ DE RÉCEPTION RATTACHÉ À L'AFFAIRE (S'IL Y EN A UN)",
                       facultatif: true,
                       tag: "SI RETOUR",
@@ -4480,7 +4479,7 @@
                   : []),
               ],
             });
-          }
+          });
           if (out.length === 0) {
             out.push({
               type: "alerte",
