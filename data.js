@@ -1233,6 +1233,25 @@ amiableReldetToggle.whenOn.topQuestions = [
 detteNonExigibleToggle.whenOn.topQuestions = amiableReldetToggle.whenOn.topQuestions;
 detteNonExigibleToggle.whenOn.etapesApres = etapesReldet; // SCRIBE / V2 (défini plus haut)
 
+// Fin des parcours RELDET (après la raison) : le commentaire WATT est une
+// étape à cocher, avec son texte prêt à copier (montre: "reldet-watt").
+const etapesReldetFin = [
+  {
+    type: "check",
+    id: "reldet-watt",
+    montre: "reldet-watt",
+    attente: "Le texte apparaîtra ici une fois la raison choisie.",
+    label: "Mettre le commentaire affaire WATT",
+  },
+];
+amiableReldetToggle.whenOn.etapesFin = etapesReldetFin;
+detteNonExigibleToggle.whenOn.etapesFin = etapesReldetFin;
+[amiableReldetToggle.whenOn, detteNonExigibleToggle.whenOn].forEach(function rangerWatt(node) {
+  if (!node || typeof node !== "object") return;
+  (node.resultats || []).forEach((r) => { if (r.label === "COMMENTAIRE AFFAIRE WATT") r.etape = "reldet-watt"; });
+  (node.choix || []).forEach((c) => rangerWatt(c.suite));
+});
+
 // Bandeau orange + retour quand on arrive depuis « dette exigible ? » = NON.
 detteNonExigibleToggle.whenOn.bandeau = {
   if: { "dette-exigible": ["non"] },

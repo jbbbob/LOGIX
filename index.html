@@ -2492,6 +2492,9 @@
         // … et celles affichées SOUS ses questions (whenOn.etapesApres).
         const toggleEtapesApres = document.createElement("div");
         toggleEtapesApres.id = "toggleEtapesApres";
+        // … et celles de fin (whenOn.etapesFin), sous les choix de la cascade.
+        const toggleEtapesFin = document.createElement("div");
+        toggleEtapesFin.id = "toggleEtapesFin";
         // Sections « fin: true » : après les textes à copier, dans le bloc.
         const checklistFin = document.createElement("section");
         checklistFin.id = "checklistContainerFin";
@@ -3315,9 +3318,11 @@
         function renderToggleEtapes() {
           toggleEtapes.innerHTML = "";
           toggleEtapesApres.innerHTML = "";
+          toggleEtapesFin.innerHTML = "";
+          if (activeToggleStack.length) checklistBas.appendChild(toggleEtapesFin);
           const vars = buildTemplateVars();
           activeToggleStack.forEach((entry) => {
-            [["etapes", toggleEtapes], ["etapesApres", toggleEtapesApres]].forEach(([cle, box]) => {
+            [["etapes", toggleEtapes], ["etapesApres", toggleEtapesApres], ["etapesFin", toggleEtapesFin]].forEach(([cle, box]) => {
               (entry.toggle.whenOn[cle] || []).forEach((item) => {
                 if (item.if && !contextMatches(item.if, vars)) return;
                 renderChecklistItem(item, vars, box, "toggle");
@@ -4596,7 +4601,7 @@
           if (!wrap.firstChild) {
             const vide = document.createElement("div");
             vide.className = "chk-aide";
-            vide.textContent = "Le texte apparaîtra ici une fois le motif et le sous-motif choisis.";
+            vide.textContent = item.attente || "Le texte apparaîtra ici une fois le motif et le sous-motif choisis.";
             wrap.appendChild(vide);
           }
           return wrap;
@@ -5372,12 +5377,14 @@
         function etapesMontrees() {
           const n = getChecklistNode();
           const out = new Set();
-          if (!n) return out;
           const visit = (it) => {
             if (it.montre) out.add(it.montre);
             (it.items || []).forEach(visit);
           };
-          buildChecklistModel(n, buildTemplateVars()).forEach((sec) => sec.items.forEach(visit));
+          if (n) buildChecklistModel(n, buildTemplateVars()).forEach((sec) => sec.items.forEach(visit));
+          // Étapes des parcours ouverts (VERSEMENT RÉCENT, DETTE NON EXIGIBLE).
+          activeToggleStack.forEach((entry) =>
+            ["etapes", "etapesApres", "etapesFin"].forEach((cle) => (entry.toggle.whenOn[cle] || []).forEach(visit)));
           return out;
         }
 
