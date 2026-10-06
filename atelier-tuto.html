@@ -128,7 +128,7 @@
           <button class="btn" id="zoomIn" title="Zoomer (touche +)">+</button>
           <button class="btn" id="zoomFit" title="Revenir à l'image entière (touche 0)">Image entière</button>
         </div>
-        <div class="hint"><b>Ctrl + molette</b> sur l'image pour zoomer là où est la souris ; <b>Espace + glisser</b> (ou clic molette) pour se déplacer.</div>
+        <div class="hint"><b>Ctrl + molette</b> sur l'image pour zoomer là où est la souris ; <b>clic maintenu sans bouger</b> (0,3 s), <b>Espace + glisser</b> ou clic molette pour se déplacer.</div>
         <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
         <input type="range" id="force" min="6" max="40" step="1" value="16">
         <div class="hint">Le flou est une <b>pixelisation</b> : le texte devient illisible et on ne peut pas le retrouver.<br>Une zone trop grande ? Outil <b>↖ Modifier</b> : clique dessus, puis glisse-la ou tire ses poignées.</div>
@@ -142,7 +142,7 @@
           <button class="btn" data-tool="ellipse" title="Tracer un cercle autour d'une petite icône (touche O)">◯ Cercle <span class="kbd">O</span></button>
           <button class="btn" data-tool="arrow" title="Tracer une flèche libre (du début vers la pointe) (touche A)">➜ Flèche <span class="kbd">A</span></button>
           <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③ (touche N)">① Numéro <span class="kbd">N</span></button>
-          <button class="btn red" id="delAnnot" title="Efface la zone ou le repère choisi (ou touche Suppr)">🗑 Effacer</button>
+          <button class="btn red" id="delAnnot" title="Efface la zone ou le repère choisi (touche X ou Suppr)">🗑 Effacer <span class="kbd">X</span></button>
         </div>
         <label class="lbl" for="taille">Taille des repères : <span id="tailleVal"></span></label>
         <input type="range" id="taille" min="40" max="160" step="5" value="100">
@@ -766,6 +766,28 @@
     e.preventDefault(); e.stopImmediatePropagation();
     pan = { x: e.clientX, y: e.clientY, l: stage.scrollLeft, t: stage.scrollTop };
   }, true);
+  // Zoomé : clic maintenu SANS bouger (0,3 s) hors d'un objet = on passe en
+  // déplacement de la vue. Si la souris bouge tout de suite, on trace normalement.
+  let hold = null;
+  stage.addEventListener("mousedown", (e) => {
+    if (!img || zoom === 1 || e.button !== 0 || pan) return;
+    const x = e.clientX, y = e.clientY;
+    const timer = setTimeout(() => {
+      if (!hold || edit) { hold = null; return; }
+      start = null; drag = null; hold = null;
+      pan = { x, y, l: stage.scrollLeft, t: stage.scrollTop };
+      stage.classList.add("is-pan");
+      draw();
+    }, 300);
+    hold = { x, y, timer };
+  });
+  document.addEventListener("mousemove", (e) => {
+    if (hold && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 4) { clearTimeout(hold.timer); hold = null; }
+  });
+  document.addEventListener("mouseup", () => {
+    if (hold) { clearTimeout(hold.timer); hold = null; }
+    if (pan && !spaceDown) stage.classList.remove("is-pan");
+  });
   document.addEventListener("mousemove", (e) => {
     if (!pan) return;
     stage.scrollLeft = pan.l - (e.clientX - pan.x);
@@ -967,7 +989,7 @@
   document.addEventListener("keydown", (e) => {
     const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !typing) { e.preventDefault(); undo(); }
-    if ((e.key === "Delete" || e.key === "Backspace") && !typing && sel) { e.preventDefault(); deleteSelected(); }
+    if ((e.key === "Delete" || e.key === "Backspace" || (e.key.toLowerCase() === "x" && !e.ctrlKey && !e.metaKey)) && !typing && sel) { e.preventDefault(); deleteSelected(); }
     if (e.key === "Escape") { sel = null; draw(); }
     if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
 
