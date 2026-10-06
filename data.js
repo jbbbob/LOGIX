@@ -833,19 +833,21 @@ anvBranch.suite.toggles = [amiableReldetToggle];
 amiableReldetToggle.whenOn.autoChoix = { id: "verse-oui", if: { "versement-recent": ["oui"] } };
 
 // ============================================================================
-// VÉRIFICATIONS AVANT L'ANV (mode opératoire, même moteur que la DCD).
-// Affichées EN HAUT de l'onglet ANV (position: "haut"), avant les motifs.
+// MODE OPÉRATOIRE ANV, de A à Z (même moteur que la DCD).
+// Section « anv-debut » EN HAUT (position: "haut") : compte, statut, justificatif ;
+// puis MOTIF / SOUS-MOTIF ; puis section « anv-suite » (bas: true) : versement,
+// prescription, crédit, contraintes ; puis les textes à copier.
 // - les champs "date" écrivent dans {{date}} (même variable que les textes ANV) ;
 // - versement récent + pas de prescription imminente = pas d'ANV : bandeau rouge,
 //   motifs et résultats masqués (stopIf), il faut passer par AMIABLE RELDET.
 // ============================================================================
 anvBranch.suite.checklist = {
   position: "haut",
-  recapOk: "✓ VÉRIFICATIONS FAITES : CHOISIS LE MOTIF CI-DESSOUS",
+  recapOk: "✓ TOUT EST FAIT : TU PEUX COPIER LES TEXTES CI-DESSOUS",
   sections: [
     {
-      id: "anv-verifs",
-      titre: "VÉRIFICATIONS AVANT L'ANV",
+      id: "anv-debut",
+      titre: "",
       items: [
         {
           // autoCoche : cochée toute seule dès que COMPTE est choisi à gauche.
@@ -869,6 +871,14 @@ anvBranch.suite.checklist = {
           label: "Trouver un justificatif permettant de passer l'ANV",
           champs: [{ id: "date", label: "DATE DU JUSTIFICATIF TROUVÉ", placeholder: "JJ/MM/AA" }],
         },
+      ],
+    },
+    {
+      // bas : affichée APRÈS le choix du motif et du sous-motif.
+      id: "anv-suite",
+      titre: "",
+      bas: true,
+      items: [
         {
           type: "question",
           id: "versement-recent",

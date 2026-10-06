@@ -594,6 +594,7 @@
       #cascadeFlow,
       #leafQuestionsContainer,
       #checklistContainer,
+      #checklistContainerBas,
       .result-card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -606,7 +607,8 @@
       #togglesContainer:empty,
       #cascadeFlow:empty,
       #leafQuestionsContainer:empty,
-      #checklistContainer:empty {
+      #checklistContainer:empty,
+      #checklistContainerBas:empty {
         display: none;
       }
 
@@ -1310,7 +1312,8 @@
       /* ---------- 7 bis. Checklist MODE OPÉRATOIRE (DCD) ----------------------- */
       /* Même carte que le reste. Une section = un titre discret + des lignes.
          Ligne cochée : texte grisé et barré, rien ne bouge (couleurs seules). */
-      #checklistContainer {
+      #checklistContainer,
+      #checklistContainerBas {
         gap: 0;
       }
 
@@ -2374,6 +2377,11 @@
         const breadcrumbs = document.getElementById("breadcrumbs");
         const categoryTabs = document.getElementById("categoryTabs");
         const leafQuestionsContainer = document.getElementById("leafQuestionsContainer");
+        // Sections de checklist « bas: true » : après le motif / sous-motif.
+        const checklistBas = document.createElement("section");
+        checklistBas.id = "checklistContainerBas";
+        checklistBas.className = "stack";
+        leafQuestionsContainer.after(checklistBas);
         const checklistContainer = document.getElementById("checklistContainer");
         const pathPanel = document.getElementById("pathPanel");
         const pathCount = document.getElementById("pathCount");
@@ -4199,7 +4207,7 @@
               }
               if (item.type === "alerte" && item.stop) stopped = true;
             });
-            if (items.length > 0) sections.push({ id: section.id, titre: section.titre, items });
+            if (items.length > 0) sections.push({ id: section.id, titre: section.titre, bas: !!section.bas, items });
           });
           sections.stopped = stopped;
           return sections;
@@ -4625,11 +4633,11 @@
         function renderChecklist() {
           const active = document.activeElement;
           const activeId =
-            active && checklistContainer.contains(active) ? active.getAttribute("data-input-id") : null;
+            active && (checklistContainer.contains(active) || checklistBas.contains(active)) ? active.getAttribute("data-input-id") : null;
           // Un même champ peut apparaître 2 fois (ex : N° D'ACTE dans SNGI et
           // dans MAIRIE) : on retient lequel des deux avait le curseur.
           const activeIdx = activeId
-            ? [...checklistContainer.querySelectorAll(`[data-input-id="${activeId}"]`)].indexOf(active)
+            ? [...document.querySelectorAll(`#checklistContainer [data-input-id="${activeId}"], #checklistContainerBas [data-input-id="${activeId}"]`)].indexOf(active)
             : -1;
           const selStart = activeId ? active.selectionStart : null;
           const selEnd = activeId ? active.selectionEnd : null;
@@ -4638,7 +4646,7 @@
           drawChecklist();
 
           if (activeId) {
-            const again = checklistContainer.querySelectorAll(`[data-input-id="${activeId}"]`)[Math.max(activeIdx, 0)];
+            const again = document.querySelectorAll(`#checklistContainer [data-input-id="${activeId}"], #checklistContainerBas [data-input-id="${activeId}"]`)[Math.max(activeIdx, 0)];
             if (again) {
               again.focus();
               try { again.setSelectionRange(selStart, selEnd); } catch (err) { /* type sans sélection */ }
@@ -4682,12 +4690,14 @@
 
         function drawChecklist() {
           checklistContainer.innerHTML = "";
+          checklistBas.innerHTML = "";
           syncAutoChecks();
           const leaf = getChecklistNode();
           // Vérifications de la racine (position "haut") : avant les motifs.
           const enHaut = !!(leaf && leaf.checklist.position === "haut");
           if (enHaut && checklistContainer.nextElementSibling !== cascadeFlow) cascadeFlow.before(checklistContainer);
           if (!enHaut && checklistContainer.previousElementSibling !== leafQuestionsContainer) leafQuestionsContainer.after(checklistContainer);
+          if (checklistBas.previousElementSibling !== leafQuestionsContainer && checklistBas.previousElementSibling !== checklistContainer) leafQuestionsContainer.after(checklistBas);
           if (!leaf) return;
 
           const vars = buildTemplateVars();
@@ -4723,16 +4733,25 @@
           head.appendChild(bar);
           checklistContainer.appendChild(head);
 
+          let zoneFin = checklistContainer;
           sections.forEach((section) => {
             const sec = document.createElement("div");
             sec.className = "chk-section";
             sec.id = "chk-sec-" + section.id;
-            const st = document.createElement("div");
-            st.className = "chk-section-title";
-            st.textContent = section.titre || "";
-            sec.appendChild(st);
+            if (section.titre) {
+              const st = document.createElement("div");
+              st.className = "chk-section-title";
+              st.textContent = section.titre;
+              sec.appendChild(st);
+            }
             section.items.forEach((item) => renderChecklistItem(item, vars, sec, section.id));
-            checklistContainer.appendChild(sec);
+            if (section.bas) {
+              // Sous le motif : carte à part, même style que celle du haut.
+              checklistBas.appendChild(sec);
+              zoneFin = checklistBas;
+            } else {
+              checklistContainer.appendChild(sec);
+            }
           });
 
           // BILAN en fin de checklist : tout est fait, ou la liste de ce qui
@@ -4765,7 +4784,7 @@
             up.addEventListener("click", () => goToStep(missing[0].id));
             recap.appendChild(up);
           }
-          checklistContainer.appendChild(recap);
+          zoneFin.appendChild(recap);
         }
 
         // Nombre d'étapes restantes dans la checklist affichée (0 si aucune).
@@ -5444,7 +5463,7 @@
           renderChecklist();
           renderResults(deepestNode);
           const stop = checklistStops();
-          [cascadeFlow, leafQuestionsContainer, resultsContainer].forEach((el) => el.classList.toggle("hidden", stop));
+          resultsContainer.classList.toggle("hidden", stop);
           // renderPathPanel en dernier : il compte les blocs résultat déjà rendus.
           renderPathPanel();
           if (backBtn) backBtn.disabled = !canGoBack();

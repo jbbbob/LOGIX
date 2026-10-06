@@ -376,7 +376,9 @@ ACTIF + A/C + DÉLAI + REFUS - PAS DE PJ + DATE=15/03/26 + MOIS=37 + DCA NON + +
 
 Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles activés, choix de la cascade, inputs remplis, leafAnswers, leafInputs, topAnswers. Format `LABEL VAL` pour les flags (OUI/NON/AE/TI), `LABEL=VALEUR` pour les inputs textuels.
 
-### Vérifications avant l'ANV (catégorie ANV)
+### Mode opératoire ANV, de A à Z (catégorie ANV)
+
+- Pas de titre de section (« un process de A à Z ») : section `anv-debut` **au-dessus des motifs** (compte, statut, justificatif + date), puis MOTIF / SOUS-MOTIF / ANV SUSPEN, puis section `anv-suite` (**`bas: true`**, rendue dans `#checklistContainerBas`, créée en JS juste après `#leafQuestionsContainer`) : versement récent, prescription, crédit, contraintes. Le bilan est en bas. Un arrêt (`stop`) ne masque plus que les résultats (les motifs restent visibles au-dessus).
 
 - `anvBranch.suite.checklist` (même moteur que la DCD) avec `position: "haut"` : affichée **au-dessus des motifs** et gardée pendant toute la cascade (`getChecklistNode()` = feuille avec checklist, sinon racine de la catégorie).
 - Étapes : compte actif/radié et A/C ou PL (**`autoCoche`** : cochées toutes seules par `syncAutoChecks()` dès que COMPTE / STATUT sont choisis à gauche, case grisée), justificatif permettant de passer l'ANV + DATE DU JUSTIFICATIF TROUVÉ (**`champsObligatoires`** : case impossible à cocher sans la date, décochée si la date est effacée) (champ `date` = `{{date}}` des textes ANV ; la DATE générique de la cascade a été retirée), versement récent ?, puis risque de prescription imminente ? si OUI. Bilan propre (`recapOk`), masqué quand le traitement s'arrête.
