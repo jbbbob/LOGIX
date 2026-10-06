@@ -898,7 +898,6 @@ anvBranch.suite.checklist = {
           label: "recherche EOPPS faite",
           lien: { label: "OUVRIR EOPPS", url: "https://www.eopps.fr/#/tableau-de-bord" },
           lienAvant: true,
-          aide: "Si la page ne s'ouvre pas tout de suite, c'est normal : c'est la bonne adresse.",
         },
         {
           type: "question",
