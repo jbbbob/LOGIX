@@ -114,9 +114,9 @@
 
       <div class="card">
         <div class="title">3. Repères (où cliquer)</div>
-        <button class="btn" data-tool="select" style="width:100%;margin-bottom:6px" title="Cliquer sur une zone ou un repère : le glisser pour le déplacer, tirer les poignées pour le redimensionner (touche M)">↖ Sélection — déplacer / redimensionner <span class="kbd">M</span></button>
+        <button class="btn" data-tool="select" style="width:100%;margin-bottom:6px" title="Cliquer sur une zone ou un repère : le glisser pour le déplacer, tirer les poignées pour le redimensionner (touche C, ou double-clic sur l'image)">↖ Sélection — déplacer / redimensionner <span class="kbd">C</span></button>
         <div class="tools3">
-          <button class="btn" data-tool="rect" title="Tracer un cadre autour du bouton / champ / onglet (touche C)">▭ Cadre <span class="kbd">C</span></button>
+          <button class="btn" data-tool="rect" title="Tracer un cadre autour du bouton / champ / onglet (touche R)">▭ Cadre <span class="kbd">R</span></button>
           <button class="btn" data-tool="ellipse" title="Tracer un cercle autour d'une petite icône (touche O)">◯ Cercle <span class="kbd">O</span></button>
           <button class="btn" data-tool="arrow" title="Tracer une flèche libre (du début vers la pointe) (touche A)">➜ Flèche <span class="kbd">A</span></button>
           <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③ (touche N)">① Numéro <span class="kbd">N</span></button>
@@ -124,6 +124,7 @@
         </div>
         <label class="lbl" for="taille">Taille des repères : <span id="tailleVal"></span></label>
         <input type="range" id="taille" min="40" max="160" step="5" value="100">
+        <label class="check-line"><input type="checkbox" id="numCadres"> Numéroter les cadres / cercles (1, 2, 3… dans l'ordre de tracé)</label>
         <label class="lbl">Couleur des repères</label>
         <div class="tools3" id="couleurs">
           <button class="btn on" data-color="rouge"><span class="sw" style="background:#e11d48"></span>Rouge</button>
@@ -147,13 +148,17 @@
           <button class="btn red" id="resetAnnots" style="flex:1">Effacer les repères</button>
         </div>
         <div class="hint"><b>Astuce :</b> <b>double-clic</b> sur une étiquette pour changer son texte ; avec n'importe quel outil, clique sur un cadre ou une étiquette pour le <b>déplacer</b> ; un simple clic sur une zone de flou la <b>sélectionne</b> (poignées pour la redimensionner).</div>
-        <div class="hint"><b>Clavier :</b> lettres sur les boutons pour changer d'outil ; avec un objet choisi, <b>flèches</b> = décaler (Maj = plus vite), <b>Suppr</b> = effacer, <b>Ctrl+Z</b> = annuler, <b>Échap</b> = désélectionner.</div>
+        <div class="hint"><b>Clavier :</b> lettres sur les boutons pour changer d'outil (<b>C</b> = sélection) ; <b>double-clic</b> sur l'image = passer en sélection ; avec un objet choisi, <b>flèches</b> = décaler (Maj = plus vite), <b>Suppr</b> = effacer, <b>Ctrl+Z</b> = annuler, <b>Échap</b> = désélectionner.</div>
         <div class="hint">Un cadre ou un cercle reçoit l'étiquette tapée ci-dessus, reliée par une flèche automatique. Plusieurs actions sur le même écran ? Utilise plutôt les <b>numéros ①②③</b> et explique-les dans la phrase.</div>
       </div>
 
       <div class="card">
         <div class="title">4. Modèle d'écran (à valider)</div>
         <select id="profile"></select>
+        <div class="row" style="margin-top:6px">
+          <button class="btn" id="renameModel" style="flex:1" title="Renommer le modèle choisi">✏️ Renommer</button>
+          <button class="btn red" id="deleteModel" style="flex:1" title="Supprimer le modèle choisi">🗑 Supprimer</button>
+        </div>
         <label class="check-line"><input type="checkbox" id="withAnnots"> Retenir aussi les repères (cadres, flèches, textes, numéros)</label>
         <button class="btn main" id="validateModel" style="width:100%;margin-top:8px">💾 Valider ce modèle</button>
         <div id="modelState"></div>
@@ -282,6 +287,7 @@
   // Le travail en cours (zones, repères) n'est PAS enregistré tout seul :
   // on le mémorise dans le modèle choisi avec « Valider ce modèle ».
   const withAnnotsIn = document.getElementById("withAnnots");
+  const numCadresIn = document.getElementById("numCadres");
   let dirty = false;
 
   // Applique le modèle enregistré au travail en cours.
@@ -290,6 +296,7 @@
     zones = JSON.parse(JSON.stringify(p.zones || []));
     annots = p.withAnnots ? JSON.parse(JSON.stringify(p.annots || [])) : [];
     withAnnotsIn.checked = !!p.withAnnots;
+    numCadresIn.checked = !!p.numCadres;
     if (p.taille) { tailleIn.value = p.taille; store.set("atelier-taille", p.taille); tailleLabel(); }
     history = []; sel = null; hover = null; dirty = false;
     showModelState();
@@ -302,6 +309,7 @@
       annots: withAnnotsIn.checked ? JSON.parse(JSON.stringify(annots)) : [],
       withAnnots: withAnnotsIn.checked,
       taille: +tailleIn.value,          // taille des repères propre à ce modèle
+      numCadres: numCadresIn.checked,   // cadres numérotés 1, 2, 3
     };
     store.set("atelier-profils", profiles);
     store.set("atelier-profil-courant", current);
@@ -330,8 +338,30 @@
     renderProfiles();
   });
   document.getElementById("validateModel").addEventListener("click", validateModel);
+  document.getElementById("renameModel").addEventListener("click", () => {
+    const n = (prompt("Nouveau nom pour le modèle « " + current + " » :", current) || "").trim().toUpperCase();
+    if (!n || n === current) return;
+    if (profiles[n] && !confirm("Le modèle « " + n + " » existe déjà. Le remplacer ?")) return;
+    profiles[n] = profiles[current] || { zones: [], annots: [] };
+    delete profiles[current];
+    current = n;
+    store.set("atelier-profils", profiles); store.set("atelier-profil-courant", current);
+    renderProfiles(); showModelState();
+    toast("MODÈLE RENOMMÉ EN « " + n + " »");
+  });
+  document.getElementById("deleteModel").addEventListener("click", () => {
+    if (!confirm("Supprimer le modèle « " + current + " » ? (le floutage à l'écran n'est pas touché)")) return;
+    const ancien = current;
+    delete profiles[current];
+    if (!Object.keys(profiles).length) profiles["ÉCRAN PAR DÉFAUT"] = { zones: [], annots: [] };
+    current = Object.keys(profiles)[0];
+    store.set("atelier-profils", profiles); store.set("atelier-profil-courant", current);
+    renderProfiles(); dirty = true; showModelState();
+    toast("MODÈLE « " + ancien + " » SUPPRIMÉ");
+  });
   document.getElementById("applyModel").addEventListener("click", () => { loadProfile(); draw(); toast("MODÈLE « " + current + " » RÉAPPLIQUÉ"); });
   withAnnotsIn.addEventListener("change", () => { dirty = true; showModelState(); });
+  numCadresIn.addEventListener("change", () => { dirty = true; showModelState(); draw(); });
 
   // ------------------------------------------------------------------
   // Flou
@@ -476,6 +506,17 @@
     c.drawImage(blurred, 0, 0);
     zones.forEach((z) => { const r = px(z); c.drawImage(z.type === "clear" ? img : blurred, r.x, r.y, r.w, r.h, r.x, r.y, r.w, r.h); });
     const labels = [];
+    // Numéro de chaque cadre / cercle (par couleur, dans l'ordre de tracé).
+    const numeroCadre = {};
+    if (numCadresIn.checked) {
+      const compte = {};
+      annots.forEach((a, i) => {
+        if (a.kind !== "rect" && a.kind !== "ellipse") return;
+        const k = a.color || "rouge";
+        compte[k] = (compte[k] || 0) + 1;
+        numeroCadre[i] = compte[k];
+      });
+    }
     annots.forEach((a) => {
       let lb = null;
       if (a.kind === "rect" || a.kind === "ellipse") {
@@ -486,6 +527,14 @@
         else c.ellipse(r.x + r.w / 2, r.y + r.h / 2, Math.max(1, r.w / 2), Math.max(1, r.h / 2), 0, 0, Math.PI * 2);
         c.stroke();
         lb = drawLabel(c, a, r, u);
+        if (numeroCadre[annots.indexOf(a)]) {
+          // Pastille du numéro posée sur le coin haut-gauche du cadre.
+          const rad = 16 * u, cx = r.x, cy = r.y, k = coul(a);
+          c.fillStyle = k.main; c.beginPath(); c.arc(cx, cy, rad, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = "#ffffff"; c.lineWidth = 3 * u; c.stroke();
+          c.fillStyle = k.on; c.font = "bold " + Math.round(19 * u) + "px Arial"; c.textAlign = "center"; c.textBaseline = "middle";
+          c.fillText(String(numeroCadre[annots.indexOf(a)]), cx, cy + 1); c.textAlign = "left"; c.textBaseline = "alphabetic";
+        }
       } else if (a.kind === "arrow") {
         arrow(c, a.x1 * img.width, a.y1 * img.height, a.x2 * img.width, a.y2 * img.height, u, 24, coul(a).main);
       } else if (a.kind === "num") {
@@ -769,6 +818,14 @@
   view.addEventListener("dblclick", (e) => {
     if (!img) return;
     const o = hitTest(pos(e));
+    // Avec un outil de tracé : le double-clic passe en Sélection (et prend l'objet visé).
+    if (tool !== "select") {
+      setTool("select");
+      if (o) choose(o);
+      toast("MODE SÉLECTION — DOUBLE-CLIC SUR UN CADRE POUR CHANGER SON TEXTE");
+      return;
+    }
+    // En Sélection : double-clic sur un cadre / cercle = modifier son texte sur place.
     if (!o || o.t !== "a") return;
     const a = annots[o.i];
     if (a.kind !== "rect" && a.kind !== "ellipse") return;
@@ -832,7 +889,7 @@
     if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
 
     // Raccourcis des outils (lettre affichée sur chaque bouton).
-    const TOUCHES = { d: "clear", f: "blur", c: "rect", o: "ellipse", a: "arrow", n: "num", m: "select" };
+    const TOUCHES = { d: "clear", f: "blur", r: "rect", o: "ellipse", a: "arrow", n: "num", c: "select" };
     const t = TOUCHES[e.key.toLowerCase()];
     if (t) { e.preventDefault(); setTool(t); return; }
 
@@ -943,7 +1000,7 @@
     // Mémoire de session (aperçu du tuto complet même sans accès au dossier).
     const ss = session[key] || (session[key] = { titre: titreIn.value.trim() || key.toUpperCase(), etapes: [] });
     if (titreIn.value.trim()) ss.titre = titreIn.value.trim();
-    ss.etapes = ss.etapes.filter((e) => e.image !== fileName).concat([{ image: fileName, texte: etape.texte, url: URL.createObjectURL(blob) }]);
+    ss.etapes = ss.etapes.filter((e) => e.image !== fileName).concat([{ image: fileName, texte: etape.texte, url: URL.createObjectURL(blob), blob }]);
     ss.etapes.sort((a, b) => (parseInt(a.image.split("-").pop()) || 0) - (parseInt(b.image.split("-").pop()) || 0));
     const box = document.getElementById("saveOut");
 
@@ -1048,6 +1105,7 @@
   });
 
   // Écrans enregistrés d'un tuto : relus dans le dossier si possible, sinon ceux de la session.
+  // Chaque écran : { image, texte, url, blob }.
   async function ecransDuTuto(key) {
     if (dirHandle) {
       const tutos = await readDirTutos();
@@ -1055,23 +1113,83 @@
       if (t) {
         const etapes = [];
         for (const e of t.etapes) {
-          try { const f = await (await dirHandle.getFileHandle(e.image)).getFile(); etapes.push({ texte: e.texte, url: URL.createObjectURL(f) }); }
-          catch (err) { etapes.push({ texte: e.texte + " (image introuvable : " + e.image + ")", url: "" }); }
+          try { const f = await (await dirHandle.getFileHandle(e.image)).getFile(); etapes.push({ image: e.image, texte: e.texte, url: URL.createObjectURL(f), blob: f }); }
+          catch (err) { etapes.push({ image: e.image, texte: e.texte + " (image introuvable : " + e.image + ")", url: "", blob: null }); }
         }
         return { titre: t.titre, etapes };
       }
     }
     return session[key] || null;
   }
+
+  // Réécrit un tuto dans le dossier : images renumérotées key-1.png, key-2.png…
+  // dans le nouvel ordre, anciennes images en trop supprimées, tutos.js à jour.
+  async function reecrireTuto(key, titre, liste) {
+    const tutos = await readDirTutos();
+    if (tutos === null) return false;
+    const anciens = ((tutos[key] || {}).etapes || []).map((e) => e.image);
+    const noms = liste.map((e, i) => key + "-" + (i + 1) + ".png");
+    for (let i = 0; i < liste.length; i++) {
+      if (!liste[i].blob) continue;
+      const w = await (await dirHandle.getFileHandle(noms[i], { create: true })).createWritable();
+      await w.write(liste[i].blob); await w.close();
+    }
+    for (const a of anciens) if (!noms.includes(a)) { try { await dirHandle.removeEntry(a); } catch (e) { /* déjà absent */ } }
+    if (liste.length) tutos[key] = { titre, etapes: liste.map((e, i) => ({ image: noms[i], texte: e.texte })) };
+    else delete tutos[key];
+    const jw = await (await dirHandle.getFileHandle("tutos.js", { create: true })).createWritable();
+    await jw.write(writeTutosText(tutos)); await jw.close();
+    window.__tutosLus = tutos;
+    // L'écran suivant reprend après le dernier.
+    numIn.value = String(liste.length + 1); store.set("atelier-num", numIn.value); showDone();
+    return true;
+  }
+
+  // Panneau de gestion : même rendu que LOGIX + ↑ ↓ ✏️ 🗑 sous chaque écran.
+  function panneauGere(key, t, apresFin) {
+    const p = panneau(t.titre, t.etapes);
+    p.querySelectorAll(".tuto-step").forEach((st, i) => {
+      const bar = document.createElement("div");
+      bar.className = "row"; bar.style.marginTop = "6px"; bar.style.gap = "4px";
+      const petit = (txt, titre, action, actif) => {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "btn"; b.textContent = txt; b.title = titre;
+        b.style.height = "1.8rem"; b.style.padding = "0 0.5rem";
+        if (!actif) b.disabled = true; else b.addEventListener("click", action);
+        return b;
+      };
+      const gerable = !!dirHandle;
+      const bouger = async (de, vers) => {
+        const l = t.etapes.slice(); const [x] = l.splice(de, 1); l.splice(vers, 0, x);
+        if (await reecrireTuto(key, t.titre, l)) { toast("ORDRE MODIFIÉ"); voirTuto(key, apresFin); }
+      };
+      bar.appendChild(petit("↑", "Monter cet écran", () => bouger(i, i - 1), gerable && i > 0));
+      bar.appendChild(petit("↓", "Descendre cet écran", () => bouger(i, i + 1), gerable && i < t.etapes.length - 1));
+      bar.appendChild(petit("✏️ Refaire", "Refaire cet écran : la prochaine capture enregistrée le remplacera", () => {
+        numIn.value = String(i + 1); store.set("atelier-num", numIn.value);
+        texteIn.value = t.etapes[i].texte || ""; updateSave();
+        fermerModal(); toast("COLLE LA NOUVELLE CAPTURE DE L'ÉCRAN " + (i + 1) + " — ELLE REMPLACERA L'ANCIENNE");
+      }, true));
+      bar.appendChild(petit("🗑", "Supprimer cet écran", async () => {
+        if (!confirm("Supprimer l'écran " + (i + 1) + " de ce tuto ?")) return;
+        const l = t.etapes.slice(); l.splice(i, 1);
+        if (await reecrireTuto(key, t.titre, l)) { toast("ÉCRAN SUPPRIMÉ"); voirTuto(key, apresFin); }
+      }, gerable));
+      st.querySelector("div").appendChild(bar);
+    });
+    return p;
+  }
+
   async function voirTuto(key, apresFin) {
     const t = await ecransDuTuto(key);
     const c = document.createElement("div");
     if (!t || !t.etapes.length) {
       c.innerHTML = "<h3>Tuto « " + key + " »</h3><div class='hint'>Aucun écran enregistré pour cette clé pour l'instant.</div>";
     } else {
-      c.innerHTML = "<h3>Tuto complet : " + t.etapes.length + " écran(s)</h3><div class='hint'>Voilà ce qui s'affichera dans LOGIX en cliquant sur le « i » de « " + key + " » (après Ctrl+F5).</div>";
+      c.innerHTML = "<h3>Tuto complet : " + t.etapes.length + " écran(s)</h3><div class='hint'>Voilà ce qui s'affichera dans LOGIX en cliquant sur le « i » de « " + key + " » (après Ctrl+F5)." +
+        (dirHandle ? " Sous chaque écran : ↑ ↓ pour changer l'ordre, ✏️ pour le refaire, 🗑 pour le supprimer." : " ✏️ pour refaire un écran. Pour réordonner ou supprimer, choisis d'abord le dossier tutos (étape 6).") + "</div>";
       const cols = document.createElement("div"); cols.className = "cols";
-      cols.appendChild(panneau(t.titre, t.etapes));
+      cols.appendChild(panneauGere(key, t, apresFin));
       c.appendChild(cols);
     }
     const act = document.createElement("div"); act.className = "actions";
