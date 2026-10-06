@@ -5331,12 +5331,16 @@
           };
           sections.forEach((sec) => sec.items.forEach((it) => visit(it, false)));
 
+          // Contexte : compte, statut, puis chaque choix de la cascade avec le
+          // titre de son niveau (MOTIF / SOUS-MOTIF en ANV, ÉTAPE / SITUATION en DCD).
           const contexte = contexteFourni || [
             ["Compte", vars.compte || "—"],
             ["Statut", vars.statut || "—"],
-            ["Motif", vars["motif-label"] || "—"],
-            ["Sous-motif", vars["sous-motif-label"] || "—"],
-          ];
+          ].concat(inlineChain.map((c, i) => {
+            const parent = i === 0 ? inlineRootNode : inlineChain[i - 1].node;
+            const titreNiv = (parent && parent.choicesTitle) || "Choix";
+            return [titreNiv.charAt(0) + titreNiv.slice(1).toLowerCase(), c.label];
+          }));
           const base = [titre, "Généré le " + dateFr(now) + " à " + heureFr(now)]
             .concat(contexte.map(([k, v]) => k + " : " + v)).concat(lignes).join("\n");
           const hash = await empreinte(base);

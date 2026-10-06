@@ -410,6 +410,7 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - **Taper dans un champ de la checklist** la redessine (`renderChecklist`) en **gardant le curseur** (même champ, même position, même si le champ existe 2 fois) et la position de la page.
 - **RECOMMENCER** : s'il reste des étapes, le 1er clic prévient (toast), un 2e clic dans les 4 s passe au dossier suivant.
 - Règles métier DCD (1ère enquête, héritiers et notaire inconnus) : DLP proche → tout masqué sauf le bandeau rouge ; reroutage GCC → idem ; acte en GED → pas de relevé SNGI ni de mairie, et acte joint au SCRIBE de la chambre interdépartementale ; décès < 6 mois → pas de succession vacante ; chambre « autre » → **un bloc par département** (ids `dcd-notaire-autre-<dépt>-envoi/-demande/-pj-acte/-ar`), chacun avec son choix FORMULAIRE / SCRIBE MAIL / SCRIBE COURRIER (AR seulement pour le formulaire) ; `{{phrase-chambres}}` regroupe les départements interrogés par mode d'envoi (une ligne formulaire, une mail, une courrier).
+- Fin de la DCD : étape « METTRE LE COMMENTAIRE AFFAIRE WATT » (`montre: "dcd-watt"`, le composite WATT a `etape: "dcd-watt"` : plus de carte séparée) puis bilan « ✓ TOUT EST FAIT » + bouton RÉCAP (`recapDocument`). Le contexte du récap liste maintenant chaque choix de la cascade avec le titre de son niveau (ÉTAPE / SITUATION en DCD, MOTIF / SOUS-MOTIF en ANV).
 - ⚠️ Source métier : fiche réflexe interne « usage interne » D5-MO-20260812 — le repo est public.
 
 ### Tutos en images (bouton « i »)

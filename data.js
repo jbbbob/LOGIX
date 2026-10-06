@@ -1917,6 +1917,9 @@ const reexecutionBranch = {
 
 const dcd1ereEnqueteInconnusLeaf = {
   checklist: {
+    recapOk: "✓ TOUT EST FAIT",
+    // Bouton « RÉCAP DES ÉTAPES » quand tout est fait (PDF à rattacher à l'affaire).
+    recapDocument: { titre: "Mode opératoire DCD complété" },
     // Chambres qui ont un formulaire en ligne de recherche de succession.
     // Pour en ajouter une : copier une ligne et changer id / label / depts / url.
     // Tout département absent de cette liste passe par le site du CSN.
@@ -2186,6 +2189,14 @@ const dcd1ereEnqueteInconnusLeaf = {
             label: "ADM NV SUSPEN CODIFIÉE, DATE D'EFFET AU {{date-effet-m1}}",
             copie: [{ label: "DATE", texte: "{{date-effet-m1}}" }],
           },
+          {
+            // Le commentaire WATT (construit à partir des étapes faites) est
+            // affiché dans l'étape, prêt à copier (montre: "dcd-watt").
+            type: "check",
+            id: "dcd-watt-mis",
+            montre: "dcd-watt",
+            label: "METTRE LE COMMENTAIRE AFFAIRE WATT",
+          },
         ],
       },
     ],
@@ -2246,6 +2257,7 @@ const dcd1ereEnqueteInconnusLeaf = {
     {
       id: "dcd-watt",
       label: "COMMENTAIRE AFFAIRE WATT",
+      etape: "dcd-watt", // affiché dans l'étape « METTRE LE COMMENTAIRE AFFAIRE WATT »
       type: "composite",
       if: { "traitement-stop": ["non"] },
       combine: [
