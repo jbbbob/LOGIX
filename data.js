@@ -790,6 +790,34 @@ amiableReldetToggle.whenOn.etapes = [
   },
 ];
 
+// Après « COMPTE EN LIGNE OU MAIL ? » (VERSEMENT RÉCENT et DETTE NON EXIGIBLE) :
+// OUI → relevé de dette par SCRIBE ; NON → RELDET en V2.
+// etapesApres : affichées SOUS les questions du toggle.
+const etapesReldet = [
+  {
+    type: "groupe",
+    label: "RELEVÉ DE DETTE PAR SCRIBE",
+    if: { "compte-en-ligne": ["oui"] },
+    items: [
+      { type: "check", id: "reldet-scribe-ouvrir", label: "Ouvrir SCRIBE" },
+      {
+        type: "check",
+        id: "reldet-scribe-modele",
+        label: "Choisir le modèle et envoyer le courrier / courriel",
+        aide: "Sous-modèle : RELEVÉ DE DETTE",
+        copie: [{ label: "MODÈLE", texte: "SITUATION DU COMPTE DE DÉBITEUR" }],
+      },
+    ],
+  },
+  {
+    type: "check",
+    id: "reldet-v2",
+    if: { "compte-en-ligne": ["non"] },
+    label: "Codifier le RELDET en V2",
+  },
+];
+amiableReldetToggle.whenOn.etapesApres = etapesReldet;
+
 // Plus de boutons en haut de l'ANV : on suit le mode opératoire, qui ouvre ces
 // parcours avec ses boutons « FAIRE RELDET » (cache : pas affiché en haut).
 amiableReldetToggle.cache = true;
@@ -1201,6 +1229,7 @@ amiableReldetToggle.whenOn.topQuestions = [
 ];
 // Même question pour DETTE NON EXIGIBLE (ses textes finissent aussi par {{phrase-reldet}}).
 detteNonExigibleToggle.whenOn.topQuestions = amiableReldetToggle.whenOn.topQuestions;
+detteNonExigibleToggle.whenOn.etapesApres = etapesReldet; // SCRIBE / V2 (défini plus haut)
 
 // Bandeau orange + retour quand on arrive depuis « dette exigible ? » = NON.
 detteNonExigibleToggle.whenOn.bandeau = {

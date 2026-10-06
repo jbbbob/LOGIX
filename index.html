@@ -2116,7 +2116,8 @@
         box-shadow: 0 0 0 3px var(--danger-wash), 0 0 0 4px var(--danger-border);
       }
 
-      #toggleEtapes:not(:empty) {
+      #toggleEtapes:not(:empty),
+      #toggleEtapesApres:not(:empty) {
         padding: 4px 0;
         border-bottom: 1px solid var(--hairline);
       }
@@ -2422,6 +2423,9 @@
         // Étapes à cocher d'un toggle actif (whenOn.etapes), dans la barre du haut.
         const toggleEtapes = document.createElement("div");
         toggleEtapes.id = "toggleEtapes";
+        // … et celles affichées SOUS ses questions (whenOn.etapesApres).
+        const toggleEtapesApres = document.createElement("div");
+        toggleEtapesApres.id = "toggleEtapesApres";
         // Sections « fin: true » : après les textes à copier, dans le bloc.
         const checklistFin = document.createElement("section");
         checklistFin.id = "checklistContainerFin";
@@ -3227,17 +3231,22 @@
 
         function renderToggleEtapes() {
           toggleEtapes.innerHTML = "";
+          toggleEtapesApres.innerHTML = "";
           const vars = buildTemplateVars();
           activeToggleStack.forEach((entry) => {
-            (entry.toggle.whenOn.etapes || []).forEach((item) => {
-              if (item.if && !contextMatches(item.if, vars)) return;
-              renderChecklistItem(item, vars, toggleEtapes, "toggle");
+            [["etapes", toggleEtapes], ["etapesApres", toggleEtapesApres]].forEach(([cle, box]) => {
+              (entry.toggle.whenOn[cle] || []).forEach((item) => {
+                if (item.if && !contextMatches(item.if, vars)) return;
+                renderChecklistItem(item, vars, box, "toggle");
+              });
             });
           });
         }
 
         // Bandeau d'information d'un toggle actif (whenOn.bandeau = { texte, if }).
         function renderToggleBandeaux() {
+          // Étapes « après les questions » du toggle, juste avant le bandeau.
+          if (activeToggleStack.length) togglesContainer.appendChild(toggleEtapesApres);
           const vars = buildTemplateVars();
           activeToggleStack.forEach((entry, idx) => {
             const b = entry.toggle.whenOn && entry.toggle.whenOn.bandeau;
@@ -4760,7 +4769,7 @@
         function renderChecklist() {
           const active = document.activeElement;
           const activeId =
-            active && (checklistContainer.contains(active) || checklistBas.contains(active) || toggleEtapes.contains(active)) ? active.getAttribute("data-input-id") : null;
+            active && (checklistContainer.contains(active) || checklistBas.contains(active) || toggleEtapes.contains(active) || toggleEtapesApres.contains(active)) ? active.getAttribute("data-input-id") : null;
           // Un même champ peut apparaître 2 fois (ex : N° D'ACTE dans SNGI et
           // dans MAIRIE) : on retient lequel des deux avait le curseur.
           const activeIdx = activeId
