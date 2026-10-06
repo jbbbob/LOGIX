@@ -2150,7 +2150,8 @@ const dcd1ereEnqueteInconnusLeaf = {
           },
           {
             type: "alerte",
-            niveau: "info",
+            niveau: "warning",
+            valideePar: "dcd-succession-vacante", // vert quand la recherche est cochée
             if: { "deces-plus-6-mois": ["oui"] },
             texte: "DÉCÈS LE {{deces-date-lue}}, IL Y A {{deces-mois}} MOIS : RECHERCHE À FAIRE.",
           },

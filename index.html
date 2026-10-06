@@ -1744,6 +1744,17 @@
         content: "⛔ ";
       }
 
+      /* Bandeau dont l'action est faite : vert, avec une coche. */
+      .chk-alert.is-ok {
+        background: #dbe9e3;
+        color: #0b5e58;
+        border-color: rgba(15, 118, 110, 0.3);
+      }
+
+      .chk-alert.is-ok > span::before {
+        content: "✓ ";
+      }
+
       /* Bandeau orange = attention / action à faire (pas un arrêt). */
       .chk-alert.is-warning > span::before {
         content: "⚠ ";
@@ -4872,7 +4883,9 @@
 
           if (item.type === "alerte") {
             const el = document.createElement("div");
-            el.className = "chk-alert is-" + (item.niveau || "info");
+            // valideePar : l'alerte passe au vert quand l'étape qui y répond est cochée.
+            const validee = item.valideePar && checkState[item.valideePar] === true;
+            el.className = "chk-alert is-" + (validee ? "ok" : item.niveau || "info");
             const txt = document.createElement("span");
             txt.textContent = fillPlain(item.texte, vars);
             el.appendChild(txt);
