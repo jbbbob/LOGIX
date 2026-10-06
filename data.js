@@ -961,6 +961,7 @@ anvBranch.suite.checklist = {
           if: { dretaf: ["oui"] },
           titre: "CONTRAINTE {n}",
           ajout: "+ AJOUTER UNE CONTRAINTE",
+          fini: "✓ PAS D'AUTRE CONTRAINTE",
           modele: [
             {
               type: "check",

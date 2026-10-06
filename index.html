@@ -2199,6 +2199,23 @@
         gap: 6px 10px;
       }
 
+      .chk-ajout.is-fini {
+        background: #dbe9e3;
+        align-items: center;
+        --ink: #2b2419;
+        --surface-raised: #f4ede1;
+        --surface-hover: #ebe2d2;
+        --border: rgba(15, 118, 110, 0.3);
+      }
+
+      .chk-ajout-ok {
+        flex: 1 1 auto;
+        font-size: var(--fs-label);
+        font-weight: 700;
+        letter-spacing: var(--ls-mid);
+        color: #0b5e58;
+      }
+
       .chk-ajout {
         display: flex;
         flex-wrap: wrap;
@@ -4798,17 +4815,39 @@
 
           if (item.type === "ajout") {
             const liste = item.liste;
+            const cleFini = liste.id + "-fini";
             const el = document.createElement("div");
-            el.className = "chk-ajout";
+            // « Pas d'autre » validé : ligne verte, on peut encore en rajouter.
+            const fini = checkState[cleFini] === true;
+            el.className = "chk-ajout" + (fini ? " is-fini" : "");
+            if (fini) {
+              const ok = document.createElement("span");
+              ok.className = "chk-ajout-ok";
+              ok.textContent = liste.fini || "✓ C'EST TOUT";
+              el.appendChild(ok);
+            }
             const plus = document.createElement("button");
             plus.type = "button";
             plus.className = "context-option pill-btn";
             plus.textContent = liste.ajout || "+ AJOUTER";
             plus.addEventListener("click", () => {
               checkState[liste.id + "-nb"] = item.nb + 1;
+              delete checkState[cleFini];
               render();
             });
             el.appendChild(plus);
+            if (!fini) {
+              const stop = document.createElement("button");
+              stop.type = "button";
+              stop.className = "context-option pill-btn";
+              stop.textContent = liste.fini || "✓ C'EST TOUT";
+              stop.addEventListener("click", () => {
+                checkState[cleFini] = true;
+                noterHeure(cleFini, true);
+                render();
+              });
+              el.appendChild(stop);
+            }
             if (item.nb > 1) {
               const moins = document.createElement("button");
               moins.type = "button";
