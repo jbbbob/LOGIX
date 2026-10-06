@@ -231,6 +231,7 @@
     </main>
   </div>
 
+<script src="./tutos/tutos.js" onerror="window.logixTutos = window.logixTutos || {}"></script>
 <script src="./data.js"></script>
 <script>
 (function () {
@@ -1167,7 +1168,15 @@
   const pickBtn = document.getElementById("pickDir");
   if (!window.showDirectoryPicker) {
     pickBtn.disabled = true;
-    document.getElementById("dirInfo").innerHTML = "Ce navigateur ne permet pas d'écrire dans un dossier : l'image ira dans <b>Téléchargements</b> (déplace-la dans LOGIX\\tutos) et la ligne à coller dans tutos.js s'affichera ici.";
+    // Firefox : on part du tutos.js déjà présent (chargé par la page) et, à chaque
+    // enregistrement, on télécharge l'image ET le tutos.js complet mis à jour.
+    window.__tutosLus = JSON.parse(JSON.stringify(window.logixTutos || {}));
+    // En ligne (GitHub Pages), tutos.js n'existe pas : le fichier téléchargé
+    // ne contiendrait QUE les nouveaux tutos et écraserait les tiens.
+    const enLigne = /github\.io$/.test(location.hostname);
+    document.getElementById("dirInfo").innerHTML = "<b>Firefox</b> ne sait pas écrire directement dans un dossier : à chaque enregistrement, <b>2 fichiers</b> sont téléchargés (l'image + <b>tutos.js</b> complet). Mets-les dans <b>LOGIX\\tutos</b> en remplaçant l'ancien tutos.js. " +
+      Object.keys(window.__tutosLus).length + " tuto(s) déjà lus.<br>" +
+      (enLigne ? "<span class='warn'>⚠️ Tu es sur la version EN LIGNE : ton tutos.js n'est pas lu ici. Ouvre plutôt l'atelier depuis ton dossier LOGIX (double-clic sur atelier-tuto.html), sinon le tutos.js téléchargé effacerait tes tutos existants.</span><br>" : "") + "<b>Astuce :</b> Firefox → Paramètres → Téléchargements → « Toujours demander où enregistrer » : tu choisis directement le dossier tutos. <b>Le plus simple : ouvre l'atelier dans Edge</b> (il écrit directement dans le dossier).";
   }
   pickBtn.addEventListener("click", async () => {
     try {
@@ -1211,12 +1220,24 @@
       window.__tutosLus = tutos;
       box.innerHTML = "<div class='hint ok'>✓ " + fileName + " enregistré et ajouté à tutos.js (" + t.etapes.length + " écran(s)). Recharge LOGIX (Ctrl+F5) pour le voir.</div>";
     } else {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      const bloc = '{ image: "' + fileName + '", texte: ' + JSON.stringify(etape.texte) + " },";
-      box.innerHTML = "<div class='hint'>✓ <b>" + fileName + "</b> téléchargé : déplace-le dans <b>LOGIX\\tutos</b>, puis ajoute cette ligne dans les « etapes » de « " + key + " » dans tutos.js :</div><pre></pre>";
-      box.querySelector("pre").textContent = bloc;
+      // Pas d'accès au dossier : tutos.js complet recalculé en mémoire.
+      const tutos = window.__tutosLus || (window.__tutosLus = {});
+      const t = tutos[key] || { titre: titreIn.value.trim() || key.toUpperCase(), etapes: [] };
+      if (titreIn.value.trim()) t.titre = titreIn.value.trim();
+      t.etapes = t.etapes.filter((e) => e.image !== fileName);
+      t.etapes.push(etape);
+      t.etapes.sort((a, b) => (parseInt(a.image.split("-").pop()) || 0) - (parseInt(b.image.split("-").pop()) || 0));
+      tutos[key] = t;
+      const telecharger = (data, nom) => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(data); a.download = nom;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      };
+      telecharger(blob, fileName);
+      setTimeout(() => telecharger(new Blob([writeTutosText(tutos)], { type: "text/javascript" }), "tutos.js"), 400);
+      box.innerHTML = "<div class='hint ok'>✓ 2 fichiers téléchargés : <b>" + fileName + "</b> et <b>tutos.js</b> (" + t.etapes.length + " écran(s) pour « " + key + " »).</div>" +
+        "<div class='hint'>Mets-les tous les deux dans <b>LOGIX\\tutos</b> et <b>remplace</b> l'ancien tutos.js. ⚠️ Si Firefox l'a renommé « tutos(1).js », renomme-le en <b>tutos.js</b>. Puis Ctrl+F5 dans LOGIX.</div>";
     }
     numIn.value = String((parseInt(n) || 1) + 1);
     store.set("atelier-num", numIn.value);
