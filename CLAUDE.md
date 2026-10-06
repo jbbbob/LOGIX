@@ -90,7 +90,7 @@ Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dos
 4. **Tout contenu dynamique venant de `data.js` passe par `escapeHtml()` avant injection.** **Seule exception intentionnelle** : `resultats[].texte` est injecté en HTML riche via `innerHTML` (nécessaire pour que le bouton "Copier" colle du rich text via `ClipboardItem` `text/html`). Tout nouveau champ doit être échappé par défaut.
    - Complément : les **valeurs saisies par l'utilisateur** (inputs, textareas) sont échappées par `escapeValue()` au moment de la substitution `{{var}}` dans `substituteTemplate()`. Le template reste du HTML riche, la valeur injectée dedans n'en est jamais. `escapeValue` n'échappe pas l'apostrophe (fréquente en français, sans danger dans un attribut délimité par des guillemets).
 5. Conserver les commentaires pédagogiques en tête de `data.js` — ils me servent si j'édite l'arbre sans passer par Claude.
-6. Ne pas renommer ces **IDs DOM** : `questionZone`, `inlineTitleContainer`, `choicesContainer`, `choicesHeader`, `inputsContainer`, `togglesContainer`, `cascadeFlow`, `contextPanel`, `entryLayout`, `mainPanel`, `breadcrumbs`, `breadcrumbsSection`, `resultsContainer`, `inlineBackArrow`, `copyPathBtn`. Note : `inputsContainer`, `choicesHeader`, `choicesContainer` sont conservés pour compat mais cachés (le rendu réel passe par `cascadeFlow`). **Nouveaux IDs** (également à ne pas renommer) : `categoryTabs`, `leafQuestionsContainer`, `pathPanel`, `pathCount`, `backBtn`, `resetBtn`, `checklistContainer`, `themeBtn`. Générés par la checklist : `chk-sec-<section>`, `chk-row-<étape>`, `chk-<étape>` (case).
+6. Ne pas renommer ces **IDs DOM** : `questionZone`, `inlineTitleContainer`, `choicesContainer`, `choicesHeader`, `inputsContainer`, `togglesContainer`, `cascadeFlow`, `contextPanel`, `entryLayout`, `mainPanel`, `breadcrumbs`, `breadcrumbsSection`, `resultsContainer`, `inlineBackArrow`. Note : `inputsContainer`, `choicesHeader`, `choicesContainer` sont conservés pour compat mais cachés (le rendu réel passe par `cascadeFlow`). **Nouveaux IDs** (également à ne pas renommer) : `categoryTabs`, `leafQuestionsContainer`, `backBtn`, `resetBtn`, `checklistContainer`, `themeBtn`. Générés par la checklist : `chk-sec-<section>`, `chk-row-<étape>`, `chk-<étape>` (case).
 7. Ne pas renommer ces **classes CSS custom** : `surface-shell`, `surface-card`, `text-muted`, `text-strong`, `brand-button`, `context-option`, `is-selected`, `motif-label`, `motif-code`, `motif-text`, `page-shell`, `context-dock`, `choice-grid-root`, `copy-success`, `fade-in`, `pop-in`, `floating-reset`, `card-row`, `card-row-label`, `card-row-content`, `card-row-inline`, `pill-btn`, `card-input`, `card-textarea`, `back-arrow-btn`, `leaf-input-wrap`, `leaf-input-label`, `result-card`, `result-header`, `result-body`, `result-sub`, `result-content`, `empty-tag`, `empty-choice`, `image-paste-zone`, `image-placeholder`. **Nouvelles classes** : `app`, `app-header`, `app-body`, `brand`, `brand-mark`, `brand-sub`, `header-actions`, `hdr-btn`, `hdr-btn-strong`, `sidebar`, `main-col`, `panel`, `panel-title`, `panel-count`, `stack`, `hidden`, `crumbs`, `path-list`, `path-step`, `path-mark`, `path-label`, `path-value`, `path-copy-btn`, `path-empty`, `is-done`, `is-current`, `is-todo`, `result-title`, `copy-btn`, `image-clear-btn`, `results-stack`, `toast`. **Checklist** : `chk-head`, `chk-head-title`, `chk-head-count`, `chk-head-go`, `chk-bar`, `chk-section`, `chk-section-title`, `chk-row`, `chk-question`, `chk-box`, `chk-body`, `chk-line`, `chk-label`, `chk-aide`, `chk-tag`, `chk-tools`, `chk-copy`, `chk-copy-label`, `chk-copy-text`, `chk-copy-rappel`, `chk-link`, `chk-group`, `chk-group-head`, `chk-group-title`, `chk-alert` (+ `is-danger` / `is-warning` / `is-info`), `chk-fields`, `chk-fields-tag`, `chk-fields-row`, `chk-recap` (+ `is-ok` / `is-todo`), `chk-recap-title`, `chk-recap-list`, `chk-recap-item`, `chk-recap-go`, `is-checked`, `is-filled`, `is-flash`, `is-large`.
    - ⚠️ `.hidden` venait de Tailwind et est manipulée par le JS (`classList.toggle("hidden", …)`). Elle est **définie à la main** maintenant : ne jamais la supprimer du CSS.
    - `.floating-reset`, `.fade-in`, `.pop-in`, `.choice-grid-root`, `.brand-button` sont conservées mais **plus utilisées** — gardées pour ne rien casser.
@@ -317,22 +317,9 @@ Appliqué à TOUT le résultat HTML après substitution :
 - **`overflow-anchor: none`** sur tout le DOM + sauvegarde/restauration de `window.scrollY` dans `render()` → la position de scroll reste stable même quand le DOM change (ex: cliquer DRETAF=NON ne fait pas remonter la page).
 - **Responsive** : à ≤ 960px la sidebar passe au-dessus en 2 blocs côte à côte ; à ≤ 680px les card-rows passent en colonne.
 
-### Panneau CHEMIN / TODO (sidebar)
+### Panneau CHEMIN / TODO — SUPPRIMÉ (octobre 2026)
 
-Construit par `buildPathSteps()` + `renderPathPanel()` **uniquement à partir de l'état existant** (`inlineRootNode`, `inlineChain`, `activeToggleStack`, `nodeInputs`, `leafAnswers`, `leafInputs`, `topAnswers`). **Aucune donnée n'est ajoutée dans `data.js` pour l'alimenter.**
-
-Ordre des étapes = ordre visuel réel : CATÉGORIE → toggles actifs → topQuestions des toggles → pour chaque niveau de cascade (inputs → choix → topQuestions) → leafQuestions du nœud le plus profond → RÉSULTAT.
-
-Trois états :
-- `is-done` ✓ — étape franchie
-- `is-current` › — première étape non franchie
-- `is-todo` ○ — étapes restantes (affichées « À RENSEIGNER »)
-
-Les étapes **CATÉGORIE** et les **niveaux de choix déjà faits** sont des `<button>` cliquables → `applyPathGoTo()` tronque `inlineChain` pour revenir directement à ce niveau. **`globalSelections` (COMPTE/STATUT) n'est jamais touché.**
-
-`renderPathPanel()` est appelé **en dernier** dans `render()` (il compte les blocs réellement rendus dans `resultsContainer`), et aussi directement depuis les handlers `input` pour que le panneau se mette à jour pendant la frappe.
-
-`getVisibleInputs(levelNode, vars)` est partagé entre `renderCascade()` et `buildPathSteps()` : c'est ce qui garantit que le panneau affiche exactement les mêmes champs que la cascade (filtrage par `conditions` + dédup par `id`).
+La colonne de gauche (CONTEXTE + CHEMIN + « COPIER LE CHEMIN ») a été retirée, avec son code (`renderContextPanel`, `buildPathSteps`, `renderPathPanel`, `getCurrentPathString`, `copyPlainText`…) et son CSS (`.sidebar`, `.panel`, `.path-*`). Les ids `contextPanel`, `pathPanel`, `pathCount`, `copyPathBtn` n'existent plus.
 
 ### RETOUR et RECOMMENCER
 
@@ -375,19 +362,8 @@ Les étapes **CATÉGORIE** et les **niveaux de choix déjà faits** sont des `<b
   1. `navigator.clipboard.write([new ClipboardItem({ "text/html", "text/plain" })])`
   2. sinon `navigator.clipboard.writeText()` (texte brut)
   3. sinon `legacyCopyHtml()` : sélection d'un `<div contenteditable>` invisible + `document.execCommand("copy")` — préserve le format riche —, puis en tout dernier recours un `<textarea>` + `execCommand` pour le texte brut.
-- `copyPlainText()` applique la même chaîne de repli au bouton **COPIER LE CHEMIN**.
 - `stripHtmlToText` convertit explicitement `<br>` → `\n`, `<li>` → `\n- `, `</p><p>` → `\n\n` (sans passer par `innerText` qui pose problème dans certains environnements). Permet aux apps qui collent en text/plain (Word config minimum) de garder les sauts de ligne, paragraphes et puces.
 - **Limitation Word 2024 connue** : la couleur (ex: `style="color:#EE0000"`, `<font color>`) **n'est pas préservée** au copier-coller depuis le navigateur (Word 2024 force son thème de document). Solution : n'utiliser que `<strong>`/`<u>`/`<em>` qui passent fiablement, et laisser l'utilisateur appliquer la couleur à la main si vraiment besoin.
-
-### Bouton "📋 COPIER LE CHEMIN" (dans le panneau CHEMIN de la sidebar)
-
-Copie dans le presse-papier une chaîne récap de tous les choix actuels. Utile pour décrire son état à Claude en collant cette ligne. **Le format n'a pas changé** avec la refonte. Format :
-
-```
-ACTIF + A/C + DÉLAI + REFUS - PAS DE PJ + DATE=15/03/26 + MOIS=37 + DCA NON + + DE 50 000€ OUI + AE OU TI AE
-```
-
-Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles activés, choix de la cascade, inputs remplis, leafAnswers, leafInputs, topAnswers. Format `LABEL VAL` pour les flags (OUI/NON/AE/TI), `LABEL=VALEUR` pour les inputs textuels.
 
 ### Mode opératoire ANV, de A à Z (catégorie ANV)
 
@@ -520,7 +496,6 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - Type d'input `image` avec listener paste global, bouton ✕ pour suppr.
 - LeafQuestions étendues à n choix via `choices: ["ae", "ti"]`.
 - Auto-conversion `JJ/MM/AAAA → JJ/MM/AA` dans tous les résultats (sauf RÉEXÉCUTION).
-- Bouton "📋 COPIER LE CHEMIN" pour partager l'état du parcours avec Claude.
 - Couleur rouge non préservée au copier-coller (limitation Word 2024).
 - Bouton Copier rich text vers Word/Outlook (avec préservation des sauts de ligne, paragraphes, puces).
 - Contexte global (COMPTE / STATUT) avec défaut "ACTIF" implicite.
@@ -566,7 +541,7 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - **Vérifier le français des textes** : `node scripts/lint-fr.js`
 - **Debug console** (F12) :
   - `window.treeData` → inspecter l'arbre
-  - Le reste de l'état est enfermé dans l'IIFE (non accessible depuis la console) — utiliser le bouton **COPIER LE CHEMIN** pour décrire ton état.
+  - Le reste de l'état est enfermé dans l'IIFE (non accessible depuis la console) — décrire son état avec une capture d'écran.
 
 ---
 *Bloqué sur une question métier sans réponse de ma part ? Mets `// TODO: à valider` au bon endroit et continue, on y reviendra.*

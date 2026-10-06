@@ -567,24 +567,6 @@
         padding: 0 22px;
       }
 
-      /* Colonne de gauche (CONTEXTE + CHEMIN) retirée de l'écran : le compte et
-         le statut se choisissent dans les modes opératoires (ou sur la ligne
-         du haut de DÉLAI / RÉEXÉCUTION). Le DOM reste (ids protégés). */
-      .sidebar {
-        display: none !important;
-      }
-
-      .sidebar-ancienne {
-        width: 320px;
-        flex: 0 0 320px;
-        min-width: 0;
-        position: sticky;
-        top: 74px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
       .main-col {
         flex: 1 1 auto;
         min-width: 0;
@@ -595,7 +577,7 @@
 
       /* --- LA CARTE ---------------------------------------------------------- */
       /* Toutes les grandes sections partagent exactement le même rectangle. */
-      .panel,
+      
       #categoryTabs,
       #togglesContainer,
       #cascadeFlow,
@@ -621,40 +603,6 @@
         display: none;
       }
 
-      .panel {
-        padding: 11px 13px 12px;
-      }
-
-      .panel-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: var(--fs-micro);
-        font-weight: 700;
-        letter-spacing: var(--ls-wide);
-        color: var(--muted);
-        margin-bottom: 9px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--hairline);
-      }
-
-      .panel-title::before {
-        content: "";
-        width: 2px;
-        height: 10px;
-        border-radius: 1px;
-        background: var(--accent);
-        flex: 0 0 auto;
-      }
-
-      .panel-title .panel-count {
-        margin-left: auto;
-        letter-spacing: 0.05em;
-        color: var(--muted);
-        opacity: 0.7;
-        font-variant-numeric: tabular-nums;
-      }
-
       .crumbs {
         padding: 7px 13px;
         font-size: var(--fs-label);
@@ -666,160 +614,18 @@
         gap: 8px;
       }
 
-      /* ---------- 5. Panneau CHEMIN / TODO ------------------------------------ */
-      /* Timeline compacte : une colonne de marqueurs reliés par un filet. */
-      .path-list {
-        display: flex;
-        flex-direction: column;
-      }
-
       /* Une étape = une ligne « LIBELLÉ : VALEUR », exactement le format copié. */
-      .path-step {
-        position: relative;
-        display: flex;
-        align-items: flex-start;
-        gap: 9px;
-        width: 100%;
-        text-align: left;
-        padding: 3px 6px;
-        border-radius: var(--r-sm);
-        border: 0;
-        background: none;
-        font-weight: 600;
-      }
-
-      .path-text {
-        flex: 1 1 auto;
-        min-width: 0;
-        line-height: 1.4;
-        overflow-wrap: anywhere;
-      }
-
-      .path-sep {
-        font-size: var(--fs-micro);
-        color: var(--muted);
-        opacity: 0.55;
-      }
 
       /* Flèche de progression entre deux étapes : discrète, alignée sur la
          colonne des pastilles. */
-      .path-arrow {
-        font-size: var(--fs-micro);
-        line-height: 1;
-        color: var(--muted);
-        opacity: 0.4;
-        margin-left: 11px;
-        padding: 1px 0;
-        user-select: none;
-      }
-
-      .path-mark {
-        flex: 0 0 auto;
-        align-self: flex-start;
-        margin-top: 2px;
-        width: 16px;
-        height: 16px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: var(--fs-micro);
-        font-weight: 700;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: var(--surface-raised);
-        color: var(--muted);
-        line-height: 1;
-        flex: 0 0 auto;
-      }
-
-      .path-label {
-        font-size: var(--fs-micro);
-        letter-spacing: var(--ls-wide);
-        color: var(--muted);
-        line-height: 1.4;
-      }
-
-      .path-value {
-        font-size: var(--fs-label);
-        letter-spacing: var(--ls-mid);
-        color: var(--ink);
-        overflow-wrap: anywhere;
-      }
 
       /* Étape franchie */
-      .path-step.is-done .path-mark {
-        border-color: var(--ok-border);
-        background: var(--ok-wash);
-        color: var(--ok);
-      }
-      .path-step.is-done .path-value {
-        color: var(--muted-strong);
-      }
 
       /* Étape en cours */
-      .path-step.is-current {
-        background: var(--accent-wash);
-      }
-      .path-step.is-current .path-mark {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: var(--accent-ink);
-      }
-      .path-step.is-current .path-label,
-      .path-step.is-current .path-value {
-        color: var(--accent-strong);
-      }
 
       /* Étape restante */
-      .path-step.is-todo .path-mark {
-        border-style: dashed;
-        border-color: var(--todo-border);
-        background: none;
-        color: var(--todo);
-      }
-      .path-step.is-todo .path-label,
-      .path-step.is-todo .path-value {
-        color: var(--muted);
-      }
-      .path-step.is-todo .path-value {
-        opacity: 0.8;
-      }
 
       /* Étape cliquable = on peut y revenir directement */
-      button.path-step {
-        cursor: pointer;
-      }
-      button.path-step:hover {
-        background: var(--surface-hover);
-      }
-      button.path-step:hover .path-value {
-        color: var(--accent-strong);
-      }
-
-      .path-empty {
-        padding: 6px;
-        font-size: var(--fs-label);
-        color: var(--muted);
-        font-weight: 600;
-      }
-
-      .path-copy-btn {
-        margin-top: 10px;
-        width: 100%;
-        height: 2.05rem;
-        border-radius: var(--r-md);
-        border: 1px solid var(--border);
-        background: var(--surface-raised);
-        color: var(--muted);
-        font-size: var(--fs-micro);
-        letter-spacing: var(--ls-wide);
-      }
-
-      .path-copy-btn:hover {
-        border-color: var(--border-strong);
-        background: var(--surface-hover);
-        color: var(--accent-strong);
-      }
 
       /* ---------- 6. Composants du parcours ----------------------------------- */
       /* Une ligne DANS une carte : libellé à gauche, contrôles à droite,
@@ -864,36 +670,6 @@
 
       .card-row-inline {
         gap: 18px;
-      }
-
-      /* Sidebar : colonne étroite, on empile libellé puis options. */
-      .context-dock {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .context-dock .card-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 6px;
-        padding: 8px 0;
-      }
-
-      .context-dock .card-row:first-child {
-        padding-top: 0;
-      }
-
-      .context-dock .card-row-label {
-        flex: none;
-        width: 100%;
-      }
-
-      .context-dock .pill-btn {
-        flex: 1 1 0;
-        min-width: 0;
-        padding: 0 0.5rem;
-        height: 2.05rem;
       }
 
       /* --- Boutons de choix -------------------------------------------------- */
@@ -1596,7 +1372,6 @@
       .chk-box:hover {
         border-color: #0f766e;
       }
-
 
       .chk-box:checked {
         background: #0f766e;
@@ -2391,10 +2166,7 @@
 
       /* ---------- 9. Responsive ------------------------------------------------ */
       @media (max-width: 1400px) {
-        .sidebar {
-          width: 290px;
-          flex-basis: 290px;
-        }
+        
         .card-row-label {
           flex-basis: 148px;
           width: 148px;
@@ -2410,10 +2182,7 @@
         .app-header::after {
           left: 16px;
         }
-        .sidebar {
-          width: 260px;
-          flex-basis: 260px;
-        }
+        
         .card-row-label {
           flex-basis: 132px;
           width: 132px;
@@ -2428,18 +2197,7 @@
           flex-direction: column;
           gap: 10px;
         }
-        .sidebar {
-          position: static;
-          width: 100%;
-          flex-basis: auto;
-          flex-direction: row;
-          flex-wrap: wrap;
-          align-items: flex-start;
-        }
-        .sidebar .panel {
-          flex: 1 1 260px;
-          min-width: 0;
-        }
+
         .main-col {
           width: 100%;
         }
@@ -2523,11 +2281,11 @@
             ☾ NUIT
           </button>
           <button type="button" id="backBtn" class="hdr-btn"
-            title="Revenir d'un seul niveau en arrière (conserve COMPTE et STATUT)">
+            title="Revenir d'un seul niveau en arrière">
             ↩ RETOUR
           </button>
           <button type="button" id="resetBtn" class="hdr-btn hdr-btn-strong"
-            title="Nouveau dossier : remet le parcours à zéro mais conserve COMPTE et STATUT">
+            title="Nouveau dossier : remet tout à zéro (compte et statut compris)">
             ⟳ RECOMMENCER
           </button>
         </div>
@@ -2535,21 +2293,6 @@
 
       <div class="app-body">
 
-        <aside class="sidebar">
-          <section class="panel">
-            <h2 class="panel-title">CONTEXTE</h2>
-            <div id="contextPanel" class="context-dock"></div>
-          </section>
-
-          <section class="panel">
-            <h2 class="panel-title">CHEMIN<span class="panel-count" id="pathCount"></span></h2>
-            <div id="pathPanel" class="path-list"></div>
-            <button type="button" id="copyPathBtn" class="path-copy-btn"
-              title="Copier le chemin actuel dans le presse-papier">
-              📋 COPIER LE CHEMIN
-            </button>
-          </section>
-        </aside>
 
         <div class="main-col">
           <section id="breadcrumbsSection" class="hidden">
@@ -2601,7 +2344,6 @@
         const inputsContainer = document.getElementById("inputsContainer");
         const togglesContainer = document.getElementById("togglesContainer");
         const cascadeFlow = document.getElementById("cascadeFlow");
-        const contextPanel = document.getElementById("contextPanel");
         const entryLayout = document.getElementById("entryLayout");
         const resultsContainer = document.getElementById("resultsContainer");
         const breadcrumbsSection = document.getElementById("breadcrumbsSection");
@@ -2630,8 +2372,6 @@
         checklistFin.id = "checklistContainerFin";
         checklistFin.className = "stack";
         const checklistContainer = document.getElementById("checklistContainer");
-        const pathPanel = document.getElementById("pathPanel");
-        const pathCount = document.getElementById("pathCount");
         const backBtn = document.getElementById("backBtn");
         const resetBtn = document.getElementById("resetBtn");
         const globalContextOptions = window.globalContextOptions || [];
@@ -2651,7 +2391,6 @@
         let inlineChain = [];
         let leafAnswers = {};
         let leafInputs = {};
-        let lastScrollTargetId = null;
         // Stack des toggles activés (ex: AMIABLE RELDET, puis DETTE NON EXIGIBLE
         // imbriqué dedans). Chaque entrée = { savedRootNode, toggle }. Quand on
         // active un toggle, on push (avec savedRootNode = inlineRootNode courant)
@@ -2674,9 +2413,6 @@
           noterHeure("input-" + inputId, String(value || "").trim() !== "");
         }
 
-        function saveNodeSelection(selectionKey, value) {
-          nodeSelections[selectionKey] = value;
-        }
 
         function getCurrentNode() {
           return trail[trail.length - 1].node;
@@ -3120,24 +2856,7 @@
             if (motif12 && checkState["psa-eopps-adresse"] === "non") docs.push("page EOPPS");
             if (motif12 && checkState.ficoba === "oui" && checkState["psa-ficoba-adresse"] === "non") docs.push("page FICOBA");
             const nbDocs = docs.length;
-            const parts = ["l'ANV est bien codifiée"];
-            if (suspenOui) parts.push("l'ANV SUSPEN bien codifiée");
-            if (nbCo === 1) parts.push("le DRETAF bien codifié");
-            if (nbCo > 1) parts.push("les " + nbCo + " DRETAF bien codifiés");
-            if (pl) {
-              parts.push(suspenOui ? "les ESDC (codes ANV et INCX) bien renseignés" : "l'ESDC bien renseigné");
-              if (nbCo === 1) parts.push("le post-it DRETAF bien renseigné");
-              if (nbCo > 1) parts.push("les post-its DRETAF bien renseignés");
-            } else {
-              const nbPostits = 1 + (suspenOui ? 1 : 0) + nbCo;
-              parts.push(nbPostits > 1 ? "les post-its bien renseignés" : "le post-it bien renseigné");
-            }
-            if (nbDocs === 1) parts.push("le " + docs[0] + " bien rattaché à l'affaire");
-            if (nbDocs > 1) parts.push("les documents bien rattachés à l'affaire (" + docs.join(", ") + ")");
-            vars["double-check"] = parts.length > 1
-              ? parts.slice(0, -1).join(", ") + " et " + parts[parts.length - 1]
-              : parts[0];
-            // Même contenu en liste (une ligne par point) pour l'étape.
+            // Liste des points (une ligne par point) de la double vérification.
             const L = [{ k: "anv", l: "ANV codifiée" }];
             if (suspenOui) L.push({ k: "suspen", l: "ANV SUSPEN codifiée" });
             if (nbCo) L.push({ k: "dretaf", l: nbCo > 1 ? nbCo + " DRETAF codifiés" : "DRETAF codifié" });
@@ -3160,15 +2879,7 @@
           {
             const parcours = activeToggleStack.length ? activeToggleStack[activeToggleStack.length - 1].toggle.id : "";
             vars["parcours-reldet"] = parcours;
-            const p = [];
             const enLigne = topAnswers["compte-en-ligne"];
-            if (enLigne === "oui") p.push("le relevé de dette bien envoyé par SCRIBE");
-            else if (enLigne === "non") p.push("le RELDET bien codifié en V2");
-            if (parcours === "amiable-reldet" && vars.compte === "RADIÉ") {
-              p.push("l'ANV SUSPEN bien codifiée", "son post-it bien renseigné");
-            }
-            p.push("le commentaire WATT bien renseigné");
-            vars["double-check-reldet"] = p.length > 1 ? p.slice(0, -1).join(", ") + " et " + p[p.length - 1] : p[0];
             const L = [];
             if (enLigne === "oui") L.push({ k: "scribe", l: "Relevé de dette envoyé par SCRIBE" });
             if (enLigne === "non") L.push({ k: "v2", l: "RELDET codifié en V2" });
@@ -3203,8 +2914,6 @@
 
           // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
           //        premières étapes cochées toutes seules.
-          vars["compte-affiche"] = vars.compte || "à choisir à gauche";
-          vars["statut-affiche"] = vars.statut || "à choisir à gauche";
           // ANV SUSPEN ne concerne que les comptes radiés : une réponse donnée
           // avant de repasser en ACTIF ne doit pas rester dans les textes.
           if (vars.compte !== "RADIÉ") vars.suspen = "";
@@ -3306,19 +3015,6 @@
 
           // Phrase de la DOUBLE VÉRIFICATION DCD, selon les étapes affichées.
           {
-            const p = [];
-            if (vars.statut === "A/C") p.push("l'arrêt début motif 25 bien positionné");
-            if (vars.statut === "PL") p.push("la transaction CPTS TOP 06 bien faite");
-            p.push("le courrier aux héritiers bien envoyé");
-            if (vars["dcd-acte-ged"] !== "oui") p.push("la demande d'acte à la mairie bien envoyée");
-            if (nbChambres === 1) p.push("la demande à la chambre des notaires bien envoyée");
-            if (nbChambres > 1) p.push("les demandes aux " + nbChambres + " chambres des notaires bien envoyées");
-            const docs = ["page SNGI"];
-            if (nbChambresForm > 0) docs.push(nbChambresForm > 1 ? "PDF des formulaires des chambres" : "PDF du formulaire de la chambre");
-            if (vars["deces-plus-6-mois"] !== "non") docs.push("recherche succession vacante");
-            p.push("les documents bien rattachés à l'affaire (" + docs.join(", ") + ")");
-            p.push("l'ESDC, l'ENQ et l'ADM NV bien codifiés", "le commentaire WATT bien renseigné");
-            vars["double-check-dcd"] = p.slice(0, -1).join(", ") + " et " + p[p.length - 1];
             const L = [];
             if (vars.statut === "A/C") L.push({ k: "arret", l: "Arrêt début motif 25 positionné" });
             if (vars.statut === "PL") L.push({ k: "top06", l: "Transaction CPTS TOP 06 faite" });
@@ -3393,7 +3089,7 @@
           return null;
         }
 
-        // Checklist avec stopIf vérifié (ex : ANV + versement récent) : motifs,
+        // Une alerte « stop: true » visible arrête la checklist (ex : ANV + versement récent) :
         // questions et résultats sont masqués, seul le bandeau rouge reste.
         // Heure à laquelle une étape a été cochée / répondue (pour le récap PDF).
         function noterHeure(id, fait) {
@@ -3450,11 +3146,6 @@
                 noterHeure(it.id, false);
               }
             }
-            if (it.autoCoche) {
-              checkState[it.id] = !!globalSelections[it.autoCoche];
-              if (checkState[it.id] && !checkState["@t:" + it.id]) noterHeure(it.id, true);
-              if (!checkState[it.id]) noterHeure(it.id, false);
-            }
             // Champ obligatoire vidé après coup : la case se décoche.
             if (it.champsObligatoires && checkState[it.id] === true && !champsRemplis(it)) {
               checkState[it.id] = false;
@@ -3468,7 +3159,6 @@
           const n = getChecklistNode();
           if (!n) return false;
           const vars = buildTemplateVars();
-          if (n.checklist.stopIf && contextMatches(n.checklist.stopIf, vars)) return true;
           return !!buildChecklistModel(n, vars).stopped;
         }
 
@@ -3488,51 +3178,6 @@
           }
         }
 
-        function findNextTarget() {
-          const vars = buildTemplateVars();
-          const leaf = getDeepestNode();
-          if (leaf && Array.isArray(leaf.leafQuestions) && leaf.leafQuestions.length > 0) {
-            let allAnswered = true;
-            for (const q of leaf.leafQuestions) {
-              if (!contextMatches(q.conditions, vars)) continue;
-              if (leafAnswers[q.id] == null) {
-                // Plus de scroll auto vers la carte DRETAF/SUSPEN non répondue.
-                // (Comportement précédent jugé perturbant.)
-                allAnswered = false;
-                continue;
-              }
-              if (leafAnswers[q.id] === "oui" && Array.isArray(q.inputsOnYes)) {
-                for (const inp of q.inputsOnYes) {
-                  if (!leafInputs[inp.id]) {
-                    return { type: "input", id: `leafInput-${inp.id}` };
-                  }
-                }
-              }
-            }
-            if (allAnswered) return { type: "element", id: "resultsContainer" };
-            return null;
-          }
-          if (leaf && Array.isArray(leaf.resultats) && leaf.resultats.length > 0) {
-            return { type: "element", id: "resultsContainer" };
-          }
-          if (inlineRootNode) {
-            return { type: "element", id: `cascade-level-${inlineChain.length}` };
-          }
-          return null;
-        }
-
-        function scrollToTarget(target) {
-          if (!target) return;
-          // Ne scrolle que si la cible change (évite de renvoyer aux résultats quand on réédite)
-          if (target.id === lastScrollTargetId) return;
-          lastScrollTargetId = target.id;
-          requestAnimationFrame(() => {
-            const el = document.getElementById(target.id);
-            if (!el) return;
-            el.scrollIntoView({ behavior: "auto", block: "center" });
-            if (target.type === "input" && typeof el.focus === "function") el.focus();
-          });
-        }
 
         function renderBreadcrumbs() {
           breadcrumbs.innerHTML = "";
@@ -3607,11 +3252,6 @@
           inlineChain = [];
           leafAnswers = {};
           leafInputs = {};
-          const auto = toggle.whenOn.autoChoix;
-          if (auto && contextMatches(auto.if, buildTemplateVars())) {
-            const opt = (toggle.whenOn.choix || []).find((o) => o.id === auto.id);
-            if (opt) inlineChain = [{ id: opt.id, label: opt.label, option: opt, node: opt.suite }];
-          }
           window.scrollTo(0, 0);
           render();
         }
@@ -3909,7 +3549,6 @@
                     saveNodeInputValue(input.id, reader.result);
                     refresh();
                     renderResults(getDeepestNode());
-                    renderPathPanel();
                   };
                   reader.readAsDataURL(blob);
                   return;
@@ -3962,7 +3601,6 @@
             // dépend des saisies : départements, date du décès…).
             renderChecklist();
             renderResults(getDeepestNode());
-            renderPathPanel();
           });
           return field;
         }
@@ -4216,73 +3854,6 @@
           });
         }
 
-        function updateContextSelectionClasses(groupId, value) {
-          contextPanel
-            .querySelectorAll(`[data-context-group="${groupId}"]`)
-            .forEach((button) => {
-              button.classList.toggle(
-                "is-selected",
-                button.getAttribute("data-context-value") === value
-              );
-            });
-        }
-
-        function renderContextPanel() {
-          if (!globalContextOptions.length) {
-            contextPanel.innerHTML = "";
-            contextPanel.classList.add("hidden");
-            return;
-          }
-
-          contextPanel.classList.remove("hidden");
-          contextPanel.innerHTML = globalContextOptions
-            .map((group) => {
-              const selected = globalSelections[group.id] || "";
-              const buttons = group.choix
-                .map((value) => {
-                  const selectedClass = selected === value ? "is-selected" : "";
-                  return `
-                    <button
-                      type="button"
-                      class="context-option pill-btn ${selectedClass}"
-                      aria-pressed="${selected === value ? "true" : "false"}"
-                      data-context-group="${escapeHtml(group.id)}"
-                      data-context-value="${escapeHtml(value)}"
-                    >${escapeHtml(value)}</button>
-                  `;
-                })
-                .join("");
-              return `
-                <div class="card-row">
-                  <div class="card-row-label">${escapeHtml(group.label)}</div>
-                  <div class="card-row-content">${buttons}</div>
-                </div>
-              `;
-            })
-            .join("");
-
-          // Tutos du contexte : clé "<groupe>-<valeur>" (ex : "compte-actif").
-          contextPanel.querySelectorAll("[data-context-group]").forEach((button) => {
-            const key = tutoKey(button.getAttribute("data-context-group") + "-" + button.getAttribute("data-context-value"));
-            const t = makeTutoButton(key);
-            if (t) button.insertAdjacentElement("afterend", t);
-          });
-
-          contextPanel.querySelectorAll("[data-context-group]").forEach((button) => {
-            button.addEventListener("click", () => {
-              const groupId = button.getAttribute("data-context-group");
-              const value = button.getAttribute("data-context-value");
-
-              if (globalSelections[groupId] === value) {
-                return;
-              }
-
-              globalSelections[groupId] = value;
-              pruneInlineChain();
-              render();
-            });
-          });
-        }
 
         function renderCategoryTabs() {
           categoryTabs.innerHTML = "";
@@ -4425,7 +3996,6 @@
                   leafInputs[input.id] = e.target.value;
                   // Idem : pas de render() complet pour ne pas perdre le focus.
                   renderResults(getDeepestNode());
-                  renderPathPanel();
                 });
                 inputEl.addEventListener("keydown", (e) => {
                   if (e.key === "Enter") {
@@ -4457,13 +4027,6 @@
         // Échap, un autre « i », ou quand on coche l'étape correspondante.
         // ====================================================================
         let openTutoKey = null;
-
-        function tutoKey(text) {
-          return String(text || "")
-            .toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-        }
 
         function getTuto(key) {
           const all = window.logixTutos || {};
@@ -5253,10 +4816,6 @@
             box.className = "chk-box";
             box.id = "chk-" + item.id;
             box.checked = checked;
-            if (item.autoCoche) {
-              box.disabled = true;
-              box.title = "Se coche tout seul selon le CONTEXTE à gauche";
-            }
             box.addEventListener("change", () => {
               // Champs obligatoires (ex : DATE DU JUSTIFICATIF) : pas de coche sans eux.
               if (box.checked && item.champsObligatoires && !champsRemplis(item)) {
@@ -5705,18 +5264,6 @@
           }
         }
 
-        // Copie texte simple avec le même repli (utilisé par COPIER LE CHEMIN).
-        async function copyPlainText(text) {
-          try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-              await navigator.clipboard.writeText(text);
-              return true;
-            }
-          } catch (err) {
-            console.error(err);
-          }
-          return legacyCopyHtml("", text) === true;
-        }
 
         async function copyRichHtml(html, button) {
           const originalText = button.textContent;
@@ -5939,20 +5486,6 @@
           });
         }
 
-        // ====================================================================
-        // PANNEAU CHEMIN / TODO
-        // --------------------------------------------------------------------
-        // Reconstruit uniquement à partir de l'état existant de l'application
-        // (inlineRootNode, inlineChain, activeToggleStack, nodeInputs,
-        // leafAnswers, leafInputs, topAnswers). Aucune donnée métier n'est
-        // ajoutée dans data.js pour l'alimenter.
-        //
-        // Chaque étape a un état :
-        //   "done"    ✓ étape franchie (et cliquable si on peut y revenir)
-        //   "current" › étape en cours (la 1ère non franchie)
-        //   "todo"    ○ étape restante
-        // ====================================================================
-
         // Est-on dans le cas particulier "une seule catégorie" ? Dans ce cas
         // l'application entre automatiquement dedans et on ne peut pas en sortir.
         const singleCategoryMode = !!(
@@ -5961,254 +5494,6 @@
           window.treeData.choix[0].suite &&
           typeof window.treeData.choix[0].suite === "object"
         );
-
-        // Le libellé affiché est TOUJOURS celui des données (label du groupe de
-        // contexte, choicesTitle du niveau, label de la question ou de l'input).
-        // Rien n'est écrit en dur : si data.js évolue, le CHEMIN suit.
-        // Le « ? » final est conservé tel quel (ex : « COMPTE EN LIGNE OU MAIL ? »).
-        function pushQuestionStep(steps, q, answers) {
-          const ans = answers[q.id];
-          steps.push({
-            label: (q.label || q.id || "").trim(),
-            value: ans ? String(ans).toUpperCase() : "",
-            state: ans ? "done" : "todo",
-          });
-        }
-
-        function buildPathSteps() {
-          const vars = buildTemplateVars();
-          const steps = [];
-
-          // 1. Contexte global : COMPTE puis STATUT. Toujours atteints (ils sont
-          //    visibles dès l'ouverture), donc toujours listés — avec « / » tant
-          //    qu'ils ne sont pas renseignés.
-          (globalContextOptions || []).forEach((group) => {
-            const v = globalSelections[group.id];
-            steps.push({
-              label: group.label || group.id || "",
-              value: v || "",
-              state: v ? "done" : "todo",
-            });
-          });
-
-          // 2. Catégorie active
-          const categoryNode = activeToggleStack.length > 0
-            ? activeToggleStack[0].savedRootNode
-            : inlineRootNode;
-
-          if (!categoryNode) {
-            steps.push({ label: CATEGORY_LABEL, value: "", state: "todo" });
-            return steps;
-          }
-
-          const cat = (window.treeData.choix || []).find((c) => c.suite === categoryNode);
-          steps.push({
-            label: CATEGORY_LABEL,
-            value: cat && cat.label ? cat.label : "",
-            state: "done",
-            goTo: { type: "category" },
-          });
-
-          // 3. Toggles activés (AMIABLE RELDET, DETTE NON EXIGIBLE…).
-          //    Un toggle REMPLACE les choix de son nœud hôte : on l'affiche donc
-          //    comme le choix qu'il remplace, « <titre du niveau hôte> : <toggle> ».
-          //    Ex. AMIABLE RELDET est posé sur le nœud dont choicesTitle vaut
-          //    « MOTIF » → « MOTIF : AMIABLE RELDET ». Tout vient des données.
-          activeToggleStack.forEach((entry) => {
-            const host = entry.savedRootNode;
-            const hostTitle = host && host.choicesTitle ? host.choicesTitle : "";
-            const toggleLabel = (entry.toggle && entry.toggle.label) || "";
-            steps.push(
-              hostTitle
-                ? { label: hostTitle, value: toggleLabel, state: "done" }
-                : { label: toggleLabel, value: "OUI", state: "done" }
-            );
-          });
-
-          // 3. topQuestions rattachées aux toggles : elles s'affichent dans la
-          //    rangée des toggles, donc juste après eux dans le chemin.
-          //    (Même condition que renderToggles : seulement si un toggle est actif.)
-          if (activeToggleStack.length > 0) {
-            const sources = new Set();
-            activeToggleStack.forEach((entry) => sources.add(entry.toggle.whenOn));
-            if (inlineRootNode) sources.add(inlineRootNode);
-            const seen = new Set();
-            sources.forEach((level) => {
-              if (!level || !Array.isArray(level.topQuestions)) return;
-              level.topQuestions.forEach((q) => {
-                if (seen.has(q.id)) return;
-                seen.add(q.id);
-                pushQuestionStep(steps, q, topAnswers);
-              });
-            });
-          }
-
-          // 4. Cascade : pour chaque niveau, inputs → choix → topQuestions,
-          //    dans le même ordre que renderCascade.
-          const cascade = [inlineRootNode, ...inlineChain.map((s) => s.node).filter(Boolean)];
-          cascade.forEach((levelNode, levelIdx) => {
-            if (!levelNode) return;
-
-            getVisibleInputs(levelNode, vars).forEach((input) => {
-              const raw = nodeInputs[input.id];
-              const filled = raw != null && raw !== "";
-              const isImage = (input.type || "text") === "image";
-              steps.push({
-                label: input.label || input.id || "",
-                value: filled ? (isImage ? "IMAGE COLLÉE" : String(raw)) : "",
-                state: filled ? "done" : "todo",
-              });
-            });
-
-            if (Array.isArray(levelNode.choix) && levelNode.choix.length > 0) {
-              const visibleChoix = levelNode.choix.filter(
-                (option) => !option.conditions || contextMatches(option.conditions, vars)
-              );
-              if (visibleChoix.length > 0) {
-                const chosen = inlineChain[levelIdx];
-                steps.push({
-                  label: levelNode.choicesTitle || "CHOIX",
-                  value: chosen ? chosen.label || "" : "",
-                  state: chosen ? "done" : "todo",
-                  // Cliquer = revenir directement à ce niveau (on coupe la suite).
-                  goTo: chosen ? { type: "level", levelIdx: levelIdx } : null,
-                });
-              }
-            }
-
-            if (levelIdx > 0 && Array.isArray(levelNode.topQuestions)) {
-              levelNode.topQuestions.forEach((q) => pushQuestionStep(steps, q, topAnswers));
-            }
-          });
-
-          // 5. leafQuestions du nœud le plus profond (DRETAF, DCA, AE/TI…)
-          const leaf = getDeepestNode();
-          if (leaf && Array.isArray(leaf.leafQuestions)) {
-            leaf.leafQuestions.forEach((q) => {
-              if (!contextMatches(q.conditions, vars)) return;
-              pushQuestionStep(steps, q, leafAnswers);
-              if (leafAnswers[q.id] === "oui" && Array.isArray(q.inputsOnYes)) {
-                q.inputsOnYes.forEach((input) => {
-                  const v = leafInputs[input.id];
-                  steps.push({
-                    label: input.label || input.id || "",
-                    value: v || "",
-                    state: v ? "done" : "todo",
-                  });
-                });
-              }
-            });
-          }
-
-          // 5 bis. Checklist du MODE OPÉRATOIRE (DCD) : une seule ligne de
-          //        progression, le détail est dans la colonne principale.
-          const clNode = getChecklistNode();
-          if (clNode) {
-            const { done, total } = countChecklist(buildChecklistModel(clNode, vars));
-            steps.push({
-              label: "MODE OPÉRATOIRE",
-              value: done + "/" + total + " ÉTAPES",
-              state: total > 0 && done === total ? "done" : "todo",
-            });
-          }
-
-          // 6. Résultat — renseigné après coup par renderPathPanel, qui est
-          //    appelé APRÈS renderResults et peut donc compter les blocs réels.
-          return steps;
-        }
-
-        function applyPathGoTo(goTo) {
-          if (!goTo) return;
-          if (goTo.type === "category") {
-            // Retour à la racine de la catégorie : on vide la cascade.
-            inlineChain = [];
-          } else if (goTo.type === "level") {
-            inlineChain = inlineChain.slice(0, goTo.levelIdx);
-          }
-          // COMPTE / STATUT (globalSelections) ne sont jamais touchés.
-          render();
-        }
-
-        // Valeur affichée pour une étape. « / » signifie : étape atteinte, mais
-        // pas encore renseignée. Attention : NON est une vraie valeur, elle ne
-        // doit jamais devenir « / ».
-        const PATH_EMPTY = "/";
-        function pathStepValue(step) {
-          return step.value === "" || step.value == null ? PATH_EMPTY : String(step.value);
-        }
-
-        // Marque les étapes : la 1ère non franchie devient l'étape en cours.
-        function markPathSteps(steps) {
-          let currentFound = false;
-          steps.forEach((step) => {
-            if (!currentFound && step.state !== "done") {
-              step.state = "current";
-              currentFound = true;
-            }
-          });
-          return steps;
-        }
-
-        function renderPathPanel() {
-          pathPanel.innerHTML = "";
-
-          const steps = markPathSteps(buildPathSteps());
-
-          const doneCount = steps.filter((s) => s.state === "done").length;
-          pathCount.textContent = doneCount + "/" + steps.length;
-
-          steps.forEach((step, idx) => {
-            // Flèche de progression entre deux étapes, discrète.
-            if (idx > 0) {
-              const arrow = document.createElement("div");
-              arrow.className = "path-arrow";
-              arrow.setAttribute("aria-hidden", "true");
-              arrow.textContent = "↓";
-              pathPanel.appendChild(arrow);
-            }
-
-            const clickable = !!step.goTo;
-            const el = document.createElement(clickable ? "button" : "div");
-            if (clickable) {
-              el.type = "button";
-              el.title = "Revenir à cette étape";
-            }
-            el.className = "path-step is-" + step.state;
-
-            const mark = document.createElement("span");
-            mark.className = "path-mark";
-            mark.textContent = step.state === "done" ? "✓" : step.state === "current" ? "›" : "○";
-            el.appendChild(mark);
-
-            // Format « LIBELLÉ : VALEUR », identique à celui de la copie.
-            const text = document.createElement("span");
-            text.className = "path-text";
-
-            const label = document.createElement("span");
-            label.className = "path-label";
-            label.textContent = step.label;
-            text.appendChild(label);
-
-            const sep = document.createElement("span");
-            sep.className = "path-sep";
-            sep.textContent = " : ";
-            text.appendChild(sep);
-
-            const value = document.createElement("span");
-            value.className = "path-value";
-            // textContent : jamais d'innerHTML ici, donc rien à échapper.
-            value.textContent = pathStepValue(step);
-            text.appendChild(value);
-
-            el.appendChild(text);
-
-            if (clickable) {
-              el.addEventListener("click", () => applyPathGoTo(step.goTo));
-            }
-
-            pathPanel.appendChild(el);
-          });
-        }
 
         // ====================================================================
         // RETOUR / RECOMMENCER
@@ -6299,7 +5584,6 @@
           leafInputs = {};
           topAnswers = {};
           activeToggleStack = [];
-          lastScrollTargetId = null;
           applyInitialInlineRoot();
           window.scrollTo(0, 0);
           render();
@@ -6349,7 +5633,6 @@
           renderBreadcrumbs();
           renderCategoryTabs();
           renderQuestion(node);
-          renderContextPanel();
           renderToggles();
           renderToggleBandeaux();
           renderCascade();
@@ -6359,8 +5642,7 @@
           renderResults(deepestNode);
           const stop = checklistStops();
           resultsContainer.classList.toggle("hidden", stop);
-          // renderPathPanel en dernier : il compte les blocs résultat déjà rendus.
-          renderPathPanel();
+
           if (backBtn) backBtn.disabled = !canGoBack();
           // Plus de scroll auto ni de focus auto : l'utilisateur navigue à son rythme.
 
@@ -6381,27 +5663,6 @@
         // réutilisée par RECOMMENCER.)
         applyInitialInlineRoot();
 
-        // Chaîne texte du CHEMIN, destinée au presse-papier (pour la donner
-        // telle quelle à une IA, ou pour décrire son état).
-        //
-        // Elle est construite à partir des MÊMES étapes que le panneau CHEMIN
-        // (buildPathSteps) : il est donc impossible que l'affichage et la copie
-        // divergent. Il n'existe plus aucune logique de navigation parallèle ici.
-        //
-        // Format, une étape par ligne, séparées par une flèche :
-        //   COMPTE : ACTIF
-        //   ↓
-        //   STATUT : A/C
-        //   ↓
-        //   MOTIF : AMIABLE RELDET
-        // « / » = étape atteinte mais pas encore renseignée.
-        function getCurrentPathString() {
-          const steps = buildPathSteps();
-          if (steps.length === 0) return "(aucun choix)";
-          return steps
-            .map((step) => step.label + " : " + pathStepValue(step))
-            .join("\n\u2193\n");
-        }
 
         // Trouve l'id du 1er input de type "image" présent dans la cascade courante.
         function findActiveImageInputId() {
@@ -6448,14 +5709,6 @@
         });
 
         // Listener du bouton "📋 chemin"
-        const copyPathBtn = document.getElementById("copyPathBtn");
-        if (copyPathBtn) {
-          copyPathBtn.addEventListener("click", async () => {
-            const path = getCurrentPathString();
-            const ok = await copyPlainText(path);
-            showToast(ok ? "CHEMIN COPIÉ" : "ERREUR COPIE");
-          });
-        }
 
         render();
       })();
