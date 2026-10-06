@@ -915,7 +915,6 @@ anvBranch.suite.checklist = {
           id: "prescription-imminente",
           if: { "versement-recent": ["oui"] },
           label: "Risque de prescription imminente ?",
-          aide: "Si OUI, on passe quand même l'ANV malgré le versement récent.",
           // Bouton posé sur la même ligne quand la réponse mène au RELDET.
           action: {
             label: "FAIRE L'AMIABLE RELDET →",
@@ -933,7 +932,7 @@ anvBranch.suite.checklist = {
           type: "alerte",
           niveau: "info",
           if: { "versement-recent": ["oui"], "prescription-imminente": ["oui"] },
-          texte: "Prescription imminente : on continue l'ANV malgré le versement récent.",
+          texte: "Prescription imminente : on passe quand même l'ANV malgré le versement récent.",
         },
       ],
     },
