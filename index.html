@@ -2870,13 +2870,11 @@
 
           // Phrase "ET RECH EOPPS [+ FICOBA] RECENTE" centralisée : sans le "+ FICOBA"
           // si la topQuestion FICOBA est répondue NON (motif 12 A/C). Source unique.
-          vars["phrase-eopps"] = (checkState.ficoba || topAnswers["ficoba"]) === "non"
-            ? "ET RECH EOPPS RECENTE"
-            : "ET RECH EOPPS + FICOBA RECENTE";
-          // PL (motif 12) : la mention n'est ajoutée que si la recherche EOPPS est faite.
-          //   « + FICOBA » seulement si la recherche FICOBA est cochée aussi.
-          vars["phrase-eopps-pl"] = checkState["psa-eopps"] !== true ? ""
-            : checkState["psa-ficoba"] === true ? " ET RECH EOPPS + FICOBA RECENTE"
+          // Motif 12 (A/C et PL) : mention ajoutée seulement si la recherche EOPPS
+          // est cochée dans le mode opératoire, « + FICOBA » seulement si la
+          // recherche FICOBA l'est aussi. Commence par une espace (vide sinon).
+          vars["phrase-eopps"] = checkState["psa-eopps"] !== true ? ""
+            : checkState.ficoba === "oui" && checkState["psa-ficoba"] === true ? " ET RECH EOPPS + FICOBA RECENTE"
             : " ET RECH EOPPS RECENTE";
 
           // Phrase "frais frustratoires" centralisée : en ACTIF (et par défaut) on

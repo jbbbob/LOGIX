@@ -73,14 +73,14 @@
     - *SOUS-MOTIF* :
       - `sous-motif-12-20-pv-659` — **20 - PV 659** *[si statut=A/C]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
-          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
+          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}}{{phrase-eopps}} »
           - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -90,14 +90,14 @@
           - fragment : « (Pas de FICOBA car site KO) »
       - `sous-motif-12-22-2-rar-pnd-psa` — **22 - 2 RAR PND PSA** *[si statut=A/C]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
-          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
+          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}}{{phrase-eopps}} »
           - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -107,14 +107,14 @@
           - fragment : « (Pas de FICOBA car site KO) »
       - `sous-motif-12-25-enq-psa` — **25 - ENQ PSA/ETRANG** *[si statut=A/C]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
-          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
+          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}}{{phrase-eopps}} »
           - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -124,14 +124,14 @@
           - fragment : « (Pas de FICOBA car site KO) »
       - `sous-motif-12-pl-pv-659` — **PV 659** *[si statut=PL]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
-          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
+          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}}{{phrase-eopps}} »
           - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
@@ -141,14 +141,14 @@
           - fragment : « (Pas de FICOBA car site KO) »
       - `sous-motif-12-pl-md-psa` — **MD PSA** *[si statut=PL]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
-          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
+          - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}}{{phrase-eopps}} »
           - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}} »
+          - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps}} »
           - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*

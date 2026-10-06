@@ -115,7 +115,7 @@ const anvLeafConfig = {
 
 // Configuration des feuilles pour le MOTIF 12 (PSA).
 // Même logique que anvLeafConfig mais textes différents :
-// - A/C → "ANV [PARTIELLE] 12 SS MOTIF [code] [abbrev] GED DU {date} {{phrase-eopps}}"
+// - A/C → "ANV [PARTIELLE] 12 SS MOTIF [code] [abbrev] GED DU {date}{{phrase-eopps}}"
 //   (la phrase EOPPS bascule sur "ET RECH EOPPS RECENTE" sans "+ FICOBA" si ficoba=non)
 // - PL  → "ANV[PARTIELLE]12 : RECHERCHES NEGATIVES - CONSTAT DU {date} - [abbrev]"
 //   (note : pas d'espace entre préfixe et code en PL, comme pour le motif 11)
@@ -133,7 +133,7 @@ const anv12LeafConfig = {
       blocs: [
         {
           id: "ged-ac-12",
-          texte: "{{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}}",
+          texte: "{{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}}{{phrase-eopps}}",
         },
         {
           id: "dretaf-line-ac-12",
@@ -169,9 +169,9 @@ const anv12LeafConfig = {
       blocs: [
         {
           id: "carence-pl-12",
-          // {{phrase-eopps-pl}} : « ET RECH EOPPS [+ FICOBA] RECENTE » seulement si
+          // {{phrase-eopps}} : « ET RECH EOPPS [+ FICOBA] RECENTE » seulement si
           // la recherche EOPPS est cochée dans le mode opératoire (vide sinon).
-          texte: "{{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps-pl}}",
+          texte: "{{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps}}",
         },
         {
           id: "dretaf-line-pl-12",
