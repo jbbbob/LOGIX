@@ -249,141 +249,6 @@ const ecrituresInput = {
 };
 
 // ============================================================================
-// Configurations pour le MOTIF 13 (DCD - Décédé), 2 sous-motifs : 1ÈRE ENQUÊTE
-// et RELANCE. Chaque sous-motif a ses propres résultats selon STATUT (A/C / PL).
-//
-// 1ÈRE ENQUÊTE :
-//   - POST-IT : "RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE" (TI ET ESDC en A/C, ESDC en PL)
-//   - WATT : 4 lignes rattachements + bloc ANV avec ARRET MOTIF 25 (A/C) ou OPP DCD DEBUT (PL)
-//
-// RELANCE :
-//   - POST-IT : 2 blocs copiables (RECHERCHE HÉRITIERS + ANV ... GED DU {today})
-//   - WATT : 4 lignes rattachements + bloc ANV combiné
-//   - {{today}} = date du jour au format JJ/MM/AA, auto-générée
-// ============================================================================
-
-const RATTACHEMENTS_HERITIERS_HTML =
-  "CCA rattaché à l'affaire<br>" +
-  "Succession vacantes rattaché à l'affaire<br>" +
-  "Mail au chambre des notaires rattaché à l'affaire<br>" +
-  "Courrier aux héritiers envoyé par voie postale";
-
-const anv13_1ereEnqueteLeaf = {
-  resultats: [
-    // POST-IT (A/C : portail TI ET ESDC)
-    {
-      id: "post-it-13-1ere-ac",
-      label: "POST-IT PORTAIL TI ET ESDC",
-      type: "simple",
-      if: { statut: ["A/C"] },
-      texte: "RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE",
-    },
-    // POST-IT (PL : ESDC seulement)
-    {
-      id: "post-it-13-1ere-pl",
-      label: "POST-IT ESDC",
-      type: "simple",
-      if: { statut: ["PL"] },
-      texte: "RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE",
-    },
-    // COMMENTAIRE WATT (A/C) : 2 sub-blocs copiables
-    {
-      id: "watt-13-1ere-ac",
-      label: "COMMENTAIRE AFFAIRE WATT",
-      type: "multi",
-      if: { statut: ["A/C"] },
-      blocs: [
-        { id: "ratt-1ere-ac", texte: RATTACHEMENTS_HERITIERS_HTML },
-        {
-          id: "anv-1ere-ac",
-          texte:
-            "ANV 13 DCD SUSPEN au {{date}} -&gt; RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE<br>+<br>ARRET MOTIF 25",
-        },
-      ],
-    },
-    // COMMENTAIRE WATT (PL)
-    {
-      id: "watt-13-1ere-pl",
-      label: "COMMENTAIRE AFFAIRE WATT",
-      type: "multi",
-      if: { statut: ["PL"] },
-      blocs: [
-        { id: "ratt-1ere-pl", texte: RATTACHEMENTS_HERITIERS_HTML },
-        {
-          id: "anv-1ere-pl",
-          texte:
-            "ANV 13 DCD SUSPEN au {{date}} -&gt; RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE<br>+<br>OPP DCD DEBUT",
-        },
-      ],
-    },
-  ],
-};
-
-const anv13_relanceLeaf = {
-  resultats: [
-    // POST-IT TI ET ESDC (A/C) : 2 sub-blocs copiables
-    {
-      id: "post-it-13-relance-ac",
-      label: "POST-IT PORTAIL TI ET ESDC",
-      type: "multi",
-      if: { statut: ["A/C"] },
-      blocs: [
-        { id: "her-rel-ac", texte: "RECHERCHE HÉRITIERS : RELANCE" },
-        {
-          id: "anv-rel-ac-ti",
-          texte: "ANV 13 SS MOTIF 19 ENQ PAS ACTIF GED DU {{today}}",
-        },
-      ],
-    },
-    // POST-IT ESDC (PL) : 2 sub-blocs
-    {
-      id: "post-it-13-relance-pl",
-      label: "POST-IT ESDC",
-      type: "multi",
-      if: { statut: ["PL"] },
-      blocs: [
-        { id: "her-rel-pl", texte: "RECHERCHE HÉRITIERS : RELANCE" },
-        {
-          id: "anv-rel-pl-esdc",
-          texte:
-            "ANV13 : DCD - CONSTAT DU {{today}} - PAS D'HÉRITIERS &amp; ACTIF CONNU",
-        },
-      ],
-    },
-    // COMMENTAIRE WATT (A/C)
-    {
-      id: "watt-13-relance-ac",
-      label: "COMMENTAIRE AFFAIRE WATT",
-      type: "multi",
-      if: { statut: ["A/C"] },
-      blocs: [
-        { id: "ratt-rel-ac", texte: RATTACHEMENTS_HERITIERS_HTML },
-        {
-          id: "anv-rel-ac-watt",
-          texte:
-            "ANV 13 SS MOTIF 19 ENQ PAS ACTIF GED DU {{today}}<br>+<br>RECHERCHE HÉRITIERS : RELANCE",
-        },
-      ],
-    },
-    // COMMENTAIRE WATT (PL)
-    {
-      id: "watt-13-relance-pl",
-      label: "COMMENTAIRE AFFAIRE WATT",
-      type: "multi",
-      if: { statut: ["PL"] },
-      blocs: [
-        { id: "ratt-rel-pl", texte: RATTACHEMENTS_HERITIERS_HTML },
-        {
-          id: "anv-rel-pl-watt",
-          texte:
-            "ANV13 : DCD - CONSTAT DU {{today}} - PAS D'HÉRITIERS &amp; ACTIF CONNU<br>+<br>RECHERCHE HÉRITIERS : RELANCE",
-        },
-      ],
-    },
-  ],
-};
-
-// ============================================================================
 // Configuration des feuilles pour le MOTIF 16 (CRÉANCE < SEUIL 201€).
 // Même structure que motif 11/12 : leafQuestions DRETAF + ANV SUSPEN, et un
 // POST-IT + COMMENTAIRE WATT (fusion auto si DRETAF=non et SUSPEN=non).
@@ -620,30 +485,12 @@ const anvBranch = {
         },
       },
       {
+        // L'ancien parcours 13 (1ère enquête / relance) a été supprimé : le
+        // bouton envoie vers l'onglet DCD (mode opératoire à jour).
         id: "motif-13-decede",
-        label: "13 - DÉCÉDÉ",
+        label: "13 - DÉCÉDÉ → ONGLET DCD",
         description: "",
-        // Pré-remplit DATE avec la date du jour quand on clique sur 13
-        // (uniquement si DATE est vide — ne touche pas une saisie manuelle).
-        defaultInputs: { date: "today" },
-        suite: {
-          question: "ANV",
-          choicesTitle: "SOUS-MOTIF",
-          choix: [
-            {
-              id: "sous-motif-13-1ere-enquete",
-              label: "1ÈRE ENQUÊTE",
-              description: "",
-              suite: anv13_1ereEnqueteLeaf,
-            },
-            {
-              id: "sous-motif-13-relance",
-              label: "RELANCE",
-              description: "",
-              suite: anv13_relanceLeaf,
-            },
-          ],
-        },
+        versCategorie: "dcd",
       },
       {
         id: "motif-14-liquidation-judiciaire-cia",

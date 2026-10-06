@@ -2679,6 +2679,7 @@
         }
 
         function isChoiceEmpty(option) {
+          if (option && option.versCategorie) return false; // renvoi vers un autre onglet
           if (!option || !option.suite || typeof option.suite !== "object") return true;
           const hasChoix = Array.isArray(option.suite.choix) && option.suite.choix.length > 0;
           const hasResultats = Array.isArray(option.suite.resultats) && option.suite.resultats.length > 0;
@@ -4044,6 +4045,23 @@
             button.innerHTML = `${empty ? `<span class="empty-tag">TODO</span>` : ""}${inner}`;
 
             button.addEventListener("click", () => {
+              // versCategorie : ce choix ouvre un autre onglet (ex. 13 → DCD).
+              if (option.versCategorie) {
+                const cat = (window.treeData.choix || []).find((c) => c.id === option.versCategorie);
+                if (cat && cat.suite) {
+                  inlineRootNode = cat.suite;
+                  inlineChain = [];
+                  leafAnswers = {};
+                  leafInputs = {};
+                  activeToggleStack = [];
+                  topAnswers = {};
+                  checkState = {};
+                  window.scrollTo(0, 0);
+                  render();
+                  showToast("ONGLET " + (cat.label || "").toUpperCase());
+                }
+                return;
+              }
               if (empty) {
                 showToast("CHOIX NON ENCORE CODÉ");
                 return;

@@ -494,7 +494,7 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 *Catégorie ANV* : **motifs 11, 12, 13, 14, 16** avec leurs variantes A/C / PL.
 - 11 (INSOLVABILITÉ) : sous-motifs 01, 02, 06, 11. Format A/C avec `+ FICOBA RECENTE`, format PL `ANV[PARTIELLE]11: CARENCE-CONSTAT…`.
 - 12 (PSA) : sous-motifs spéciaux selon statut (20/25 en A/C avec code, PV 659/MD PSA en PL sans code). Question optionnelle FICOBA DISPONIBLE qui modifie le résultat.
-- 13 (DCD) : sous-motifs 1ÈRE ENQUÊTE et RELANCE. DATE auto-remplie à today au clic. Préfixe `ANV` en dur (jamais PARTIELLE).
+- 13 (DCD) : **ancien parcours supprimé** (octobre 2026). Le bouton « 13 - DÉCÉDÉ → ONGLET DCD » a `versCategorie: "dcd"` : il ouvre l'onglet DCD (mode opératoire à jour). Un choix avec `versCategorie` n'est jamais « TODO ».
 - 14 (LIQ. JUD.) : en A/C, DATE auto-remplie ; en PL, DATE renommée en BODACC + ajout DATE PR LIQ CL IN inline.
 - 16 (CRÉANCE < SEUIL) : DATE auto-remplie. A/C `… SS MOTIF 32 - CONSTAT DU {date}`, PL `ANV[PARTIELLE]16 : CREANCE < AU SEUIL - CONSTAT DU {date}`.
 

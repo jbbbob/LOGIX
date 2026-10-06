@@ -156,32 +156,7 @@
           - appendFragments: ficoba-line-12
         - [fragment] `ficoba-line-12` — **** *[si ficoba=non]*
           - fragment : « (Pas de FICOBA car site KO) »
-  - `motif-13-decede` — **13 - DÉCÉDÉ**
-    - *SOUS-MOTIF* :
-      - `sous-motif-13-1ere-enquete` — **1ÈRE ENQUÊTE**
-        - [simple] `post-it-13-1ere-ac` — **POST-IT PORTAIL TI ET ESDC** *[si statut=A/C]*
-          - « RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE »
-        - [simple] `post-it-13-1ere-pl` — **POST-IT ESDC** *[si statut=PL]*
-          - « RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE »
-        - [multi] `watt-13-1ere-ac` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
-          - bloc `ratt-1ere-ac` : « CCA rattaché à l'affaire<br>Succession vacantes rattaché à l'affaire<br>Mail au chambre des notaires rattaché à l'affaire<br>Courrier aux héritiers envoyé par voie postale »
-          - bloc `anv-1ere-ac` : « ANV 13 DCD SUSPEN au {{date}} -&gt; RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE<br>+<br>ARRET MOTIF 25 »
-        - [multi] `watt-13-1ere-pl` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
-          - bloc `ratt-1ere-pl` : « CCA rattaché à l'affaire<br>Succession vacantes rattaché à l'affaire<br>Mail au chambre des notaires rattaché à l'affaire<br>Courrier aux héritiers envoyé par voie postale »
-          - bloc `anv-1ere-pl` : « ANV 13 DCD SUSPEN au {{date}} -&gt; RECHERCHE HÉRITIERS : 1ÈRE ENQUÊTE<br>+<br>OPP DCD DEBUT »
-      - `sous-motif-13-relance` — **RELANCE**
-        - [multi] `post-it-13-relance-ac` — **POST-IT PORTAIL TI ET ESDC** *[si statut=A/C]*
-          - bloc `her-rel-ac` : « RECHERCHE HÉRITIERS : RELANCE »
-          - bloc `anv-rel-ac-ti` : « ANV 13 SS MOTIF 19 ENQ PAS ACTIF GED DU {{today}} »
-        - [multi] `post-it-13-relance-pl` — **POST-IT ESDC** *[si statut=PL]*
-          - bloc `her-rel-pl` : « RECHERCHE HÉRITIERS : RELANCE »
-          - bloc `anv-rel-pl-esdc` : « ANV13 : DCD - CONSTAT DU {{today}} - PAS D'HÉRITIERS &amp; ACTIF CONNU »
-        - [multi] `watt-13-relance-ac` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
-          - bloc `ratt-rel-ac` : « CCA rattaché à l'affaire<br>Succession vacantes rattaché à l'affaire<br>Mail au chambre des notaires rattaché à l'affaire<br>Courrier aux héritiers envoyé par voie postale »
-          - bloc `anv-rel-ac-watt` : « ANV 13 SS MOTIF 19 ENQ PAS ACTIF GED DU {{today}}<br>+<br>RECHERCHE HÉRITIERS : RELANCE »
-        - [multi] `watt-13-relance-pl` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
-          - bloc `ratt-rel-pl` : « CCA rattaché à l'affaire<br>Succession vacantes rattaché à l'affaire<br>Mail au chambre des notaires rattaché à l'affaire<br>Courrier aux héritiers envoyé par voie postale »
-          - bloc `anv-rel-pl-watt` : « ANV13 : DCD - CONSTAT DU {{today}} - PAS D'HÉRITIERS &amp; ACTIF CONNU<br>+<br>RECHERCHE HÉRITIERS : RELANCE »
+  - `motif-13-decede` — **13 - DÉCÉDÉ → ONGLET DCD**
   - `motif-14-liquidation-judiciaire-cia` — **14 - LIQUIDATION JUDICIAIRE (CIA)**
     - [simple] `result-14-pl` — **POST-IT ESDC & COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
       - « ANV14 : CIA DU {{date-liq}} AVIS JUGEMENT BODACC DU {{date}} »
@@ -340,8 +315,8 @@
 ## Stats
 
 - Catégories : 4
-- Choix totaux (tous niveaux) : 36
+- Choix totaux (tous niveaux) : 34
 - Inputs : 7
 - Toggles : 2
 - TopQuestions : 2
-- Résultats (blocs texte) : 104
+- Résultats (blocs texte) : 96
