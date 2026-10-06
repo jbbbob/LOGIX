@@ -3115,6 +3115,7 @@
           //   phrase de la double vérification selon les choix.
           {
             const parcours = activeToggleStack.length ? activeToggleStack[activeToggleStack.length - 1].toggle.id : "";
+            vars["parcours-reldet"] = parcours;
             const p = [];
             const enLigne = topAnswers["compte-en-ligne"];
             if (enLigne === "oui") p.push("le relevé de dette bien envoyé par SCRIBE");
@@ -3221,6 +3222,30 @@
           });
           vars["chambre-autre"] = deptsAutres.length > 0 ? "oui" : "non";
           vars["depts-autres"] = deptsAutres.join(" ET ");
+          // Un PDF de formulaire à rattacher : chambre à formulaire (Paris, 77, 91)
+          // ou autre chambre interrogée par formulaire en ligne.
+          const nbChambresForm =
+            chambres.filter((ch) => vars["chambre-" + ch.id] === "oui").length +
+            deptsAutres.filter((d) => envoiDe(d) === "formulaire").length;
+          const nbChambres = chambres.filter((ch) => vars["chambre-" + ch.id] === "oui").length + deptsAutres.length;
+          vars["dcd-docs-chambres"] = nbChambresForm > 0 ? "oui" : "non";
+
+          // Phrase de la DOUBLE VÉRIFICATION DCD, selon les étapes affichées.
+          {
+            const p = [];
+            if (vars.statut === "A/C") p.push("l'arrêt début motif 25 bien positionné");
+            if (vars.statut === "PL") p.push("la transaction CPTS TOP 06 bien faite");
+            p.push("le courrier aux héritiers bien envoyé");
+            if (vars["dcd-acte-ged"] !== "oui") p.push("la demande d'acte à la mairie bien envoyée");
+            if (nbChambres === 1) p.push("la demande à la chambre des notaires bien envoyée");
+            if (nbChambres > 1) p.push("les demandes aux " + nbChambres + " chambres des notaires bien envoyées");
+            const docs = ["page SNGI"];
+            if (nbChambresForm > 0) docs.push(nbChambresForm > 1 ? "PDF des formulaires des chambres" : "PDF du formulaire de la chambre");
+            if (vars["deces-plus-6-mois"] !== "non") docs.push("recherche succession vacante");
+            p.push("les documents bien rattachés à l'affaire (" + docs.join(", ") + ")");
+            p.push("l'ESDC, l'ENQ et l'ADM NV bien codifiés", "le commentaire WATT bien renseigné");
+            vars["double-check-dcd"] = p.slice(0, -1).join(", ") + " et " + p[p.length - 1];
+          }
 
           // 7. Phrase WATT : uniquement les départements réellement interrogés,
           //    regroupés par mode d'envoi, avec l'accord singulier / pluriel.

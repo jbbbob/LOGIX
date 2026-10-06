@@ -1334,6 +1334,13 @@ const etapesReldetFin = [
     type: "check",
     id: "reldet-double-check",
     label: "Double vérification : {{double-check-reldet}}",
+    sousCoches: [
+      { id: "dc-rel-scribe", label: "Relevé de dette envoyé par SCRIBE", if: { "compte-en-ligne": ["oui"] } },
+      { id: "dc-rel-v2", label: "RELDET codifié en V2", if: { "compte-en-ligne": ["non"] } },
+      { id: "dc-rel-suspen", label: "ANV SUSPEN codifiée", if: { "parcours-reldet": ["amiable-reldet"], compte: ["RADIÉ"] } },
+      { id: "dc-rel-suspen-postit", label: "Post-it ANV SUSPEN", if: { "parcours-reldet": ["amiable-reldet"], compte: ["RADIÉ"] } },
+      { id: "dc-rel-watt", label: "Commentaire WATT" },
+    ],
   },
 ];
 amiableReldetToggle.whenOn.etapesFin = etapesReldetFin;
@@ -2305,6 +2312,18 @@ const dcd1ereEnqueteInconnusLeaf = {
             id: "dcd-watt-mis",
             montre: "dcd-watt",
             label: "METTRE LE COMMENTAIRE AFFAIRE WATT",
+          },
+          {
+            // Phrase selon les choix (statut, mairie, chambres, succession).
+            type: "check",
+            id: "dcd-double-check",
+            label: "DOUBLE VÉRIFICATION : {{double-check-dcd}}",
+            // Petites cases (non obligatoires) : chaque document à rattacher.
+            sousCoches: [
+              { id: "dc-dcd-sngi", label: "Page SNGI (PDF)" },
+              { id: "dc-dcd-chambres", label: "PDF formulaire(s) des chambres", if: { "dcd-docs-chambres": ["oui"] } },
+              { id: "dc-dcd-succession", label: "Recherche succession vacante (PDF)", if: { "deces-plus-6-mois": ["oui", ""] } },
+            ],
           },
         ],
       },
