@@ -989,7 +989,7 @@ anvBranch.suite.checklist = {
           id: "anv-esdc",
           if: { statut: ["PL"] },
           montre: "anv-postit",
-          label: "Mettre en ESDC, avec le code ANV, le post-it",
+          label: "Renseigné en ESDC avec le code ANV",
         },
         // ---------- ANV SUSPEN (compte radié) ----------
         {
@@ -1016,7 +1016,7 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-suspen-esdc",
           if: { compte: ["RADIÉ"], suspen: ["oui"], statut: ["PL"] },
-          label: "Mettre en ESDC, avec le code INCX, le post-it de l'ANV SUSPEN",
+          label: "Renseigné en ESDC avec le code INCX (ANV SUSPEN)",
           copie: [{ label: "ESDC", texte: "ANV SUSPEN pour exigibilité inférieure à un an" }],
         },
         {
@@ -1043,7 +1043,7 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-double-check-pl",
           if: { statut: ["PL"] },
-          label: "Double vérification : le post-it ESDC est bien enregistré",
+          label: "Double vérification : l'ESDC est bien renseigné",
         },
         // A/C : plus de 25 000 € → manager, sinon clôture.
         {
@@ -2107,7 +2107,7 @@ const dcd1ereEnqueteInconnusLeaf = {
           {
             type: "check",
             id: "dcd-esdc",
-            label: "ESDC ÉCRIT AVEC LE CODE DCD",
+            label: "RENSEIGNÉ EN ESDC AVEC LE CODE DCD",
             copie: [{ texte: "RECHERCHE HERITIERS : 1ÈRE ENQUÊTE" }],
           },
           {
