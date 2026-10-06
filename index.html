@@ -2219,6 +2219,36 @@
         gap: 6px 10px;
       }
 
+      /* Petites cases de contrôle sous une étape (ex : documents rattachés). */
+      .chk-sous {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        padding-left: 2px;
+      }
+
+      .chk-sous-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-mid);
+        color: var(--muted-strong);
+        cursor: pointer;
+      }
+
+      .chk-sous-item input {
+        width: 15px;
+        height: 15px;
+        margin: 0;
+        accent-color: #0f766e;
+      }
+
+      .chk-sous-item.is-on {
+        color: #0b5e58;
+      }
+
       .chk-ajout.is-fini {
         background: #dbe9e3;
         align-items: center;
@@ -3057,10 +3087,11 @@
             const pl = vars.statut === "PL";
             // Documents à rattacher : justificatif (sauf motif 16), pages EOPPS / FICOBA.
             const motif12 = vars["motif-id"] === "motif-12-psa";
-            const nbDocs =
-              (vars["motif-id"] !== "motif-16-creance-seuil" ? 1 : 0) +
-              (motif12 && checkState["psa-eopps-adresse"] === "non" ? 1 : 0) +
-              (motif12 && checkState.ficoba === "oui" && checkState["psa-ficoba-adresse"] === "non" ? 1 : 0);
+            const docs = [];
+            if (vars["motif-id"] !== "motif-16-creance-seuil") docs.push("justificatif");
+            if (motif12 && checkState["psa-eopps-adresse"] === "non") docs.push("page EOPPS");
+            if (motif12 && checkState.ficoba === "oui" && checkState["psa-ficoba-adresse"] === "non") docs.push("page FICOBA");
+            const nbDocs = docs.length;
             const parts = ["l'ANV est bien codifiée"];
             if (suspenOui) parts.push("l'ANV SUSPEN bien codifiée");
             if (nbCo === 1) parts.push("le DRETAF bien codifié");
@@ -3073,8 +3104,8 @@
               const nbPostits = 1 + (suspenOui ? 1 : 0) + nbCo;
               parts.push(nbPostits > 1 ? "les post-its bien renseignés" : "le post-it bien renseigné");
             }
-            if (nbDocs === 1) parts.push("le document bien rattaché à l'affaire");
-            if (nbDocs > 1) parts.push("les " + nbDocs + " documents bien rattachés à l'affaire");
+            if (nbDocs === 1) parts.push("le " + docs[0] + " bien rattaché à l'affaire");
+            if (nbDocs > 1) parts.push("les documents bien rattachés à l'affaire (" + docs.join(", ") + ")");
             vars["double-check"] = parts.length > 1
               ? parts.slice(0, -1).join(", ") + " et " + parts[parts.length - 1]
               : parts[0];
@@ -5131,6 +5162,29 @@
               item.copie.forEach((c) => tools.appendChild(makeChecklistCopy(c, vars)));
               body.appendChild(tools);
             }
+            // sousCoches : petites cases de contrôle (non comptées) sous l'étape.
+            const sous = (item.sousCoches || []).filter((sc) =>
+              (!sc.if || contextMatches(sc.if, vars)) && !(sc.sauf && contextMatches(sc.sauf, vars)));
+            if (sous.length) {
+              const box = document.createElement("div");
+              box.className = "chk-sous";
+              sous.forEach((sc) => {
+                const lab = document.createElement("label");
+                lab.className = "chk-sous-item" + (checkState[sc.id] === true ? " is-on" : "");
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.checked = checkState[sc.id] === true;
+                cb.addEventListener("change", () => {
+                  checkState[sc.id] = cb.checked;
+                  noterHeure(sc.id, cb.checked);
+                  render();
+                });
+                lab.appendChild(cb);
+                lab.appendChild(document.createTextNode(" " + sc.label));
+                box.appendChild(lab);
+              });
+              body.appendChild(box);
+            }
             if (item.montre) {
               const tools = makeEtapeTextes(item, vars);
               tools.classList.add("chk-tools");
@@ -5400,6 +5454,9 @@
             const details = [];
             (item.champs || []).forEach((c) => details.push(c.label + " : " + String(nodeInputs[c.id] || "").trim()));
             textesEtape(item).forEach((t) => details.push("Texte : " + t));
+            (item.sousCoches || []).filter((sc) =>
+              (!sc.if || contextMatches(sc.if, vars)) && !(sc.sauf && contextMatches(sc.sauf, vars)))
+              .forEach((sc) => details.push(sc.label + " : " + (checkState[sc.id] === true ? "✓ " + heureDe(sc.id) : "—")));
             const h = heureDe(item.id);
             rows.push("<tr><td>" + escapeHtml(label) +
               (details.length ? '<div class="det">' + details.map((d) => escapeHtml(d).replace(/\n/g, "<br>")).join("<br>") + "</div>" : "") +

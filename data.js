@@ -1141,12 +1141,24 @@ anvBranch.suite.checklist = {
           id: "anv-double-check-ac",
           if: { statut: ["A/C", ""] },
           label: "Double vérification : {{double-check}}",
+          // Petites cases de contrôle (non obligatoires) : chaque document à rattacher.
+          sousCoches: [
+            { id: "dc-doc-justif", label: "Justificatif (PDF)", sauf: { "motif-id": ["motif-16-creance-seuil"] } },
+            { id: "dc-doc-eopps", label: "Page EOPPS (PDF)", if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] } },
+            { id: "dc-doc-ficoba", label: "Page FICOBA (PDF)", if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] } },
+          ],
         },
         {
           type: "check",
           id: "anv-double-check-pl",
           if: { statut: ["PL"] },
           label: "Double vérification : {{double-check}}",
+          // Petites cases de contrôle (non obligatoires) : chaque document à rattacher.
+          sousCoches: [
+            { id: "dc-doc-justif", label: "Justificatif (PDF)", sauf: { "motif-id": ["motif-16-creance-seuil"] } },
+            { id: "dc-doc-eopps", label: "Page EOPPS (PDF)", if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] } },
+            { id: "dc-doc-ficoba", label: "Page FICOBA (PDF)", if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] } },
+          ],
         },
         // A/C : plus de 25 000 € → manager, sinon clôture.
         {
