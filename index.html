@@ -2667,6 +2667,13 @@
             ? "ET RECH EOPPS RECENTE"
             : "ET RECH EOPPS + FICOBA RECENTE";
 
+          // Phrase "frais frustratoires" centralisée : en ACTIF (et par défaut) on
+          // précise qu'on attend d'autres contraintes pour une réexécution groupée ;
+          // en RADIÉ, plus de contraintes à venir, donc phrase courte. Source unique.
+          vars["phrase-frustratoires"] = vars.compte === "RADIÉ"
+            ? "Pas de réexécution car frais frustratoires"
+            : "Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée";
+
           // RÉEXÉCUTION : "date-prescription-full" expand JJ/MM/AA en JJ/MM/AAAA
           // (l'inverse du raccourcissement global). Si l'user tape déjà 4 chiffres,
           // c'est un no-op.

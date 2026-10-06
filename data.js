@@ -294,7 +294,7 @@ function makeFrustrSansVersementsLeaf() {
         label: "COMMENTAIRE AFFAIRE WATT",
         type: "simple",
         texte:
-          "Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car aucun justificatif - Tentative de recouvrement à l'amiable {{phrase-reldet}}",
+          "Compte {{compte-display}} - Pas de risque de prescription - {{phrase-frustratoires}} - Pas d'ANV car aucun justificatif - Tentative de recouvrement à l'amiable {{phrase-reldet}}",
       },
     ],
   };
@@ -787,7 +787,7 @@ const raisonChoixAvecVersements = [
     label: "FRAIS FRUSTRATOIRES",
     description: "",
     suite: makeVersementsLeaf(
-      "Pas de réexécution car frais frustratoires - Pas d'ANV car {{versements-nom}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
+      "{{phrase-frustratoires}} - Pas d'ANV car {{versements-nom}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
     ),
   },
   {
@@ -979,7 +979,7 @@ const detteNonExigibleToggle = {
               id: "raison-co-frustratoires",
               label: "FRAIS FRUSTRATOIRES",
               suite: makeDetteNonExigibleLeaf(
-                "Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée"
+                "{{phrase-frustratoires}}"
               ),
             },
             {

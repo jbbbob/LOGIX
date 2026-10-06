@@ -209,7 +209,7 @@
         - *RAISON* :
           - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car frais frustratoires - Pas d'ANV car {{versements-nom}} - Tentative de  … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>{{phrase-frustratoires}} - Pas d'ANV car {{versements-nom}} - Tentative de recouvrement à l'a … »
           - `raison-insolvable` — **INSOLVABLE**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
               - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite {{versements-suite}} -  … »
@@ -223,7 +223,7 @@
         - *RAISON* :
           - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
             - [simple] `watt-frustr-sans-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car aucun justifi … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{phrase-frustratoires}} - Pas d'ANV car aucun justificatif - Tentative de recouvrement à l'amiable {{phrase-reldet}} »
     - *topQuestions* : COMPTE EN LIGNE OU MAIL ? (`compte-en-ligne`)
   - ☑ **DETTE NON EXIGIBLE** (`dette-non-exigible`)
     - *TYPE* :
@@ -231,7 +231,7 @@
         - *RAISON* :
           - `raison-co-frustratoires` — **FRAIS FRUSTRATOIRES**
             - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car dette non exi … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{phrase-frustratoires}} - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reldet}} »
           - `raison-co-insolvable` — **INSOLVABLE**
             - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
               - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif insolvable - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reld … »
