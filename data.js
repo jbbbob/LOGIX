@@ -988,7 +988,7 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-suspen-esdc",
           if: { compte: ["RADIÉ"], suspen: ["oui"], statut: ["PL"] },
-          label: "Renseigné en ESDC avec le code INCX (ANV SUSPEN)",
+          label: "Renseigné en ESDC avec le code INCX",
           copie: [{ label: "ESDC", texte: "ANV SUSPEN pour exigibilité inférieure à un an" }],
         },
         {
