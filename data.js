@@ -2068,7 +2068,7 @@ const dcd1ereEnqueteInconnusLeaf = {
               {
                 type: "check",
                 id: "dcd-mairie",
-                label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS",
+                label: "ACTE DE DÉCÈS DEMANDÉ À LA MAIRIE DU LIEU DE DÉCÈS : COURRIER / COURRIEL ENVOYÉ",
                 // Rappel en lecture seule de ce qui a été relevé dans SNGI (à
                 // modifier là-haut), avec un bouton COPIER pour chaque valeur.
                 copie: [
