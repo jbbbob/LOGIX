@@ -130,7 +130,7 @@
           <button class="btn" id="zoomIn" title="Zoomer (touche +)">+</button>
           <button class="btn" id="zoomFit" title="Revenir à l'image entière (touche 0)">Image entière</button>
         </div>
-        <div class="hint"><b>Ctrl + molette</b> sur l'image pour zoomer là où est la souris, <b>double-clic droit</b> pour revenir à l'image entière ; <b>clic maintenu sans bouger</b> (0,3 s), la <b>mini-carte</b> en bas à droite, <b>Espace + glisser</b> ou clic molette pour se déplacer.</div>
+        <div class="hint"><b>Ctrl + molette</b> sur l'image pour zoomer là où est la souris, <b>double-clic droit</b> pour revenir à l'image entière ; <b>clic maintenu sans bouger</b> (0,3 s), la <b>mini-carte</b> en bas à droite, <b>A (ou Espace) maintenu + glisser</b> ou clic molette pour se déplacer tout de suite.</div>
         <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
         <input type="range" id="force" min="6" max="40" step="1" value="16">
         <div class="hint">Le flou est une <b>pixelisation</b> : le texte devient illisible et on ne peut pas le retrouver.<br>Une zone trop grande ? Outil <b>↖ Modifier</b> : clique dessus, puis glisse-la ou tire ses poignées.</div>
@@ -142,7 +142,7 @@
         <div class="tools3">
           <button class="btn" data-tool="rect" title="Tracer un cadre autour du bouton / champ / onglet (touche R)">▭ Cadre <span class="kbd">R</span></button>
           <button class="btn" data-tool="ellipse" title="Tracer un cercle autour d'une petite icône (touche O)">◯ Cercle <span class="kbd">O</span></button>
-          <button class="btn" data-tool="arrow" title="Tracer une flèche libre (du début vers la pointe) (touche A)">➜ Flèche <span class="kbd">A</span></button>
+          <button class="btn" data-tool="arrow" title="Tracer une flèche libre (du début vers la pointe) (touche L)">➜ Flèche <span class="kbd">L</span></button>
           <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③ (touche N)">① Numéro <span class="kbd">N</span></button>
           <button class="btn red" id="delAnnot" title="Efface la zone ou le repère choisi (touche X ou Suppr)">🗑 Effacer <span class="kbd">X</span></button>
         </div>
@@ -814,7 +814,7 @@
     e.preventDefault();
     setZoom(zoom * (e.deltaY < 0 ? 1.25 : 0.8), e.clientX, e.clientY);
   }, { passive: false });
-  // Se déplacer dans l'image zoomée : Espace + glisser, ou clic molette.
+  // Se déplacer dans l'image zoomée : A ou Espace maintenu + glisser, ou clic molette.
   stage.addEventListener("mousedown", (e) => {
     if (!img || zoom === 1 || !(spaceDown || e.button === 1)) return;
     e.preventDefault(); e.stopImmediatePropagation();
@@ -850,13 +850,13 @@
   document.addEventListener("mouseup", () => { pan = null; });
   document.addEventListener("keydown", (e) => {
     if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
-    if (e.key === " ") { e.preventDefault(); if (!spaceDown) { spaceDown = true; stage.classList.add("is-pan"); } }
+    if (e.key === " " || (e.key.toLowerCase() === "a" && !e.ctrlKey && !e.metaKey && !e.altKey)) { e.preventDefault(); if (!spaceDown) { spaceDown = true; stage.classList.add("is-pan"); } }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "+" || e.key === "=") { e.preventDefault(); setZoom(zoom * 1.5); }
     if (e.key === "-") { e.preventDefault(); setZoom(zoom / 1.5); }
     if (e.key === "0") { e.preventDefault(); setZoom(1); }
   });
-  document.addEventListener("keyup", (e) => { if (e.key === " ") { spaceDown = false; stage.classList.remove("is-pan"); } });
+  document.addEventListener("keyup", (e) => { if (e.key === " " || e.key.toLowerCase() === "a") { spaceDown = false; stage.classList.remove("is-pan"); } });
 
   view.addEventListener("mousedown", (e) => {
     if (!img) return;
@@ -1048,7 +1048,7 @@
     if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
 
     // Raccourcis des outils (lettre affichée sur chaque bouton).
-    const TOUCHES = { d: "clear", f: "blur", r: "rect", o: "ellipse", a: "arrow", n: "num", c: "select" };
+    const TOUCHES = { d: "clear", f: "blur", r: "rect", o: "ellipse", l: "arrow", n: "num", c: "select" };
     const t = TOUCHES[e.key.toLowerCase()];
     if (t) { e.preventDefault(); setTool(t); return; }
 
