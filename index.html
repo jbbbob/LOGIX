@@ -2167,6 +2167,13 @@
         padding: 6px 6px 6px 12px;
       }
 
+      .chk-aide-lien {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 10px;
+      }
+
       .chk-ajout {
         display: flex;
         flex-wrap: wrap;
@@ -4534,7 +4541,8 @@
               type: "groupe",
               label: "AUTRE CHAMBRE (DÉPT " + d + ")",
               lien: autre.url ? { label: "OUVRIR LE SITE CSN", url: autre.url } : null,
-              aide: "Chambre interdépartementale → département " + d + " → RECHERCHER : voir son mode d'envoi.",
+              lienDansAide: true,
+              aide: "chambre interdépartementale → département " + d + " → RECHERCHER : voir son mode d'envoi.",
               items: [
                 {
                   type: "question",
@@ -4814,9 +4822,19 @@
             const tutoG = item.tuto ? makeTutoButton(item.tuto) : null;
             if (tutoG) head.insertBefore(tutoG, title.nextSibling);
             const link = makeChecklistLink(item.lien);
-            if (link) head.appendChild(link);
+            // lienDansAide : le bouton du site ouvre la consigne (1re chose à faire).
+            if (link && !(item.lienDansAide && item.aide)) head.appendChild(link);
             grp.appendChild(head);
-            if (item.aide) grp.appendChild(makeChecklistAide(item.aide));
+            if (item.aide) {
+              const aide = makeChecklistAide(item.aide);
+              if (link && item.lienDansAide) {
+                aide.classList.add("chk-aide-lien");
+                aide.textContent = "";
+                aide.appendChild(link);
+                aide.appendChild(document.createTextNode(" puis " + item.aide));
+              }
+              grp.appendChild(aide);
+            }
             (item.items || []).forEach((sub) => renderChecklistItem(sub, vars, grp, sectionId));
             parent.appendChild(grp);
             return;
