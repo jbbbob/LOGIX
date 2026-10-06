@@ -976,10 +976,12 @@ anvBranch.suite.checklist = {
           label: "Codifier l'ANV au stade IN CRA",
         },
         {
+          // montre : le texte POST-IT généré s'affiche dans l'étape (à copier).
           type: "check",
           id: "anv-postit-ac",
           if: { statut: ["A/C", ""] },
-          label: "Ajouter en post-it le texte POST-IT généré ci-dessous",
+          montre: "anv-postit",
+          label: "Ajouter le post-it",
         },
 
         // ---------- Codification + textes (PL) ----------
@@ -1005,12 +1007,14 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-esdc",
           if: { statut: ["PL"] },
-          label: "Mettre en ESDC, avec le code ANV, le post-it généré ci-dessous",
+          montre: "anv-postit",
+          label: "Mettre en ESDC, avec le code ANV, le post-it",
         },
         {
           type: "check",
           id: "anv-watt",
-          label: "Mettre le COMMENTAIRE AFFAIRE WATT généré ci-dessous",
+          montre: "anv-watt",
+          label: "Mettre le commentaire affaire WATT",
         },
       ],
     },
@@ -1081,6 +1085,20 @@ anvBranch.suite.checklist = {
     },
   ],
 };
+
+// Textes générés des motifs ANV rangés dans les étapes du mode opératoire :
+// les blocs POST-IT… vont dans l'étape « post-it » (montre: "anv-postit"),
+// les COMMENTAIRE AFFAIRE WATT dans l'étape WATT (montre: "anv-watt").
+// Les lignes DRETAF du post-it sont déjà dans les blocs CONTRAINTE : hors étape.
+(function rangerTextesAnv(node) {
+  if (!node || typeof node !== "object") return;
+  (node.resultats || []).forEach((r) => {
+    if (/^POST-IT/.test(r.label || "")) r.etape = "anv-postit";
+    else if (r.label === "COMMENTAIRE AFFAIRE WATT") r.etape = "anv-watt";
+    (r.blocs || []).forEach((b) => { if (/^dretaf-line/.test(b.id || "")) b.horsEtape = true; });
+  });
+  (node.choix || []).forEach((c) => rangerTextesAnv(c.suite));
+})(anvBranch.suite);
 
 // ============================================================================
 // DETTE NON EXIGIBLE = toggle imbriqué dans AMIABLE RELDET.

@@ -4425,6 +4425,36 @@
           return wrap;
         }
 
+        // Textes générés (post-it, WATT…) affichés dans une étape « montre ».
+        function makeEtapeTextes(item, vars) {
+          const wrap = document.createElement("div");
+          const blocs = computeResultBlocks(getDeepestNode(), vars).filter((rb) => rb.source.etape === item.montre);
+          blocs.forEach((rb) => {
+            rb.subBlocs.filter((sub) => !sub.horsEtape).forEach((sub) => {
+              const line = document.createElement("span");
+              line.className = "chk-copy";
+              const txt = document.createElement("span");
+              txt.className = "chk-copy-text";
+              txt.innerHTML = sub.texte || ""; // déjà passé par substituteTemplate
+              line.appendChild(txt);
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "copy-btn";
+              btn.textContent = "COPIER";
+              btn.addEventListener("click", () => copyRichHtml(sub.texte || "", btn));
+              line.appendChild(btn);
+              wrap.appendChild(line);
+            });
+          });
+          if (!wrap.firstChild) {
+            const vide = document.createElement("div");
+            vide.className = "chk-aide";
+            vide.textContent = "Le texte apparaîtra ici une fois le motif et le sous-motif choisis.";
+            wrap.appendChild(vide);
+          }
+          return wrap;
+        }
+
         function makeChecklistLink(lien) {
           // Uniquement des liens https (ouverts dans un nouvel onglet).
           if (!lien || !/^https:\/\//i.test(lien.url || "")) return null;
@@ -4665,6 +4695,11 @@
               const tools = document.createElement("div");
               tools.className = "chk-tools";
               item.copie.forEach((c) => tools.appendChild(makeChecklistCopy(c, vars)));
+              body.appendChild(tools);
+            }
+            if (item.montre) {
+              const tools = makeEtapeTextes(item, vars);
+              tools.classList.add("chk-tools");
               body.appendChild(tools);
             }
             row.appendChild(body);
@@ -4944,12 +4979,10 @@
           }
         }
 
-        function renderResults(node) {
-          resultsContainer.innerHTML = "";
-
-          if (!node || !Array.isArray(node.resultats) || node.resultats.length === 0) return;
-
-          const vars = buildTemplateVars();
+        // Calcule les blocs résultat d'une feuille (sans rien afficher) :
+        // utilisé par renderResults et par les étapes « montre » de la checklist.
+        function computeResultBlocks(node, vars) {
+          if (!node || !Array.isArray(node.resultats) || node.resultats.length === 0) return [];
           const subBlocsById = {};
           const resultBlocks = [];
 
@@ -4987,7 +5020,7 @@
                 .filter((b) => !b.if || contextMatches(b.if, vars))
                 .map((b) => {
                   const texte = substituteTemplate(b.texte || "", vars);
-                  const sub = { id: b.id, texte };
+                  const sub = { id: b.id, texte, horsEtape: !!b.horsEtape };
                   if (b.id) subBlocsById[b.id] = sub;
                   return sub;
                 });
@@ -5031,6 +5064,7 @@
             const rb = resultBlocks[i];
             const src = rb.source;
             if (!src.mergeWithCompositeIfSingle) continue;
+            if (src.etape) continue; // rangés dans des étapes séparées : pas de fusion
             if (rb.subBlocs.length !== 1) continue;
             const compIdx = resultBlocks.findIndex((o) => o.id === src.mergeWithCompositeIfSingle);
             if (compIdx < 0) continue;
@@ -5046,6 +5080,29 @@
               break;
             }
           }
+
+          return resultBlocks;
+        }
+
+        // Étapes « montre » visibles dans la checklist affichée (ANV) : leurs
+        // textes y sont déjà, on ne les répète pas en dessous.
+        function etapesMontrees() {
+          const n = getChecklistNode();
+          const out = new Set();
+          if (!n) return out;
+          const visit = (it) => {
+            if (it.montre) out.add(it.montre);
+            (it.items || []).forEach(visit);
+          };
+          buildChecklistModel(n, buildTemplateVars()).forEach((sec) => sec.items.forEach(visit));
+          return out;
+        }
+
+        function renderResults(node) {
+          resultsContainer.innerHTML = "";
+          const vars = buildTemplateVars();
+          const montrees = etapesMontrees();
+          const resultBlocks = computeResultBlocks(node, vars).filter((rb) => !montrees.has(rb.source.etape));
 
           // Fabrique un bouton COPIER pour un texte donné.
           const makeCopyButton = (texte) => {
