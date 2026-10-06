@@ -2157,7 +2157,7 @@
       #toggleEtapes:not(:empty),
       #toggleEtapesApres:not(:empty) {
         padding: 0;
-        border-bottom: 1px solid var(--hairline);
+        border-bottom: 0;
       }
 
       /* Bandeau d'un toggle actif, à droite de son bouton (même ligne). */
@@ -2181,9 +2181,9 @@
       .chk-group {
         margin: 0;
         border: 0;
-        /* Filet vert très léger (pas le filet sombre du mode nuit) : invisible
-           entre deux blocs verts, discret ailleurs. */
-        border-top: 1px solid rgba(15, 118, 110, 0.15);
+        /* Pas de trait au-dessus : un trait sur fond transparent laisse voir
+           le fond sombre de la carte (mode nuit) entre deux lignes vertes. */
+        border-top: 0;
         border-radius: 0;
         background: transparent;
       }
