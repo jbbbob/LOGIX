@@ -895,7 +895,7 @@ anvBranch.suite.checklist = {
         },
         {
           type: "alerte",
-          niveau: "info",
+          niveau: "danger",
           if: { "versement-recent": ["oui"], "prescription-imminente": ["oui"] },
           texte: "Prescription imminente : on passe quand même l'ANV malgré le versement récent.",
         },
@@ -917,7 +917,12 @@ anvBranch.suite.checklist = {
           type: "question",
           id: "dretaf",
           label: "Contrainte (CO) en cours ?",
-          aide: "Si OUI : DRETAF à faire pour chaque contrainte.",
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          if: { dretaf: ["oui"] },
+          texte: "DRETAF à faire pour chaque contrainte.",
         },
         {
           // Un bloc par contrainte, « + AJOUTER UNE CONTRAINTE » pour en ajouter.
