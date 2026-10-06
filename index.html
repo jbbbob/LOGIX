@@ -1321,6 +1321,15 @@
       }
 
       /* Textes à copier DANS le bloc ANV : un peu d'air autour des cartes. */
+      /* Vide (textes rangés dans les étapes) : il ne doit laisser aucune bande. */
+      #processBloc > #resultsContainer {
+        margin-top: 0;
+      }
+
+      #processBloc > #resultsContainer:empty {
+        display: none;
+      }
+
       #processBloc > #resultsContainer:not(:empty) {
         padding: 10px 13px;
       }
@@ -2155,14 +2164,19 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin: 2px 13px 10px;
+        margin: 0;
+        padding: 8px 13px;
+        border-top: 1px solid var(--hairline);
       }
 
+      /* Groupe (CONTRAINTE 1, COURRIER AUX HÉRITIERS…) : pleine largeur, collé
+         aux lignes autour, juste un bandeau titre (pas d'encadré en retrait). */
       .chk-group {
-        margin: 4px 13px 8px;
-        border: 1px solid var(--border);
-        border-radius: var(--r-md);
-        background: var(--wash);
+        margin: 0;
+        border: 0;
+        border-top: 1px solid var(--hairline);
+        border-radius: 0;
+        background: transparent;
       }
 
       .chk-group-head {
@@ -2170,7 +2184,8 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 7px 10px;
-        padding: 8px 10px;
+        padding: 8px 13px;
+        background: var(--wash);
         border-bottom: 1px solid var(--hairline);
       }
 
