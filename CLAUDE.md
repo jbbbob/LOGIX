@@ -398,6 +398,7 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 
 - **Barre MODE OPÉRATOIRE collée** sous l'en-tête (`position: sticky; top: 58px`) : compteur, progression, bouton « → ÉTAPE MANQUANTE ».
 - **Bilan en fin de liste** : « TOUT EST FAIT » (vert) ou « IL MANQUE X ÉTAPES » (orange) avec la liste cliquable et « ↑ REMONTER À LA PREMIÈRE ÉTAPE MANQUANTE ». L'étape atteinte clignote (`is-flash`, couleur seule).
+- **Choix faits = fond vert sans barrer** : question de checklist répondue (`.chk-question.is-checked`) et, dans le bloc ANV, motif / sous-motif choisis (`.card-row.is-done`, posé par `createChoiceCard`). Mêmes jetons « mode jour » que la ligne cochée (boutons lisibles en nuit).
 - **Case cochée = « ligne surlignée »** : carré vert canard + coche blanche, ligne vert pâle, libellé barré. Dans une ligne cochée, les jetons du mode jour sont remis pour que tout reste lisible en nuit.
 - **Champs dans l'étape** : cadre orange pointillé « À REMPLIR » → vert « REMPLI ✓ ». Cocher une étape aux champs vides est **permis** mais affiche un conseil (« CONSEILLÉ : REMPLIR … »).
 - **Taper dans un champ de la checklist** la redessine (`renderChecklist`) en **gardant le curseur** (même champ, même position, même si le champ existe 2 fois) et la position de la page.

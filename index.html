@@ -1560,11 +1560,21 @@
         outline-offset: 2px;
       }
 
-      /* Ligne cochée : fond vert pâle. Dans cette ligne, on remet les couleurs
+      /* Ligne cochée : fond vert pâle (libellé barré). Question répondue et,
+         dans le bloc ANV, motif / sous-motif choisis : même fond vert, SANS
+         barrer (ce sont des choix, pas des tâches). Dans cette ligne, on remet les couleurs
          du mode jour (textes foncés, champs clairs) pour que tout reste lisible
          sur le vert pâle, y compris en mode nuit. */
-      .chk-row.is-checked:not(.chk-question) {
+      .chk-row.is-checked:not(.chk-question),
+      .chk-row.chk-question.is-checked,
+      #processBloc .card-row.is-done {
         background: #dbe9e3;
+        --surface: #fffdf8;
+        --surface-raised: #f4ede1;
+        --surface-hover: #ebe2d2;
+        --border-strong: rgba(15, 118, 110, 0.5);
+        --accent-wash-2: rgba(15, 118, 110, 0.15);
+        --wash: rgba(80, 60, 30, 0.035);
         --ink: #2b2419;
         --muted: #4f6560;
         --muted-strong: #1a140c;
@@ -3557,7 +3567,7 @@
 
           const card = document.createElement("section");
           card.id = `cascade-level-${levelIdx}`;
-          card.className = "card-row";
+          card.className = "card-row" + (selectedIdAtLevel ? " is-done" : "");
 
           const labelEl = document.createElement("div");
           labelEl.className = "card-row-label";
