@@ -74,6 +74,7 @@ Pendant ma journée, je traite plusieurs dossiers à la chaîne. Pour chaque dos
   - **NUIT** — le **thème LOGIX d'origine** : encre bleutée `#090d14`, cartes `#101825`, accent cyan `#22d3ee`, dégradés bleus en fond. Jetons dans `:root[data-theme="nuit"]` (section « 1 bis »).
   - **Toutes les couleurs passent par des jetons** (`--bg-1`, `--surface*`, `--ink`, `--muted*`, `--brand-ink`, `--brand-sub-ink`, `--header-line`, `--accent*` dont `--accent-tint`, `--border*`, `--hairline*`, `--wash*`, `--overlay`, `--ok/--ok-wash/--ok-border`, `--todo/--todo-wash/--todo-border`, `--danger/--danger-ink/--danger-wash/--danger-border`). **Aucune couleur en dur dans le CSS** hors de ces deux blocs (exceptions volontaires : le vert canard fixe de la case cochée et de la ligne cochée, identique dans les deux modes).
   - **Règle des couleurs des bandeaux** : rouge + ⛔ = on s'arrête là (DLP proche, reroutage GCC) · orange = action à faire (saisir, vérifier, étapes manquantes) · gris = simple information.
+- **Barres de défilement** : fines, en pilule, couleur de l'accent (`::-webkit-scrollbar` + `scrollbar-color` pour Firefox), en tête de la section 2 du CSS ; même style dans l'atelier.
 - **Animations — règle stricte, à respecter à la lettre** :
   - `animation: none !important` reste global (aucun keyframe, jamais).
   - Seules `background-color`, `border-color`, `box-shadow` et `color` peuvent transitionner, en **110 ms** (`--t`), sans aucun délai.
