@@ -76,6 +76,12 @@
   .stage { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 10px; min-height: 420px; display: flex; align-items: center; justify-content: center; position: sticky; top: 10px; }
   .drop { text-align: center; color: var(--muted); }
   .drop b { color: var(--accent-strong); font-size: 13pt; letter-spacing: 0.1em; }
+  .stage.is-zoom { display: block; overflow: auto; height: calc(100vh - 20px); }
+  .stage.is-zoom canvas#view { max-width: none; max-height: none; }
+  .stage.is-pan, .stage.is-pan canvas#view { cursor: grab !important; }
+  .zoom-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .zoom-row .btn { height: 1.9rem; padding: 0 0.6rem; flex: 0 0 auto; }
+  .zoom-row #zoomVal { min-width: 52px; text-align: center; font-weight: 700; color: var(--accent-strong); }
   canvas#view { max-width: 100%; max-height: calc(100vh - 40px); height: auto; display: none; cursor: crosshair; border-radius: 4px; }
   .check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 8px; border-radius: var(--r-md); background: var(--todo-wash); border: 1px solid var(--todo); font-size: 10pt; }
   .check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; flex: 0 0 auto; }
@@ -115,6 +121,14 @@
           <button class="btn" id="resetZones" title="Retire toutes les zones : toute l'image floutée">Tout reflouter</button>
           <button class="btn" id="clearAll" title="Toute l'image redevient nette ; tu peux ensuite reflouter seulement les parties sensibles (F)">Tout déflouter</button>
         </div>
+        <label class="lbl">Zoom sur l'image</label>
+        <div class="zoom-row">
+          <button class="btn" id="zoomOut" title="Dézoomer (touche -)">−</button>
+          <span id="zoomVal">100 %</span>
+          <button class="btn" id="zoomIn" title="Zoomer (touche +)">+</button>
+          <button class="btn" id="zoomFit" title="Revenir à l'image entière (touche 0)">Image entière</button>
+        </div>
+        <div class="hint"><b>Ctrl + molette</b> sur l'image pour zoomer là où est la souris ; <b>Espace + glisser</b> (ou clic molette) pour se déplacer.</div>
         <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
         <input type="range" id="force" min="6" max="40" step="1" value="16">
         <div class="hint">Le flou est une <b>pixelisation</b> : le texte devient illisible et on ne peut pas le retrouver.<br>Une zone trop grande ? Outil <b>↖ Modifier</b> : clique dessus, puis glisse-la ou tire ses poignées.</div>
@@ -410,6 +424,9 @@
   // dans le panneau tuto (≈ 300 px de large).
   // × réglage « taille des repères » (40 % à 160 %, 100 % = moyen).
   function U() { return img.width / 1000 * (+tailleIn.value / 100); }
+  // Pixels de l'image par pixel d'écran : contours et poignées gardent la même
+  // finesse à l'écran, quelle que soit la taille de la capture ou le zoom.
+  function S() { const w = view.getBoundingClientRect().width; return w ? img.width / w : 1; }
   function px(r) { return { x: r.x * img.width, y: r.y * img.height, w: r.w * img.width, h: r.h * img.height }; }
 
   function arrow(c, x1, y1, x2, y2, u, head, col) {
@@ -490,18 +507,18 @@
     ];
   }
   function outline(c, o, strong) {
-    const b = boundsOf(o), u = U();
+    const b = boundsOf(o), k = S();
     if (!b) return;
     const it = itemOf(o);
     const col = o.t === "z" ? (it.type === "clear" ? "#0f766e" : "#b45309") : "#0f766e";
-    c.setLineDash([7 * u, 5 * u]); c.lineWidth = (strong ? 2.5 : 1.5) * u; c.strokeStyle = col;
-    const m = o.t === "z" ? 0 : 6 * u;
+    c.setLineDash([3 * k, 3 * k]); c.lineWidth = (strong ? 1.5 : 1) * k; c.strokeStyle = col;
+    const m = o.t === "z" ? 0 : 4 * k;
     c.strokeRect(b.x - m, b.y - m, b.w + 2 * m, b.h + 2 * m);
     c.setLineDash([]);
     if (strong) {
-      const hs = 9 * u;
+      const hs = 6 * k;
       handlesOf(o).forEach((h) => {
-        c.fillStyle = "#ffffff"; c.strokeStyle = col; c.lineWidth = 2 * u;
+        c.fillStyle = "#ffffff"; c.strokeStyle = col; c.lineWidth = 1.2 * k;
         c.fillRect(h.x - hs / 2, h.y - hs / 2, hs, hs); c.strokeRect(h.x - hs / 2, h.y - hs / 2, hs, hs);
       });
     }
@@ -571,7 +588,7 @@
         arrow(ctx, drag.x1 * img.width, drag.y1 * img.height, drag.x2 * img.width, drag.y2 * img.height, u, 24, COULEURS[couleur].main);
       } else {
         const r = px(drag);
-        ctx.setLineDash([6 * u, 4 * u]); ctx.lineWidth = 2 * u;
+        ctx.setLineDash([3 * S(), 3 * S()]); ctx.lineWidth = 1.5 * S();
         ctx.strokeStyle = drag.kind === "blur" ? "#b45309" : drag.kind === "clear" ? "#0f766e" : COULEURS[couleur].main;
         if (drag.kind === "ellipse") { ctx.beginPath(); ctx.ellipse(r.x + r.w / 2, r.y + r.h / 2, Math.max(1, r.w / 2), Math.max(1, r.h / 2), 0, 0, Math.PI * 2); ctx.stroke(); }
         else ctx.strokeRect(r.x, r.y, r.w, r.h);
@@ -593,7 +610,7 @@
       img.getContext("2d").drawImage(im, 0, 0);
       URL.revokeObjectURL(url);
       const perdu = dirty;      // changements non validés sur la capture précédente
-      loadProfile(); makeBlurred();
+      loadProfile(); makeBlurred(); resetZoom();
       document.getElementById("drop").style.display = "none";
       view.style.display = "block";
       document.getElementById("verif").checked = false;
@@ -709,10 +726,61 @@
   }
   function handleAt(p) {
     if (!sel) return null;
-    const X = p.x * img.width, Y = p.y * img.height, m = 12 * U();
+    const X = p.x * img.width, Y = p.y * img.height, m = 7 * S();
     return handlesOf(sel).find((h) => Math.abs(h.x - X) <= m && Math.abs(h.y - Y) <= m) || null;
   }
   const CURSORS = { nw: "nwse-resize", se: "nwse-resize", ne: "nesw-resize", sw: "nesw-resize", n: "ns-resize", s: "ns-resize", e: "ew-resize", w: "ew-resize", p1: "crosshair", p2: "crosshair" };
+
+  // Zoom : la toile est agrandie dans la zone image, qui défile.
+  let zoom = 1, baseW = 0, spaceDown = false, pan = null;
+  const zoomVal = document.getElementById("zoomVal");
+  function setZoom(z, cx, cy) {
+    if (!img) return;
+    z = Math.max(1, Math.min(8, z));
+    if (zoom === 1) baseW = view.getBoundingClientRect().width;
+    const r = view.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    if (cx === undefined) { cx = sr.left + sr.width / 2; cy = sr.top + sr.height / 2; }
+    const fx = (cx - r.left) / r.width, fy = (cy - r.top) / r.height;
+    zoom = z;
+    if (z === 1) { stage.classList.remove("is-zoom"); view.style.width = ""; }
+    else { stage.classList.add("is-zoom"); view.style.width = Math.round(baseW * z) + "px"; }
+    // Garde le point visé sous la souris.
+    const r2 = view.getBoundingClientRect();
+    stage.scrollLeft += r2.left + fx * r2.width - cx;
+    stage.scrollTop += r2.top + fy * r2.height - cy;
+    zoomVal.textContent = Math.round(z * 100) + " %";
+    draw();
+  }
+  function resetZoom() { zoom = 1; stage.classList.remove("is-zoom"); view.style.width = ""; zoomVal.textContent = "100 %"; }
+  document.getElementById("zoomIn").addEventListener("click", () => setZoom(zoom * 1.5));
+  document.getElementById("zoomOut").addEventListener("click", () => setZoom(zoom / 1.5));
+  document.getElementById("zoomFit").addEventListener("click", () => setZoom(1));
+  stage.addEventListener("wheel", (e) => {
+    if (!img || !(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    setZoom(zoom * (e.deltaY < 0 ? 1.25 : 0.8), e.clientX, e.clientY);
+  }, { passive: false });
+  // Se déplacer dans l'image zoomée : Espace + glisser, ou clic molette.
+  stage.addEventListener("mousedown", (e) => {
+    if (!img || zoom === 1 || !(spaceDown || e.button === 1)) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    pan = { x: e.clientX, y: e.clientY, l: stage.scrollLeft, t: stage.scrollTop };
+  }, true);
+  document.addEventListener("mousemove", (e) => {
+    if (!pan) return;
+    stage.scrollLeft = pan.l - (e.clientX - pan.x);
+    stage.scrollTop = pan.t - (e.clientY - pan.y);
+  });
+  document.addEventListener("mouseup", () => { pan = null; });
+  document.addEventListener("keydown", (e) => {
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    if (e.key === " ") { e.preventDefault(); if (!spaceDown) { spaceDown = true; stage.classList.add("is-pan"); } }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "+" || e.key === "=") { e.preventDefault(); setZoom(zoom * 1.5); }
+    if (e.key === "-") { e.preventDefault(); setZoom(zoom / 1.5); }
+    if (e.key === "0") { e.preventDefault(); setZoom(1); }
+  });
+  document.addEventListener("keyup", (e) => { if (e.key === " ") { spaceDown = false; stage.classList.remove("is-pan"); } });
 
   view.addEventListener("mousedown", (e) => {
     if (!img) return;
