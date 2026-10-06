@@ -245,7 +245,7 @@ const anv12LeafConfig = {
 
 // ============================================================================
 // Configurations pour les cas SPÉCIAUX (pas d'ANV) :
-// - 4 cas avec versements récents (frais frustratoires / insolvable / PSA / MD PSA)
+// - 4 cas avec versements récents (frais frustratoires / insolvable / PV 659 / MD PSA)
 // - 1 cas rare (frustratoires sans versements)
 // Tous produisent un seul bloc COMMENTAIRE AFFAIRE WATT.
 // ============================================================================
@@ -548,13 +548,8 @@ const anvBranch = {
   suite: {
     question: "ANV",
     inputs: [
-      // DATE générique : visible toujours, sauf override par un autre input "date" ci-dessous.
-      {
-        id: "date",
-        label: "DATE",
-        type: "text",
-        placeholder: "",
-      },
+      // La DATE générique se saisit maintenant dans les VÉRIFICATIONS AVANT
+      // L'ANV (date du document / de l'acte trouvé en GED, même id "date").
       // Override pour motif 14 + PL : DATE devient "DATE DE PARUTION JUGEMENT BODACC".
       // (Même id "date" → même variable {{date}}, juste le label change.)
       // inline: true → cet input et le suivant (date-liq) sont regroupés sur une seule rangée.
@@ -792,7 +787,7 @@ const raisonChoixAvecVersements = [
     label: "FRAIS FRUSTRATOIRES",
     description: "",
     suite: makeVersementsLeaf(
-      "Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car aucun justificatif et {{versements-nom}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
+      "Pas de réexécution car frais frustratoires - Pas d'ANV car {{versements-nom}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
     ),
   },
   {
@@ -804,11 +799,11 @@ const raisonChoixAvecVersements = [
     ),
   },
   {
-    id: "raison-psa",
-    label: "PSA",
+    id: "raison-pv-659",
+    label: "PV 659",
     description: "",
     suite: makeVersementsLeaf(
-      "Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
+      "Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative de recouvrement à l'amiable {{phrase-reldet}}"
     ),
   },
   {
@@ -869,6 +864,80 @@ const amiableReldetToggle = {
 
 anvBranch.suite.toggles = [amiableReldetToggle];
 
+// Arrivée depuis la vérification « versement récent » de l'ANV : en activant
+// AMIABLE RELDET, VERSEMENT RÉCENT = OUI est déjà choisi (recliquable).
+amiableReldetToggle.whenOn.autoChoix = { id: "verse-oui", if: { "versement-recent": ["oui"] } };
+
+// ============================================================================
+// VÉRIFICATIONS AVANT L'ANV (mode opératoire, même moteur que la DCD).
+// Affichées EN HAUT de l'onglet ANV (position: "haut"), avant les motifs.
+// - les champs "date" écrivent dans {{date}} (même variable que les textes ANV) ;
+// - versement récent + pas de prescription imminente = pas d'ANV : bandeau rouge,
+//   motifs et résultats masqués (stopIf), il faut passer par AMIABLE RELDET.
+// ============================================================================
+anvBranch.suite.checklist = {
+  position: "haut",
+  stopIf: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
+  sections: [
+    {
+      id: "anv-verifs",
+      titre: "VÉRIFICATIONS AVANT L'ANV",
+      items: [
+        {
+          type: "check",
+          id: "anv-verif-compte",
+          label: "Vérifier si le compte est ACTIF ou RADIÉ",
+          aide: "À sélectionner à gauche, dans CONTEXTE > COMPTE.",
+        },
+        {
+          type: "check",
+          id: "anv-verif-statut",
+          label: "Vérifier si le cotisant est A/C ou PL",
+          aide: "À sélectionner à gauche, dans CONTEXTE > STATUT.",
+        },
+        {
+          type: "check",
+          id: "anv-acte-ged-ac",
+          if: { statut: ["A/C", ""] },
+          label: "Trouver en GED un document qui permet de passer l'ANV",
+          champs: [{ id: "date", label: "DATE DU DOCUMENT TROUVÉ EN GED", placeholder: "JJ/MM/AA" }],
+        },
+        {
+          type: "check",
+          id: "anv-acte-ged-pl",
+          if: { statut: ["PL"] },
+          label: "Trouver en GED l'acte qui permet de passer l'ANV",
+          champs: [{ id: "date", label: "DATE DE RÉALISATION DE L'ACTE", placeholder: "JJ/MM/AA" }],
+        },
+        {
+          type: "question",
+          id: "versement-recent",
+          label: "Versement récent sur le compte ?",
+        },
+        {
+          type: "question",
+          id: "prescription-imminente",
+          if: { "versement-recent": ["oui"] },
+          label: "Risque de prescription imminente ?",
+          aide: "Si OUI, on passe quand même l'ANV malgré le versement récent.",
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
+          texte: "⛔ VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → clique sur AMIABLE RELDET en haut de la page (VERSEMENT RÉCENT = OUI sera déjà choisi).",
+        },
+        {
+          type: "alerte",
+          niveau: "info",
+          if: { "versement-recent": ["oui"], "prescription-imminente": ["oui"] },
+          texte: "Prescription imminente : on continue l'ANV malgré le versement récent.",
+        },
+      ],
+    },
+  ],
+};
+
 // ============================================================================
 // DETTE NON EXIGIBLE = toggle imbriqué dans AMIABLE RELDET.
 // Quand activé, remplace VERSEMENT RÉCENT par un choix CO / MD PSA.
@@ -920,10 +989,10 @@ const detteNonExigibleToggle = {
               ),
             },
             {
-              id: "raison-co-psa",
-              label: "PSA",
+              id: "raison-co-pv-659",
+              label: "PV 659",
               suite: makeDetteNonExigibleLeaf(
-                "Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée"
+                "Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée"
               ),
             },
           ],

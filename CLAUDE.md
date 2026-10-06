@@ -375,6 +375,14 @@ ACTIF + A/C + DÉLAI + REFUS - PAS DE PJ + DATE=15/03/26 + MOIS=37 + DCA NON + +
 
 Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles activés, choix de la cascade, inputs remplis, leafAnswers, leafInputs, topAnswers. Format `LABEL VAL` pour les flags (OUI/NON/AE/TI), `LABEL=VALEUR` pour les inputs textuels.
 
+### Vérifications avant l'ANV (catégorie ANV)
+
+- `anvBranch.suite.checklist` (même moteur que la DCD) avec `position: "haut"` : affichée **au-dessus des motifs** et gardée pendant toute la cascade (`getChecklistNode()` = feuille avec checklist, sinon racine de la catégorie).
+- Étapes : compte actif/radié, A/C ou PL, document (A/C) / acte (PL) trouvé en GED + sa date (champ `date` = `{{date}}` des textes ANV ; la DATE générique de la cascade a été retirée), versement récent ?, puis risque de prescription imminente ? si OUI.
+- `stopIf` (versement récent OUI + prescription NON) : bandeau rouge « RELDET À FAIRE », motifs / questions / résultats masqués (`checklistStops()`).
+- Le toggle AMIABLE RELDET a un `autoChoix` : activé après « versement récent = OUI », VERSEMENT RÉCENT = OUI est déjà choisi. DETTE NON EXIGIBLE reste disponible (à revoir).
+- Raisons : PSA renommé **PV 659** (versements et dette non exigible), MD PSA inchangé.
+
 ### Checklist MODE OPÉRATOIRE (catégorie DCD)
 
 - **Barre MODE OPÉRATOIRE collée** sous l'en-tête (`position: sticky; top: 58px`) : compteur, progression, bouton « → ÉTAPE MANQUANTE ».

@@ -13,7 +13,7 @@
 
 ### ANV (`anv`)
 
-- *inputs* : date(text), date(text) *[si statut=PL, motif-id=motif-14-liquidation-judiciaire-cia]*, date-liq(text) *[si statut=PL, motif-id=motif-14-liquidation-judiciaire-cia]*
+- *inputs* : date(text) *[si statut=PL, motif-id=motif-14-liquidation-judiciaire-cia]*, date-liq(text) *[si statut=PL, motif-id=motif-14-liquidation-judiciaire-cia]*
 - *MOTIF* :
   - `motif-11-insolvabilite` — **11 - INSOLVABILITÉ**
     - *SOUS-MOTIF* :
@@ -209,13 +209,13 @@
         - *RAISON* :
           - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une ré … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car frais frustratoires - Pas d'ANV car {{versements-nom}} - Tentative de  … »
           - `raison-insolvable` — **INSOLVABLE**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
               - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif insolvable - Pas d'ANV suite {{versements-suite}} -  … »
-          - `raison-psa` — **PSA**
+          - `raison-pv-659` — **PV 659**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée - Pas d'ANV s … »
+              - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée - Pas d'AN … »
           - `raison-md-psa` — **MD PSA**
             - [simple] `watt-versements` — **COMMENTAIRE AFFAIRE WATT**
               - « Compte {{compte-display}} - Pas de risque de prescription - {{versements-intro}} :<br>{{ecritures}}<br><br>MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV suite {{versements-suite}} - Tentative  … »
@@ -235,9 +235,9 @@
               - `raison-co-insolvable` — **INSOLVABLE**
                 - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
                   - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif insolvable - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reld … »
-              - `raison-co-psa` — **PSA**
+              - `raison-co-pv-659` — **PV 659**
                 - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
-                  - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif PSA et pas de nouvelle adresse trouvée - Pas d'ANV car dette non exigible - Tentative de recouvreme … »
+                  - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée - Pas d'ANV car dette non exigible - Tentative de recouvr … »
           - `type-md-psa` — **MD PSA**
             - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
               - « Compte {{compte-display}} - Pas de risque de prescription - MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reldet}} »
@@ -349,7 +349,7 @@
 
 - Catégories : 4
 - Choix totaux (tous niveaux) : 39
-- Inputs : 8
+- Inputs : 7
 - Toggles : 2
 - TopQuestions : 2
 - Résultats (blocs texte) : 105

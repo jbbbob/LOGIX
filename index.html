@@ -2708,7 +2708,7 @@
             }
           });
 
-          addChecklistVars(vars, leaf);
+          addChecklistVars(vars, getChecklistNode());
 
           return vars;
         }
@@ -2926,6 +2926,23 @@
           return inlineRootNode || getCurrentNode();
         }
 
+        // Nœud qui porte la checklist affichée : la feuille la plus profonde
+        // (DCD), sinon la racine de la catégorie (ANV : vérifications en haut,
+        // gardées pendant qu'on choisit le motif).
+        function getChecklistNode() {
+          const deep = getDeepestNode();
+          if (deep && deep.checklist) return deep;
+          if (inlineRootNode && inlineRootNode.checklist) return inlineRootNode;
+          return null;
+        }
+
+        // Checklist avec stopIf vérifié (ex : ANV + versement récent) : motifs,
+        // questions et résultats sont masqués, seul le bandeau rouge reste.
+        function checklistStops() {
+          const n = getChecklistNode();
+          return !!(n && n.checklist.stopIf && contextMatches(n.checklist.stopIf, buildTemplateVars()));
+        }
+
         function pruneInlineChain() {
           const vars = buildTemplateVars();
           let validLength = 0;
@@ -3104,6 +3121,11 @@
                 inlineChain = [];
                 leafAnswers = {};
                 leafInputs = {};
+                const auto = toggle.whenOn.autoChoix;
+                if (auto && contextMatches(auto.if, buildTemplateVars())) {
+                  const opt = (toggle.whenOn.choix || []).find((o) => o.id === auto.id);
+                  if (opt) inlineChain = [{ id: opt.id, label: opt.label, option: opt, node: opt.suite }];
+                }
                 render();
               });
               togglesContainer.appendChild(card);
@@ -4481,8 +4503,12 @@
 
         function drawChecklist() {
           checklistContainer.innerHTML = "";
-          const leaf = getDeepestNode();
-          if (!leaf || !leaf.checklist) return;
+          const leaf = getChecklistNode();
+          // Vérifications de la racine (position "haut") : avant les motifs.
+          const enHaut = !!(leaf && leaf.checklist.position === "haut");
+          if (enHaut && checklistContainer.nextElementSibling !== cascadeFlow) cascadeFlow.before(checklistContainer);
+          if (!enHaut && checklistContainer.previousElementSibling !== leafQuestionsContainer) leafQuestionsContainer.after(checklistContainer);
+          if (!leaf) return;
 
           const vars = buildTemplateVars();
           const sections = buildChecklistModel(leaf, vars);
@@ -4563,8 +4589,8 @@
 
         // Nombre d'étapes restantes dans la checklist affichée (0 si aucune).
         function remainingChecklistSteps() {
-          const leaf = getDeepestNode();
-          if (!leaf || !leaf.checklist) return 0;
+          const leaf = getChecklistNode();
+          if (!leaf) return 0;
           const { done, total } = countChecklist(buildChecklistModel(leaf, buildTemplateVars()));
           return total - done;
         }
@@ -4983,8 +5009,9 @@
 
           // 5 bis. Checklist du MODE OPÉRATOIRE (DCD) : une seule ligne de
           //        progression, le détail est dans la colonne principale.
-          if (leaf && leaf.checklist) {
-            const { done, total } = countChecklist(buildChecklistModel(leaf, vars));
+          const clNode = getChecklistNode();
+          if (clNode) {
+            const { done, total } = countChecklist(buildChecklistModel(clNode, vars));
             steps.push({
               label: "MODE OPÉRATOIRE",
               value: done + "/" + total + " ÉTAPES",
@@ -5233,6 +5260,8 @@
           renderLeafQuestions();
           renderChecklist();
           renderResults(deepestNode);
+          const stop = checklistStops();
+          [cascadeFlow, leafQuestionsContainer, resultsContainer].forEach((el) => el.classList.toggle("hidden", stop));
           // renderPathPanel en dernier : il compte les blocs résultat déjà rendus.
           renderPathPanel();
           if (backBtn) backBtn.disabled = !canGoBack();
