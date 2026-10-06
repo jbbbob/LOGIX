@@ -862,8 +862,10 @@
     if (e.key === "-") { e.preventDefault(); setZoom(zoom / 1.5); }
     if (e.key === "0") { e.preventDefault(); setZoom(1); }
   });
-  // Alt seul ne doit pas ouvrir le menu du navigateur pendant qu'on défile.
-  document.addEventListener("keyup", (e) => { if (e.key === "Alt" && img && zoom > 1) e.preventDefault(); });
+  // Alt seul ne doit pas ouvrir le menu du navigateur (Firefox : barre
+  // « Fichier Édition… ») : on bloque l'appui ET le relâchement dès qu'une
+  // capture est chargée.
+  ["keydown", "keyup"].forEach((t) => document.addEventListener(t, (e) => { if (e.key === "Alt" && img) e.preventDefault(); }));
   document.addEventListener("keyup", (e) => { if (e.key === " " || e.key.toLowerCase() === "a") { spaceDown = false; stage.classList.remove("is-pan"); } });
 
   view.addEventListener("mousedown", (e) => {
