@@ -51,6 +51,7 @@
   .btn.red { color: #b4232f; }
   .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .tools .wide { grid-column: span 2; }
+  .kbd { display: inline-block; margin-left: 4px; padding: 0 4px; border-radius: 3px; border: 1px solid var(--border); font-size: 7.5pt; color: var(--muted); letter-spacing: 0; }
   .tools3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .sides { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
   .sides .btn { padding: 0 0.2rem; font-size: 8pt; }
@@ -87,8 +88,8 @@
       <div class="card">
         <div class="title">2. Flou</div>
         <div class="tools">
-          <button class="btn on" data-tool="clear" title="Tracer un rectangle : la zone redevient nette">⬚ Déflouter</button>
-          <button class="btn" data-tool="blur" title="Tracer un rectangle : la zone est floutée à nouveau">▦ Reflouter</button>
+          <button class="btn on" data-tool="clear" title="Tracer un rectangle : la zone redevient nette (touche D)">⬚ Déflouter <span class="kbd">D</span></button>
+          <button class="btn" data-tool="blur" title="Tracer un rectangle : la zone est floutée à nouveau (touche F)">▦ Reflouter <span class="kbd">F</span></button>
           <button class="btn wide" id="resetZones" title="Retire toutes les zones : toute l'image floutée">Tout reflouter</button>
         </div>
         <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
@@ -99,11 +100,11 @@
       <div class="card">
         <div class="title">3. Repères (où cliquer)</div>
         <div class="tools3">
-          <button class="btn" data-tool="rect" title="Tracer un cadre autour du bouton / champ / onglet">▭ Cadre</button>
-          <button class="btn" data-tool="ellipse" title="Tracer un cercle autour d'une petite icône">◯ Cercle</button>
-          <button class="btn" data-tool="arrow" title="Tracer une flèche libre (du début vers la pointe)">➜ Flèche</button>
-          <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③">① Numéro</button>
-          <button class="btn" data-tool="select" title="Cliquer sur une zone ou un repère : le glisser pour le déplacer, tirer les poignées pour le redimensionner">↖ Modifier</button>
+          <button class="btn" data-tool="rect" title="Tracer un cadre autour du bouton / champ / onglet (touche C)">▭ Cadre <span class="kbd">C</span></button>
+          <button class="btn" data-tool="ellipse" title="Tracer un cercle autour d'une petite icône (touche O)">◯ Cercle <span class="kbd">O</span></button>
+          <button class="btn" data-tool="arrow" title="Tracer une flèche libre (du début vers la pointe) (touche A)">➜ Flèche <span class="kbd">A</span></button>
+          <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③ (touche N)">① Numéro <span class="kbd">N</span></button>
+          <button class="btn" data-tool="select" title="Cliquer sur une zone ou un repère : le glisser pour le déplacer, tirer les poignées pour le redimensionner (touche M)">↖ Modifier <span class="kbd">M</span></button>
           <button class="btn red" id="delAnnot" title="Efface la zone ou le repère choisi (ou touche Suppr)">🗑 Effacer</button>
         </div>
         <label class="lbl" for="label">Étiquette du cadre / cercle</label>
@@ -122,6 +123,7 @@
           <button class="btn" id="undo" style="flex:1" title="Annule le dernier ajout (Ctrl+Z)">↶ Annuler</button>
           <button class="btn red" id="resetAnnots" style="flex:1">Effacer les repères</button>
         </div>
+        <div class="hint"><b>Clavier :</b> lettres sur les boutons pour changer d'outil ; avec un objet choisi, <b>flèches</b> = décaler (Maj = plus vite), <b>Suppr</b> = effacer, <b>Ctrl+Z</b> = annuler, <b>Échap</b> = désélectionner.</div>
         <div class="hint">Un cadre ou un cercle reçoit l'étiquette tapée ci-dessus, reliée par une flèche automatique. Plusieurs actions sur le même écran ? Utilise plutôt les <b>numéros ①②③</b> et explique-les dans la phrase.</div>
       </div>
 
@@ -702,6 +704,27 @@
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !typing) { e.preventDefault(); undo(); }
     if ((e.key === "Delete" || e.key === "Backspace") && !typing && sel) { e.preventDefault(); deleteSelected(); }
     if (e.key === "Escape") { sel = null; draw(); }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+
+    // Raccourcis des outils (lettre affichée sur chaque bouton).
+    const TOUCHES = { d: "clear", f: "blur", c: "rect", o: "ellipse", a: "arrow", n: "num", m: "select" };
+    const t = TOUCHES[e.key.toLowerCase()];
+    if (t) { e.preventDefault(); setTool(t); return; }
+
+    // Flèches du clavier : décale l'objet choisi de 2 pixels (10 avec Maj).
+    const DIRS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    const d = DIRS[e.key];
+    if (d && sel && img) {
+      e.preventDefault();
+      const r = view.getBoundingClientRect();
+      const step = (e.shiftKey ? 10 : 2);
+      const dx = d[0] * step / (r.width || img.width), dy = d[1] * step / (r.height || img.height);
+      const it = itemOf(sel);
+      if ("x1" in it) { it.x1 = clamp01(it.x1 + dx); it.y1 = clamp01(it.y1 + dy); it.x2 = clamp01(it.x2 + dx); it.y2 = clamp01(it.y2 + dy); }
+      else if ("w" in it) { it.x = Math.min(1 - it.w, Math.max(0, it.x + dx)); it.y = Math.min(1 - it.h, Math.max(0, it.y + dy)); }
+      else { it.x = clamp01(it.x + dx); it.y = clamp01(it.y + dy); }
+      saveProfile(); draw();
+    }
   });
 
   // ------------------------------------------------------------------
