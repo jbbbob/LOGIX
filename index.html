@@ -2189,6 +2189,19 @@
         border-bottom: 1px solid var(--hairline);
       }
 
+      /* Groupe terminé : bandeau titre vert, comme les lignes cochées. */
+      .chk-group.is-done > .chk-group-head {
+        background: #dbe9e3;
+        --accent-strong: #0b5e58;
+        --muted: #4f6560;
+        --ink: #2b2419;
+        --hairline: rgba(15, 118, 110, 0.15);
+      }
+
+      .chk-group.is-done > .chk-group-head .chk-group-title::before {
+        content: "✓ ";
+      }
+
       .chk-group-title {
         flex: 1 1 auto;
         font-size: var(--fs-label);
@@ -4662,7 +4675,18 @@
 
           if (item.type === "groupe") {
             const grp = document.createElement("div");
-            grp.className = "chk-group";
+            // Toutes ses étapes faites (hors facultatives) : le titre passe en vert.
+            const aFaire = [];
+            const visiteGrp = (it) => {
+              if (it.if && !contextMatches(it.if, vars)) return;
+              if (it.type === "groupe") return (it.items || []).forEach(visiteGrp);
+              if (it.facultatif) return;
+              if (it.type === "check") aFaire.push(checkState[it.id] === true);
+              if (it.type === "question") aFaire.push(!!checkState[it.id]);
+            };
+            (item.items || []).forEach(visiteGrp);
+            const grpFait = aFaire.length > 0 && aFaire.every(Boolean);
+            grp.className = "chk-group" + (grpFait ? " is-done" : "");
             const head = document.createElement("div");
             head.className = "chk-group-head";
             const title = document.createElement("span");
