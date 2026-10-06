@@ -35,22 +35,10 @@ const globalContextOptions = [
 //   {{motif-code}}        = "11" (extrait du label du motif)
 //   {{sous-motif-code}}   = "01" (extrait du label du sous-motif)
 //   {{sous-motif-abbrev}} = abréviation du sous-motif selon STATUT (abbrevAC ou abbrevPL)
-//   {{date}}, {{co-number}}, {{dretaf}}, {{suspen}} = saisis par l'utilisateur
+//   {{date}}, {{suspen}} = saisis par l'utilisateur ; {{dretaf}} et {{dretaf-postits}}
+//   viennent des VÉRIFICATIONS AVANT L'ANV (une ligne par contrainte)
 const anvLeafConfig = {
   leafQuestions: [
-    {
-      // DRETAF : toujours visible
-      id: "dretaf",
-      label: "DRETAF",
-      inputsOnYes: [
-        {
-          id: "co-number",
-          label: "N° CO",
-          type: "text",
-          placeholder: "",
-        },
-      ],
-    },
     {
       // ANV SUSPEN : uniquement si COMPTE = RADIÉ
       id: "suspen",
@@ -77,7 +65,7 @@ const anvLeafConfig = {
         {
           id: "dretaf-line-ac",
           if: { dretaf: ["oui"] },
-          texte: "DRETAF CO {{co-number}} pour passer ANV",
+          texte: "{{dretaf-postits}}",
         },
         {
           id: "suspen-line-ac",
@@ -112,7 +100,7 @@ const anvLeafConfig = {
         {
           id: "dretaf-line-pl",
           if: { dretaf: ["oui"] },
-          texte: "DRETAF CO {{co-number}} pour passer ANV",
+          texte: "{{dretaf-postits}}",
         },
         {
           id: "suspen-line-pl",
@@ -141,18 +129,6 @@ const anvLeafConfig = {
 const anv12LeafConfig = {
   leafQuestions: [
     {
-      id: "dretaf",
-      label: "DRETAF",
-      inputsOnYes: [
-        {
-          id: "co-number",
-          label: "N° CO",
-          type: "text",
-          placeholder: "",
-        },
-      ],
-    },
-    {
       id: "suspen",
       label: "ANV SUSPEN",
       conditions: { compte: ["RADIÉ"] },
@@ -175,7 +151,7 @@ const anv12LeafConfig = {
         {
           id: "dretaf-line-ac-12",
           if: { dretaf: ["oui"] },
-          texte: "DRETAF CO {{co-number}} pour passer ANV",
+          texte: "{{dretaf-postits}}",
         },
         {
           id: "suspen-line-ac-12",
@@ -211,7 +187,7 @@ const anv12LeafConfig = {
         {
           id: "dretaf-line-pl-12",
           if: { dretaf: ["oui"] },
-          texte: "DRETAF CO {{co-number}} pour passer ANV",
+          texte: "{{dretaf-postits}}",
         },
         {
           id: "suspen-line-pl-12",
@@ -445,18 +421,6 @@ const anv13_relanceLeaf = {
 const anv16LeafConfig = {
   leafQuestions: [
     {
-      id: "dretaf",
-      label: "DRETAF",
-      inputsOnYes: [
-        {
-          id: "co-number",
-          label: "N° CO",
-          type: "text",
-          placeholder: "",
-        },
-      ],
-    },
-    {
       id: "suspen",
       label: "ANV SUSPEN",
       conditions: { compte: ["RADIÉ"] },
@@ -479,7 +443,7 @@ const anv16LeafConfig = {
         {
           id: "dretaf-line-ac-16",
           if: { dretaf: ["oui"] },
-          texte: "DRETAF CO {{co-number}} pour passer ANV",
+          texte: "{{dretaf-postits}}",
         },
         {
           id: "suspen-line-ac-16",
@@ -512,7 +476,7 @@ const anv16LeafConfig = {
         {
           id: "dretaf-line-pl-16",
           if: { dretaf: ["oui"] },
-          texte: "DRETAF CO {{co-number}} pour passer ANV",
+          texte: "{{dretaf-postits}}",
         },
         {
           id: "suspen-line-pl-16",
@@ -878,7 +842,6 @@ amiableReldetToggle.whenOn.autoChoix = { id: "verse-oui", if: { "versement-recen
 anvBranch.suite.checklist = {
   position: "haut",
   recapOk: "✓ VÉRIFICATIONS FAITES : CHOISIS LE MOTIF CI-DESSOUS",
-  stopIf: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
   sections: [
     {
       id: "anv-verifs",
@@ -898,6 +861,46 @@ anvBranch.suite.checklist = {
           autoCoche: "statut",
           label: "Vérifier si le cotisant est A/C ou PL",
           aide: "Se coche tout seul quand tu choisis à gauche, dans CONTEXTE > STATUT.",
+        },
+        {
+          type: "question",
+          id: "credit-present",
+          label: "Crédit présent sur le compte ?",
+        },
+        {
+          // stop : tout ce qui suit est masqué, motifs et résultats aussi.
+          type: "alerte",
+          niveau: "danger",
+          stop: true,
+          if: { "credit-present": ["oui"] },
+          texte: "CRÉDIT PRÉSENT : PAS D'ANV. Reroutage au GCC pour régularisation (circuit CAF / CAV).",
+        },
+        {
+          // Question « dretaf » : même variable que les textes ANV ({{dretaf}}).
+          type: "question",
+          id: "dretaf",
+          label: "Contrainte (CO) en cours ?",
+          aide: "Si OUI : DRETAF à faire pour chaque contrainte.",
+        },
+        {
+          // Un bloc par contrainte, « + AJOUTER UNE CONTRAINTE » pour en ajouter.
+          // {n} = numéro du bloc (co-1, co-2…). Les post-its WATT / ESDC
+          // reprennent toutes les contraintes ({{dretaf-postits}}).
+          type: "liste",
+          id: "co",
+          if: { dretaf: ["oui"] },
+          titre: "CONTRAINTE {n}",
+          ajout: "+ AJOUTER UNE CONTRAINTE",
+          modele: [
+            {
+              type: "check",
+              id: "co-{n}-dretaf",
+              champsObligatoires: true,
+              label: "Codifier le DRETAF et ajouter en post-it",
+              champs: [{ id: "co-{n}", label: "N° DE LA CONTRAINTE", placeholder: "" }],
+              copie: [{ label: "POST-IT", texte: "DRETAF CO {{co-{n}}} POUR PASSER ANV" }],
+            },
+          ],
         },
         {
           type: "check",
@@ -926,6 +929,7 @@ anvBranch.suite.checklist = {
         {
           type: "alerte",
           niveau: "danger",
+          stop: true,
           if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
           texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE L'AMIABLE RELDET » juste au-dessus (VERSEMENT RÉCENT = OUI sera déjà choisi).",
         },

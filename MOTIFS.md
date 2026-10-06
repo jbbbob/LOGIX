@@ -20,52 +20,52 @@
       - `sous-motif-01-pv-carence` — **01 - PV DE CARENCE**
         - [multi] `post-it-ti` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} »
-          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac + suspen-line-ac + dretaf-line-ac
         - [multi] `post-it-esdc` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl` : « {{motif-prefix}}{{motif-code}}: CARENCE-CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl + suspen-line-pl + dretaf-line-pl
       - `sous-motif-02-s-att-negative` — **02 - S ATT NÉGATIVE**
         - [multi] `post-it-ti` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} »
-          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac + suspen-line-ac + dretaf-line-ac
         - [multi] `post-it-esdc` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl` : « {{motif-prefix}}{{motif-code}}: CARENCE-CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl + suspen-line-pl + dretaf-line-pl
       - `sous-motif-06-certificat-irrecouvrabilite` — **06 - CERTIFICAT D’IRRÉCOUVRABILITÉ**
         - [multi] `post-it-ti` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} »
-          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac + suspen-line-ac + dretaf-line-ac
         - [multi] `post-it-esdc` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl` : « {{motif-prefix}}{{motif-code}}: CARENCE-CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl + suspen-line-pl + dretaf-line-pl
       - `sous-motif-11-ficoba-negatif` — **11 - FICOBA NÉGATIF**
         - [multi] `post-it-ti` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} »
-          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac + suspen-line-ac + dretaf-line-ac
         - [multi] `post-it-esdc` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl` : « {{motif-prefix}}{{motif-code}}: CARENCE-CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl + suspen-line-pl + dretaf-line-pl
@@ -74,14 +74,14 @@
       - `sous-motif-12-20-pv-659` — **20 - PV 659** *[si statut=A/C]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
-          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl-12 + suspen-line-pl-12 + dretaf-line-pl-12
@@ -91,14 +91,14 @@
       - `sous-motif-12-22-2-rar-pnd-psa` — **22 - 2 RAR PND PSA** *[si statut=A/C]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
-          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl-12 + suspen-line-pl-12 + dretaf-line-pl-12
@@ -108,14 +108,14 @@
       - `sous-motif-12-25-enq-psa` — **25 - ENQ PSA/ETRANG** *[si statut=A/C]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
-          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl-12 + suspen-line-pl-12 + dretaf-line-pl-12
@@ -125,14 +125,14 @@
       - `sous-motif-12-pl-pv-659` — **PV 659** *[si statut=PL]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
-          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl-12 + suspen-line-pl-12 + dretaf-line-pl-12
@@ -142,14 +142,14 @@
       - `sous-motif-12-pl-md-psa` — **MD PSA** *[si statut=PL]*
         - [multi] `post-it-ti-12` — **POST-IT PORTAIL TI** *[si statut=A/C]*
           - bloc `ged-ac-12` : « {{motif-prefix}} {{motif-code}} SS MOTIF {{sous-motif-code}} {{sous-motif-abbrev}} GED DU {{date}} {{phrase-eopps}} »
-          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-ac-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-ac-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-ac-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
           - combine: ged-ac-12 + suspen-line-ac-12 + dretaf-line-ac-12
           - appendFragments: ficoba-line-12
         - [multi] `post-it-esdc-12` — **POST-IT ESDC** *[si statut=PL]*
           - bloc `carence-pl-12` : « {{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}} »
-          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+          - bloc `dretaf-line-pl-12` *[si dretaf=oui]* : « {{dretaf-postits}} »
           - bloc `suspen-line-pl-12` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
         - [composite] `commentaire-watt-pl-12` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
           - combine: carence-pl-12 + suspen-line-pl-12 + dretaf-line-pl-12
@@ -191,13 +191,13 @@
   - `motif-16-creance-seuil` — **16 - CRÉANCE < SEUIL 201€**
     - [multi] `post-it-ti-16` — **POST-IT PORTAIL TI** *[si statut=A/C]*
       - bloc `ged-ac-16` : « {{motif-prefix}} {{motif-code}} SS MOTIF 32 - CONSTAT DU {{date}} »
-      - bloc `dretaf-line-ac-16` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+      - bloc `dretaf-line-ac-16` *[si dretaf=oui]* : « {{dretaf-postits}} »
       - bloc `suspen-line-ac-16` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
     - [composite] `commentaire-watt-ac-16` — **COMMENTAIRE AFFAIRE WATT** *[si statut=A/C]*
       - combine: ged-ac-16 + suspen-line-ac-16 + dretaf-line-ac-16
     - [multi] `post-it-esdc-16` — **POST-IT ESDC** *[si statut=PL]*
       - bloc `carence-pl-16` : « {{motif-prefix}}{{motif-code}} : CREANCE &lt; AU SEUIL - CONSTAT DU {{date}} »
-      - bloc `dretaf-line-pl-16` *[si dretaf=oui]* : « DRETAF CO {{co-number}} pour passer ANV »
+      - bloc `dretaf-line-pl-16` *[si dretaf=oui]* : « {{dretaf-postits}} »
       - bloc `suspen-line-pl-16` *[si suspen=oui]* : « ANV SUSPEN pour exigibilité inférieure à un an »
     - [composite] `commentaire-watt-pl-16` — **COMMENTAIRE AFFAIRE WATT** *[si statut=PL]*
       - combine: carence-pl-16 + suspen-line-pl-16 + dretaf-line-pl-16

@@ -2084,6 +2084,13 @@
         box-shadow: 0 0 0 3px var(--danger-wash), 0 0 0 4px var(--danger-border);
       }
 
+      .chk-ajout {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 2px 13px 10px;
+      }
+
       .chk-group {
         margin: 4px 13px 8px;
         border: 1px solid var(--border);
@@ -2827,6 +2834,16 @@
             else if (val != null) vars[id] = val;
           });
 
+          // 1 bis. ANV : une ligne de post-it « DRETAF CO … pour passer ANV » par
+          //        contrainte saisie dans les vérifications (au moins une).
+          const nbCo = Math.max(1, parseInt(checkState["co-nb"], 10) || 1);
+          const lignesCo = [];
+          for (let k = 1; k <= nbCo; k++) {
+            const num = String(nodeInputs["co-" + k] || "").trim();
+            if (num || k === 1) lignesCo.push("DRETAF CO " + num + " pour passer ANV");
+          }
+          vars["dretaf-postits"] = lignesCo.join("\n");
+
           // 2. Date d'effet de l'ADM NV : date du jour + 1 mois (JJ/MM/AAAA).
           vars["date-effet-m1"] = formatDateLong(addMonths(new Date(), 1));
 
@@ -2968,6 +2985,7 @@
           if (!n || !Array.isArray(n.checklist.sections)) return;
           const visit = (it) => {
             if (Array.isArray(it.items)) it.items.forEach(visit);
+            if (Array.isArray(it.modele)) for (let k = 1; k <= listeNb(it); k++) listeBloc(it, k).forEach(visit);
             if (it.autoCoche) checkState[it.id] = !!globalSelections[it.autoCoche];
             // Champ obligatoire vidé après coup : la case se décoche.
             if (it.champsObligatoires && checkState[it.id] === true && !champsRemplis(it)) checkState[it.id] = false;
@@ -2977,7 +2995,10 @@
 
         function checklistStops() {
           const n = getChecklistNode();
-          return !!(n && n.checklist.stopIf && contextMatches(n.checklist.stopIf, buildTemplateVars()));
+          if (!n) return false;
+          const vars = buildTemplateVars();
+          if (n.checklist.stopIf && contextMatches(n.checklist.stopIf, vars)) return true;
+          return !!buildChecklistModel(n, vars).stopped;
         }
 
         function pruneInlineChain() {
@@ -4159,20 +4180,48 @@
           const cl = leaf && leaf.checklist;
           if (!cl || !Array.isArray(cl.sections)) return [];
           const sections = [];
+          // Une alerte « stop » visible arrête la checklist : rien n'est
+          // affiché après elle (et checklistStops() masque motifs / résultats).
+          let stopped = false;
           cl.sections.forEach((section) => {
+            if (stopped) return;
             if (section.if && !contextMatches(section.if, vars)) return;
             const items = [];
             (section.items || []).forEach((item) => {
+              if (stopped) return;
               if (item.if && !contextMatches(item.if, vars)) return;
               if (item.type === "chambres") {
                 items.push(...buildChambresItems(cl, vars));
+              } else if (item.type === "liste") {
+                items.push(...buildListeItems(item));
               } else {
                 items.push(item);
               }
+              if (item.type === "alerte" && item.stop) stopped = true;
             });
             if (items.length > 0) sections.push({ id: section.id, titre: section.titre, items });
           });
+          sections.stopped = stopped;
           return sections;
+        }
+
+        // Liste répétable (ex : une contrainte par bloc) : le modèle est copié
+        // autant de fois que demandé, {n} remplacé par 1, 2, 3… Le nombre de
+        // blocs est gardé dans checkState["<id>-nb"].
+        function listeNb(item) {
+          return Math.max(1, parseInt(checkState[item.id + "-nb"], 10) || 1);
+        }
+        function listeBloc(item, n) {
+          return JSON.parse(JSON.stringify(item.modele || []).split("{n}").join(String(n)));
+        }
+        function buildListeItems(item) {
+          const nb = listeNb(item);
+          const out = [];
+          for (let n = 1; n <= nb; n++) {
+            out.push({ type: "groupe", label: String(item.titre || "").split("{n}").join(String(n)), items: listeBloc(item, n) });
+          }
+          out.push({ type: "ajout", liste: item, nb });
+          return out;
         }
 
         function buildChambresItems(cl, vars) {
@@ -4382,6 +4431,41 @@
             row.className = "chk-row chk-fields-row";
             row.appendChild(makeChecklistFields(item.champs || []));
             parent.appendChild(row);
+            return;
+          }
+
+          if (item.type === "ajout") {
+            const liste = item.liste;
+            const el = document.createElement("div");
+            el.className = "chk-ajout";
+            const plus = document.createElement("button");
+            plus.type = "button";
+            plus.className = "context-option pill-btn";
+            plus.textContent = liste.ajout || "+ AJOUTER";
+            plus.addEventListener("click", () => {
+              checkState[liste.id + "-nb"] = item.nb + 1;
+              render();
+            });
+            el.appendChild(plus);
+            if (item.nb > 1) {
+              const moins = document.createElement("button");
+              moins.type = "button";
+              moins.className = "context-option pill-btn";
+              moins.textContent = "− RETIRER LA DERNIÈRE";
+              moins.addEventListener("click", () => {
+                // On efface aussi ce qui avait été saisi / coché dans ce bloc.
+                const vider = (it) => {
+                  if (it.id) { delete checkState[it.id]; delete nodeInputs[it.id]; }
+                  (it.champs || []).forEach((c) => delete nodeInputs[c.id]);
+                  (it.items || []).forEach(vider);
+                };
+                listeBloc(liste, item.nb).forEach(vider);
+                checkState[liste.id + "-nb"] = item.nb - 1;
+                render();
+              });
+              el.appendChild(moins);
+            }
+            parent.appendChild(el);
             return;
           }
 
