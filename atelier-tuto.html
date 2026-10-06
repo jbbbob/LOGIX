@@ -205,7 +205,7 @@
         <input type="text" id="titre" placeholder="ex : COMMENT FAIRE UNE DRETAF">
         <label class="lbl" for="num">N° de l'écran</label>
         <input type="text" id="num" value="1">
-        <label class="lbl" for="texte">Phrase de cet écran</label>
+        <label class="lbl" for="texte">Phrase de cet écran <span style="font-weight:400;text-transform:none;letter-spacing:0">(facultatif)</span></label>
         <textarea id="texte" placeholder="ex : Portail TI → onglet CO"></textarea>
         <div id="dejaFaits" class="steps-done"></div>
       </div>
@@ -1150,7 +1150,7 @@
 
   const verif = document.getElementById("verif"), saveBtn = document.getElementById("save");
   verif.addEventListener("change", updateSave);
-  function updateSave() { saveBtn.disabled = !(img && verif.checked && cleanKey(keyIn.value) && texteIn.value.trim()); }
+  function updateSave() { saveBtn.disabled = !(img && verif.checked && cleanKey(keyIn.value)); }
   function showDone() {
     const t = (window.__tutosLus || {})[cleanKey(keyIn.value)];
     document.getElementById("dejaFaits").innerHTML = t ? "<div class='hint'>Déjà dans tutos.js : " + t.etapes.length + " écran(s).</div>" : "";

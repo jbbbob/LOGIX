@@ -3988,10 +3988,13 @@
               sw.appendChild(zoom);
               box.appendChild(sw);
             }
-            const cap = document.createElement("div");
-            cap.className = "tuto-cap";
-            cap.textContent = etape.texte || "";
-            box.appendChild(cap);
+            // La phrase est facultative : pas de légende vide.
+            if (etape.texte) {
+              const cap = document.createElement("div");
+              cap.className = "tuto-cap";
+              cap.textContent = etape.texte;
+              box.appendChild(cap);
+            }
             step.appendChild(box);
             panel.appendChild(step);
           });
