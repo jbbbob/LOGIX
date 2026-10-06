@@ -385,6 +385,13 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - Règles métier DCD (1ère enquête, héritiers et notaire inconnus) : DLP proche → tout masqué sauf le bandeau rouge ; reroutage GCC → idem ; acte en GED → pas de relevé SNGI ni de mairie, et acte joint au SCRIBE de la chambre interdépartementale ; décès < 6 mois → pas de succession vacante ; chambre « autre » → choix FORMULAIRE / SCRIBE MAIL / SCRIBE COURRIER (AR seulement pour le formulaire).
 - ⚠️ Source métier : fiche réflexe interne « usage interne » D5-MO-20260812 — le repo est public.
 
+### Tutos en images (bouton « i »)
+
+- Contenu dans **`tutos/tutos.js`** (`window.logixTutos = { "<clé>": { titre, etapes: [{ image, texte }] } }`) + les captures dans `tutos/`. Le mode d'emploi est en tête de ce fichier.
+- **Le dossier `tutos/` est dans `.gitignore` : jamais envoyé sur GitHub** (captures internes, même floutées). Sur GitHub Pages, `tutos/tutos.js` est absent → `window.logixTutos = {}` et aucun « i » n'apparaît.
+- Clés : id d'étape de checklist ou de question (`dretaf`, `dcd-scribe-ouvrir`…), `<groupe>-<valeur>` pour le contexte (`compte-actif`, `statut-pl`…), ou `tuto: "<clé>"` explicite sur un élément de `data.js` (obligatoire pour un `groupe`).
+- Comportement : clic sur « i » → panneau accroché à droite de l'étape (en dessous s'il manque de place), écrans empilés, ⤢ = image en grand. Un seul panneau à la fois (`openTutoKey`), il survit aux re-rendus, se ferme avec ✕ / Échap / autre « i » / en cochant l'étape.
+
 ## Workflow que j'attends
 
 **Avant toute modif non-triviale** :
@@ -420,6 +427,7 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 - [ ] RETOUR recule d'un seul niveau, RECOMMENCER garde COMPTE/STATUT
 - [ ] Parcours complet testé + bouton Copier testé dans Word
 - [ ] Testé en mode JOUR **et** en mode NUIT
+- [ ] Aucune capture ni fichier de `tutos/` ajouté à Git (`git status` ne doit jamais lister `tutos/`)
 - [ ] Rechargé avec **Ctrl+F5** (le navigateur garde parfois l'ancien `data.js` en cache)
 
 ## Ne jamais

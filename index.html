@@ -1696,6 +1696,192 @@
         background: var(--accent-wash);
       }
 
+      /* ---------- Tutos en images (bouton « i » + panneau accroché) -------- */
+      .tuto-wrap {
+        position: relative;
+        display: inline-flex;
+        vertical-align: middle;
+        margin-left: 6px;
+      }
+
+      .tuto-i {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1.5px solid var(--accent);
+        background: transparent;
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 700;
+        font-style: italic;
+        text-transform: lowercase;
+        letter-spacing: 0;
+        display: grid;
+        place-content: center;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .tuto-i:hover,
+      .tuto-i.is-on {
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+
+      /* Panneau accroché à droite du « i », relié par une pointe. */
+      .tuto-panel {
+        position: absolute;
+        z-index: 45;
+        left: calc(100% + 14px);
+        top: -14px;
+        width: 360px;
+        max-height: 75vh;
+        overflow: auto;
+        padding: 12px 12px 14px;
+        background: var(--surface);
+        border: 1.5px solid var(--accent);
+        border-radius: var(--r-lg);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+        text-transform: none;
+        letter-spacing: 0.02em;
+        cursor: default;
+        text-align: left;
+      }
+
+      .tuto-panel::before {
+        content: "";
+        position: absolute;
+        left: -9px;
+        top: 18px;
+        width: 14px;
+        height: 14px;
+        background: var(--surface);
+        border-left: 1.5px solid var(--accent);
+        border-bottom: 1.5px solid var(--accent);
+        transform: rotate(45deg);
+      }
+
+      /* Pas de place à droite : en dessous du « i ». */
+      .tuto-panel.is-below {
+        left: auto;
+        right: -14px;
+        top: calc(100% + 12px);
+      }
+
+      .tuto-panel.is-below::before {
+        left: auto;
+        right: 18px;
+        top: -9px;
+        transform: rotate(135deg);
+      }
+
+      .tuto-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .tuto-title {
+        flex: 1 1 auto;
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: var(--ls-wide);
+        color: var(--accent-strong);
+        text-transform: uppercase;
+      }
+
+      .tuto-x {
+        border: 1px solid var(--border);
+        background: var(--surface-raised);
+        color: var(--ink);
+        border-radius: var(--r-sm);
+        font-weight: 700;
+        padding: 1px 8px;
+        cursor: pointer;
+      }
+
+      .tuto-step {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin-top: 10px;
+      }
+
+      .tuto-n {
+        flex: 0 0 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--accent-ink);
+        display: grid;
+        place-content: center;
+        font-weight: 700;
+        font-size: 11px;
+      }
+
+      .tuto-shot-wrap {
+        position: relative;
+      }
+
+      .tuto-shot {
+        display: block;
+        width: 300px;
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border);
+        background: #ffffff;
+      }
+
+      .tuto-zoom {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        border: 0;
+        border-radius: var(--r-sm);
+        background: var(--accent);
+        color: var(--accent-ink);
+        font-weight: 700;
+        padding: 1px 6px;
+        cursor: pointer;
+      }
+
+      .tuto-cap {
+        margin-top: 4px;
+        font-size: var(--fs-label);
+        line-height: 1.35;
+        color: var(--ink);
+      }
+
+      /* Image en grand (bouton ⤢) */
+      .tuto-big {
+        position: fixed;
+        inset: 0;
+        z-index: 70;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .tuto-big.hidden {
+        display: none;
+      }
+
+      .tuto-big img {
+        max-width: 92vw;
+        max-height: 86vh;
+        border-radius: var(--r-md);
+        background: #ffffff;
+      }
+
+      .tuto-big-x {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+      }
+
       .chk-group {
         margin: 4px 13px 8px;
         border: 1px solid var(--border);
@@ -1955,6 +2141,9 @@
     </div>
 
     <script src="./data.js"></script>
+    <!-- Tutos en images : dossier tutos/ gardé sur le PC (jamais envoyé sur
+         GitHub, voir .gitignore). S'il n'existe pas, aucun « i » n'apparaît. -->
+    <script src="./tutos/tutos.js" onerror="window.logixTutos = window.logixTutos || {}"></script>
     <script>
       (function () {
         if (!window.treeData) {
@@ -3186,6 +3375,13 @@
             })
             .join("");
 
+          // Tutos du contexte : clé "<groupe>-<valeur>" (ex : "compte-actif").
+          contextPanel.querySelectorAll("[data-context-group]").forEach((button) => {
+            const key = tutoKey(button.getAttribute("data-context-group") + "-" + button.getAttribute("data-context-value"));
+            const t = makeTutoButton(key);
+            if (t) button.insertAdjacentElement("afterend", t);
+          });
+
           contextPanel.querySelectorAll("[data-context-group]").forEach((button) => {
             button.addEventListener("click", () => {
               const groupId = button.getAttribute("data-context-group");
@@ -3291,6 +3487,8 @@
             const labelEl = document.createElement("div");
             labelEl.className = "card-row-label";
             labelEl.textContent = q.label || q.id || "";
+            const tutoL = makeTutoButton(q.tuto || q.id);
+            if (tutoL) labelEl.appendChild(tutoL);
             card.appendChild(labelEl);
 
             const content = document.createElement("div");
@@ -3358,6 +3556,148 @@
             leafQuestionsContainer.appendChild(card);
           });
         }
+
+        // ====================================================================
+        // TUTOS EN IMAGES (bouton « i » à côté d'une étape)
+        // --------------------------------------------------------------------
+        // Le contenu vient de tutos/tutos.js (window.logixTutos), un fichier
+        // que l'utilisateur remplit lui-même : { "<clé>": { titre, etapes:
+        // [{ image, texte }] } }. Les images sont dans le dossier tutos/.
+        // Clés : id d'une étape de checklist ou d'une question (ex : "dretaf",
+        // "dcd-scribe-ouvrir"), ou "<groupe>-<valeur>" pour le contexte
+        // (ex : "compte-actif").
+        // Un seul panneau ouvert à la fois ; il reste ouvert pendant qu'on
+        // travaille (même si la page se redessine) ; il se ferme avec ✕,
+        // Échap, un autre « i », ou quand on coche l'étape correspondante.
+        // ====================================================================
+        let openTutoKey = null;
+
+        function tutoKey(text) {
+          return String(text || "")
+            .toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        }
+
+        function getTuto(key) {
+          const all = window.logixTutos || {};
+          const t = all[key];
+          return t && Array.isArray(t.etapes) && t.etapes.length > 0 ? t : null;
+        }
+
+        // Grande image (bouton ⤢) : une seule fenêtre, créée une fois.
+        const tutoBig = document.createElement("div");
+        tutoBig.className = "tuto-big hidden";
+        tutoBig.innerHTML = '<button type="button" class="tuto-x tuto-big-x">✕ FERMER</button><img alt="">';
+        document.body.appendChild(tutoBig);
+        tutoBig.addEventListener("click", (e) => {
+          if (e.target === tutoBig || e.target.classList.contains("tuto-big-x")) tutoBig.classList.add("hidden");
+        });
+
+        function closeTutos() {
+          openTutoKey = null;
+          document.querySelectorAll(".tuto-panel").forEach((p) => p.remove());
+          document.querySelectorAll(".tuto-i.is-on").forEach((b) => b.classList.remove("is-on"));
+        }
+
+        function openTutoPanel(wrap, key) {
+          const t = getTuto(key);
+          if (!t) return;
+          const panel = document.createElement("div");
+          panel.className = "tuto-panel";
+          const head = document.createElement("div");
+          head.className = "tuto-head";
+          const title = document.createElement("span");
+          title.className = "tuto-title";
+          title.textContent = t.titre || "TUTO";
+          head.appendChild(title);
+          const x = document.createElement("button");
+          x.type = "button";
+          x.className = "tuto-x";
+          x.textContent = "✕";
+          x.setAttribute("aria-label", "Fermer le tuto");
+          x.addEventListener("click", (e) => { e.stopPropagation(); closeTutos(); });
+          head.appendChild(x);
+          panel.appendChild(head);
+          t.etapes.forEach((etape, i) => {
+            const step = document.createElement("div");
+            step.className = "tuto-step";
+            const n = document.createElement("span");
+            n.className = "tuto-n";
+            n.textContent = String(i + 1);
+            step.appendChild(n);
+            const box = document.createElement("div");
+            if (etape.image) {
+              const sw = document.createElement("div");
+              sw.className = "tuto-shot-wrap";
+              const img = document.createElement("img");
+              img.className = "tuto-shot";
+              img.alt = etape.texte || "";
+              img.src = "tutos/" + etape.image;
+              sw.appendChild(img);
+              const zoom = document.createElement("button");
+              zoom.type = "button";
+              zoom.className = "tuto-zoom";
+              zoom.textContent = "⤢";
+              zoom.title = "Voir en grand";
+              zoom.addEventListener("click", (e) => {
+                e.stopPropagation();
+                tutoBig.querySelector("img").src = img.src;
+                tutoBig.classList.remove("hidden");
+              });
+              sw.appendChild(zoom);
+              box.appendChild(sw);
+            }
+            const cap = document.createElement("div");
+            cap.className = "tuto-cap";
+            cap.textContent = etape.texte || "";
+            box.appendChild(cap);
+            step.appendChild(box);
+            panel.appendChild(step);
+          });
+          panel.addEventListener("click", (e) => e.stopPropagation());
+          wrap.appendChild(panel);
+          // Pas assez de place à droite → le panneau s'ouvre en dessous.
+          const r = wrap.getBoundingClientRect();
+          if (r.right + 390 > window.innerWidth) panel.classList.add("is-below");
+        }
+
+        // Renvoie le bouton « i » d'une clé, ou null si aucun tuto n'existe.
+        function makeTutoButton(key) {
+          if (!getTuto(key)) return null;
+          const wrap = document.createElement("span");
+          wrap.className = "tuto-wrap";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "tuto-i";
+          btn.textContent = "i";
+          btn.title = "Voir le tuto en images";
+          btn.setAttribute("aria-label", "Voir le tuto en images");
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dejaOuvert = openTutoKey === key;
+            closeTutos();
+            if (!dejaOuvert) {
+              openTutoKey = key;
+              btn.classList.add("is-on");
+              openTutoPanel(wrap, key);
+            }
+          });
+          wrap.appendChild(btn);
+          // La page s'est redessinée alors que ce tuto était ouvert : on le rouvre.
+          if (openTutoKey === key) {
+            btn.classList.add("is-on");
+            setTimeout(() => { if (wrap.isConnected && !wrap.querySelector(".tuto-panel")) openTutoPanel(wrap, key); }, 0);
+          }
+          return wrap;
+        }
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Escape") return;
+          if (!tutoBig.classList.contains("hidden")) tutoBig.classList.add("hidden");
+          else if (openTutoKey) closeTutos();
+        });
 
         // ====================================================================
         // MODE OPÉRATOIRE : checklist (catégorie DCD)
@@ -3629,6 +3969,8 @@
             title.className = "chk-group-title";
             title.textContent = fillPlain(item.label, vars);
             head.appendChild(title);
+            const tutoG = item.tuto ? makeTutoButton(item.tuto) : null;
+            if (tutoG) head.insertBefore(tutoG, title.nextSibling);
             const link = makeChecklistLink(item.lien);
             if (link) head.appendChild(link);
             grp.appendChild(head);
@@ -3650,6 +3992,8 @@
             lbl.className = "chk-label";
             lbl.textContent = fillPlain(item.label, vars);
             line.appendChild(lbl);
+            const tutoQ = makeTutoButton(item.tuto || item.id);
+            if (tutoQ) line.appendChild(tutoQ);
             const current = checkState[item.id];
             const choix = Array.isArray(item.choix) && item.choix.length > 0
               ? item.choix
@@ -3687,6 +4031,7 @@
             box.id = "chk-" + item.id;
             box.checked = checked;
             box.addEventListener("change", () => {
+              if (box.checked && openTutoKey === (item.tuto || item.id)) closeTutos();
               checkState[item.id] = box.checked;
               render();
               if (box.checked && Array.isArray(item.champs) && !champsRemplis(item)) {
@@ -3708,6 +4053,8 @@
             lbl.htmlFor = box.id;
             lbl.textContent = fillPlain(item.label, vars);
             line.appendChild(lbl);
+            const tutoC = makeTutoButton(item.tuto || item.id);
+            if (tutoC) line.appendChild(tutoC);
             if (item.tag) {
               const tag = document.createElement("span");
               tag.className = "chk-tag";

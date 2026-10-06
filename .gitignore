@@ -15,3 +15,6 @@
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# Tutos en images : captures internes (même floutées), gardées sur le PC
+tutos/
