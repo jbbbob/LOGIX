@@ -763,6 +763,33 @@ const amiableReldetToggle = {
 
 anvBranch.suite.toggles = [amiableReldetToggle];
 
+// Compte RADIÉ : ANV SUSPEN à codifier 7 mois après le dernier versement.
+// etapes : étapes à cocher affichées dans la barre du haut, au-dessus de
+// « COMPTE EN LIGNE OU MAIL ? » ({{date-anv-suspen}} calculée dans index.html).
+amiableReldetToggle.whenOn.etapes = [
+  {
+    type: "groupe",
+    label: "ANV SUSPEN (COMPTE RADIÉ)",
+    if: { compte: ["RADIÉ"] },
+    items: [
+      {
+        type: "check",
+        id: "vr-suspen-codif",
+        champsObligatoires: true,
+        label: "Codifier l'ANV SUSPEN au {{date-anv-suspen}}",
+        aide: "7 mois après la date du dernier versement.",
+        champs: [{ id: "date-dernier-versement", label: "DATE DU DERNIER VERSEMENT", placeholder: "JJ/MM/AA" }],
+      },
+      {
+        type: "check",
+        id: "vr-suspen-postit",
+        label: "Ajouter le post-it",
+        copie: [{ label: "POST-IT", texte: "ANV SUSPEN car {{versements-nom}}" }],
+      },
+    ],
+  },
+];
+
 // Plus de boutons en haut de l'ANV : on suit le mode opératoire, qui ouvre ces
 // parcours avec ses boutons « FAIRE RELDET » (cache : pas affiché en haut).
 amiableReldetToggle.cache = true;

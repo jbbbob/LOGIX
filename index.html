@@ -2116,6 +2116,11 @@
         box-shadow: 0 0 0 3px var(--danger-wash), 0 0 0 4px var(--danger-border);
       }
 
+      #toggleEtapes:not(:empty) {
+        padding: 4px 0;
+        border-bottom: 1px solid var(--hairline);
+      }
+
       .chk-ajout {
         display: flex;
         flex-wrap: wrap;
@@ -2414,6 +2419,9 @@
         // Bloc unique du mode opératoire ANV (créé une fois, inséré au besoin).
         const processBloc = document.createElement("div");
         processBloc.id = "processBloc";
+        // Étapes à cocher d'un toggle actif (whenOn.etapes), dans la barre du haut.
+        const toggleEtapes = document.createElement("div");
+        toggleEtapes.id = "toggleEtapes";
         // Sections « fin: true » : après les textes à copier, dans le bloc.
         const checklistFin = document.createElement("section");
         checklistFin.id = "checklistContainerFin";
@@ -2878,6 +2886,13 @@
             else if (val != null) vars[id] = val;
           });
 
+          // 1 quater. ANV SUSPEN (versement récent, compte radié) : 7 mois après
+          //          la date du dernier versement.
+          const dernierVersement = parseDateFr(nodeInputs["date-dernier-versement"]);
+          vars["date-anv-suspen"] = dernierVersement
+            ? formatDateLong(addMonths(dernierVersement, 7))
+            : "… (saisir la date du dernier versement)";
+
           // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
           //        premières étapes cochées toutes seules.
           vars["compte-affiche"] = vars.compte || "à choisir à gauche";
@@ -3210,6 +3225,17 @@
           render();
         }
 
+        function renderToggleEtapes() {
+          toggleEtapes.innerHTML = "";
+          const vars = buildTemplateVars();
+          activeToggleStack.forEach((entry) => {
+            (entry.toggle.whenOn.etapes || []).forEach((item) => {
+              if (item.if && !contextMatches(item.if, vars)) return;
+              renderChecklistItem(item, vars, toggleEtapes, "toggle");
+            });
+          });
+        }
+
         // Bandeau d'information d'un toggle actif (whenOn.bandeau = { texte, if }).
         function renderToggleBandeaux() {
           const vars = buildTemplateVars();
@@ -3289,6 +3315,11 @@
               togglesContainer.appendChild(card);
             });
           }
+
+          // 2 bis. Étapes à cocher du toggle actif (ex : ANV SUSPEN dans VERSEMENT
+          //        RÉCENT), au-dessus de ses questions.
+          togglesContainer.appendChild(toggleEtapes);
+          renderToggleEtapes();
 
           // 3. Top questions liées aux toggles (stack + inlineRootNode si toggle actif).
           //    Les topQuestions des nœuds de la cascade (ex: motif-12 → FICOBA) sont
@@ -4729,20 +4760,21 @@
         function renderChecklist() {
           const active = document.activeElement;
           const activeId =
-            active && (checklistContainer.contains(active) || checklistBas.contains(active)) ? active.getAttribute("data-input-id") : null;
+            active && (checklistContainer.contains(active) || checklistBas.contains(active) || toggleEtapes.contains(active)) ? active.getAttribute("data-input-id") : null;
           // Un même champ peut apparaître 2 fois (ex : N° D'ACTE dans SNGI et
           // dans MAIRIE) : on retient lequel des deux avait le curseur.
           const activeIdx = activeId
-            ? [...document.querySelectorAll(`#checklistContainer [data-input-id="${activeId}"], #checklistContainerBas [data-input-id="${activeId}"]`)].indexOf(active)
+            ? [...document.querySelectorAll(`#checklistContainer [data-input-id="${activeId}"], #checklistContainerBas [data-input-id="${activeId}"], #toggleEtapes [data-input-id="${activeId}"]`)].indexOf(active)
             : -1;
           const selStart = activeId ? active.selectionStart : null;
           const selEnd = activeId ? active.selectionEnd : null;
           const scrollY = window.scrollY;
 
           drawChecklist();
+          if (activeToggleStack.length) renderToggleEtapes();
 
           if (activeId) {
-            const again = document.querySelectorAll(`#checklistContainer [data-input-id="${activeId}"], #checklistContainerBas [data-input-id="${activeId}"]`)[Math.max(activeIdx, 0)];
+            const again = document.querySelectorAll(`#checklistContainer [data-input-id="${activeId}"], #checklistContainerBas [data-input-id="${activeId}"], #toggleEtapes [data-input-id="${activeId}"]`)[Math.max(activeIdx, 0)];
             if (again) {
               again.focus();
               try { again.setSelectionRange(selStart, selEnd); } catch (err) { /* type sans sélection */ }
