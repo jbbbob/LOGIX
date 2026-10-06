@@ -863,6 +863,43 @@ anvBranch.suite.checklist = {
           aide: "Se coche tout seul quand tu choisis à gauche, dans CONTEXTE > STATUT.",
         },
         {
+          type: "check",
+          id: "anv-justificatif",
+          champsObligatoires: true, // impossible à cocher sans la date
+          label: "Trouver un justificatif permettant de passer l'ANV",
+          champs: [{ id: "date", label: "DATE DU JUSTIFICATIF TROUVÉ", placeholder: "JJ/MM/AA" }],
+        },
+        {
+          type: "question",
+          id: "versement-recent",
+          label: "Versement récent sur le compte ?",
+        },
+        {
+          type: "question",
+          id: "prescription-imminente",
+          if: { "versement-recent": ["oui"] },
+          label: "Risque de prescription imminente ?",
+          // Bouton posé sur la même ligne quand la réponse mène au RELDET.
+          action: {
+            label: "FAIRE L'AMIABLE RELDET →",
+            toggle: "amiable-reldet",
+            if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
+          },
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          stop: true,
+          if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
+          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE L'AMIABLE RELDET » juste au-dessus (VERSEMENT RÉCENT = OUI sera déjà choisi).",
+        },
+        {
+          type: "alerte",
+          niveau: "info",
+          if: { "versement-recent": ["oui"], "prescription-imminente": ["oui"] },
+          texte: "Prescription imminente : on passe quand même l'ANV malgré le versement récent.",
+        },
+        {
           type: "question",
           id: "credit-present",
           label: "Crédit présent sur le compte ?",
@@ -901,43 +938,6 @@ anvBranch.suite.checklist = {
               copie: [{ label: "POST-IT", texte: "DRETAF CO {{co-{n}}} POUR PASSER ANV" }],
             },
           ],
-        },
-        {
-          type: "check",
-          id: "anv-justificatif",
-          champsObligatoires: true, // impossible à cocher sans la date
-          label: "Trouver un justificatif permettant de passer l'ANV",
-          champs: [{ id: "date", label: "DATE DU JUSTIFICATIF TROUVÉ", placeholder: "JJ/MM/AA" }],
-        },
-        {
-          type: "question",
-          id: "versement-recent",
-          label: "Versement récent sur le compte ?",
-        },
-        {
-          type: "question",
-          id: "prescription-imminente",
-          if: { "versement-recent": ["oui"] },
-          label: "Risque de prescription imminente ?",
-          // Bouton posé sur la même ligne quand la réponse mène au RELDET.
-          action: {
-            label: "FAIRE L'AMIABLE RELDET →",
-            toggle: "amiable-reldet",
-            if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
-          },
-        },
-        {
-          type: "alerte",
-          niveau: "danger",
-          stop: true,
-          if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
-          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE L'AMIABLE RELDET » juste au-dessus (VERSEMENT RÉCENT = OUI sera déjà choisi).",
-        },
-        {
-          type: "alerte",
-          niveau: "info",
-          if: { "versement-recent": ["oui"], "prescription-imminente": ["oui"] },
-          texte: "Prescription imminente : on passe quand même l'ANV malgré le versement récent.",
         },
       ],
     },
