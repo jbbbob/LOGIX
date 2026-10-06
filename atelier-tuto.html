@@ -605,6 +605,9 @@
       annots.push({ kind: "num", x: p.x, y: p.y, n });
       history.push("annot"); choose({ t: "a", i: annots.length - 1 }); saveProfile(); return;
     }
+    // Clic à côté de l'objet choisi (hors poignée) : on le désélectionne,
+    // puis on commence à tracer avec l'outil en cours.
+    if (sel) { sel = null; draw(); }
     start = p;
     drag = tool === "arrow" ? { kind: "arrow", x1: p.x, y1: p.y, x2: p.x, y2: p.y } : { kind: tool, x: p.x, y: p.y, w: 0, h: 0 };
   });
@@ -668,6 +671,11 @@
     saveProfile(); draw();
   });
   view.addEventListener("mouseleave", () => { if (hover) { hover = null; draw(); } });
+  // Clic sur le fond de la page (hors image et hors colonne d'outils) : désélection.
+  document.addEventListener("mousedown", (e) => {
+    if (!sel || e.target === view || e.target.closest("aside")) return;
+    sel = null; draw();
+  });
 
   function deleteSelected() {
     if (!sel) return;
