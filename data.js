@@ -803,9 +803,8 @@ const etapesReldet = [
       {
         type: "check",
         id: "reldet-scribe-modele",
-        label: "Choisir le modèle et envoyer le courrier / courriel",
-        aide: "Sous-modèle : RELEVÉ DE DETTE",
-        copie: [{ label: "MODÈLE", texte: "SITUATION DU COMPTE DE DÉBITEUR" }],
+        label: "Rechercher le modèle, choisir le sous-modèle RELEVÉ DE DETTE et envoyer le courrier / courriel",
+        copie: [{ label: "MODÈLE À RECHERCHER", texte: "SITUATION DU COMPTE DE DÉBITEUR" }],
       },
     ],
   },
