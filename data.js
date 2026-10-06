@@ -699,6 +699,7 @@ anvBranch.suite.checklist = {
           id: "anv-verif-compte",
           contexte: "compte",
           label: "Compte",
+          tuto: "compte-actif", // tuto « i » (ex-colonne CONTEXTE)
         },
         {
           type: "question",

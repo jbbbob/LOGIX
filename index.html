@@ -2446,6 +2446,23 @@
       }
 
       @media (max-width: 680px) {
+        /* Champs d'une étape : le libellé passe au-dessus du champ, qui garde
+           une largeur lisible (sinon « JJ/MM/AA » était coupé). */
+        .chk-fields .leaf-input-wrap {
+          flex-wrap: wrap;
+          margin-left: 0;
+        }
+        .chk-fields .card-input,
+        .chk-fields .card-input.is-large,
+        .chk-fields .card-textarea {
+          width: 100%;
+          min-width: 0;
+        }
+        .hdr-btn {
+          padding-left: 4px;
+          padding-right: 4px;
+          letter-spacing: 0.06em;
+        }
         .app-header {
           height: auto;
           flex-wrap: wrap;
