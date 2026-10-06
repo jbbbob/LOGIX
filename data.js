@@ -915,6 +915,12 @@ anvBranch.suite.checklist = {
           texte: "PAS D'ANV : FAIRE LA RÉEXÉCUTION À LA NOUVELLE ADRESSE TROUVÉE SUR EOPPS.",
         },
         {
+          type: "check",
+          id: "psa-eopps-pdf",
+          if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] },
+          label: "Page EOPPS imprimée en PDF et rattachée à l'affaire",
+        },
+        {
           // Motif 12 (tous sous-motifs) : change les textes ({{phrase-eopps}}).
           type: "question",
           id: "ficoba",
@@ -940,6 +946,12 @@ anvBranch.suite.checklist = {
           stop: true,
           if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["oui"] },
           texte: "PAS D'ANV : FAIRE LA RÉEXÉCUTION À LA NOUVELLE ADRESSE TROUVÉE SUR FICOBA.",
+        },
+        {
+          type: "check",
+          id: "psa-ficoba-pdf",
+          if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] },
+          label: "Page FICOBA imprimée en PDF et rattachée à l'affaire",
         },
         {
           type: "question",

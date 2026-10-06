@@ -3057,6 +3057,12 @@
             const suspenOui = radie && checkState.suspen === "oui";
             const nbCo = checkState.dretaf === "oui" ? Math.max(1, parseInt(checkState["co-nb"], 10) || 1) : 0;
             const pl = vars.statut === "PL";
+            // Documents à rattacher : justificatif (sauf motif 16), pages EOPPS / FICOBA.
+            const motif12 = vars["motif-id"] === "motif-12-psa";
+            const nbDocs =
+              (vars["motif-id"] !== "motif-16-creance-seuil" ? 1 : 0) +
+              (motif12 && checkState["psa-eopps-adresse"] === "non" ? 1 : 0) +
+              (motif12 && checkState.ficoba === "oui" && checkState["psa-ficoba-adresse"] === "non" ? 1 : 0);
             const parts = ["l'ANV est bien codifiée"];
             if (suspenOui) parts.push("l'ANV SUSPEN bien codifiée");
             if (nbCo === 1) parts.push("le DRETAF bien codifié");
@@ -3069,6 +3075,8 @@
               const nbPostits = 1 + (suspenOui ? 1 : 0) + nbCo;
               parts.push(nbPostits > 1 ? "les post-its bien renseignés" : "le post-it bien renseigné");
             }
+            if (nbDocs === 1) parts.push("le document bien rattaché à l'affaire");
+            if (nbDocs > 1) parts.push("les " + nbDocs + " documents bien rattachés à l'affaire");
             vars["double-check"] = parts.length > 1
               ? parts.slice(0, -1).join(", ") + " et " + parts[parts.length - 1]
               : parts[0];
