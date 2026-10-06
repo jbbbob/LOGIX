@@ -1066,13 +1066,13 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-double-check-ac",
           if: { statut: ["A/C", ""] },
-          label: "Double vérification : l'ANV est bien codifiée et le post-it bien renseigné",
+          label: "Double vérification : {{double-check}}",
         },
         {
           type: "check",
           id: "anv-double-check-pl",
           if: { statut: ["PL"] },
-          label: "Double vérification : l'ANV est bien codifiée et l'ESDC bien renseigné",
+          label: "Double vérification : {{double-check}}",
         },
         // A/C : plus de 25 000 € → manager, sinon clôture.
         {

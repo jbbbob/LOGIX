@@ -2963,6 +2963,30 @@
             ? formatDateLong(addMonths(dernierVersement, 7))
             : "… (saisir la date du dernier versement)";
 
+          // 1 quinquies. ANV : phrase de la double vérification selon les choix
+          //   (ANV SUSPEN, DRETAF, A/C = post-it / PL = ESDC), avec les accords.
+          {
+            const radie = vars.compte === "RADIÉ";
+            const suspenOui = radie && checkState.suspen === "oui";
+            const nbCo = checkState.dretaf === "oui" ? Math.max(1, parseInt(checkState["co-nb"], 10) || 1) : 0;
+            const pl = vars.statut === "PL";
+            const parts = ["l'ANV est bien codifiée"];
+            if (suspenOui) parts.push("l'ANV SUSPEN bien codifiée");
+            if (nbCo === 1) parts.push("le DRETAF bien codifié");
+            if (nbCo > 1) parts.push("les " + nbCo + " DRETAF bien codifiés");
+            if (pl) {
+              parts.push(suspenOui ? "les ESDC (codes ANV et INCX) bien renseignés" : "l'ESDC bien renseigné");
+              if (nbCo === 1) parts.push("le post-it DRETAF bien renseigné");
+              if (nbCo > 1) parts.push("les post-its DRETAF bien renseignés");
+            } else {
+              const nbPostits = 1 + (suspenOui ? 1 : 0) + nbCo;
+              parts.push(nbPostits > 1 ? "les post-its bien renseignés" : "le post-it bien renseigné");
+            }
+            vars["double-check"] = parts.length > 1
+              ? parts.slice(0, -1).join(", ") + " et " + parts[parts.length - 1]
+              : parts[0];
+          }
+
           // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
           //        premières étapes cochées toutes seules.
           vars["compte-affiche"] = vars.compte || "à choisir à gauche";
