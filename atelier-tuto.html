@@ -146,8 +146,8 @@
           <button class="btn" data-tool="num" title="Cliquer : pose une pastille numérotée ①②③ (touche N)">① Numéro <span class="kbd">N</span></button>
           <button class="btn red" id="delAnnot" title="Efface la zone ou le repère choisi (touche X ou Suppr)">🗑 Effacer <span class="kbd">X</span></button>
         </div>
-        <label class="lbl" for="taille">Taille des repères : <span id="tailleVal"></span></label>
-        <input type="range" id="taille" min="40" max="160" step="5" value="100">
+        <label class="lbl" for="taille"><span id="tailleQui">Taille des nouveaux repères</span> : <span id="tailleVal"></span></label>
+        <input type="range" id="taille" min="15" max="200" step="5" value="100">
         <label class="check-line"><input type="checkbox" id="numCadres"> Numéroter les cadres / cercles (1, 2, 3… dans l'ordre de tracé)</label>
         <label class="lbl">Couleur des repères</label>
         <div class="tools3" id="couleurs">
@@ -394,8 +394,16 @@
   const tailleIn = document.getElementById("taille");
   tailleIn.value = store.get("atelier-taille", 100);
   const tailleVal = document.getElementById("tailleVal");
-  function tailleLabel() { const t = +tailleIn.value; tailleVal.textContent = t < 75 ? "PETIT" : t <= 120 ? "MOYEN" : "GRAND"; }
-  tailleIn.addEventListener("input", () => { store.set("atelier-taille", +tailleIn.value); tailleLabel(); saveProfile(); draw(); });
+  function tailleLabel() { const t = +tailleIn.value; tailleVal.textContent = (t < 45 ? "TRÈS FIN" : t < 75 ? "PETIT" : t <= 120 ? "MOYEN" : t <= 160 ? "GRAND" : "TRÈS GRAND") + " (" + t + " %)"; }
+  // Un repère choisi : le curseur règle CE repère (trait, étiquette, flèche).
+  // Rien de choisi : il règle la taille des prochains repères.
+  tailleIn.addEventListener("input", () => {
+    tailleLabel();
+    const a = typeof selAnnot === "function" ? selAnnot() : null;
+    if (a) a.taille = +tailleIn.value;
+    else store.set("atelier-taille", +tailleIn.value);
+    saveProfile(); draw();
+  });
   tailleLabel();
   // Chargement du modèle choisi (après le curseur de taille, qu'il peut régler).
   renderProfiles(); loadProfile();
@@ -427,6 +435,15 @@
   // dans le panneau tuto (≈ 300 px de large).
   // × réglage « taille des repères » (40 % à 160 %, 100 % = moyen).
   function U() { return img.width / 1000 * (+tailleIn.value / 100); }
+  // Unité d'un repère : sa propre taille s'il en a une, sinon le réglage courant.
+  let lastSelKey = "";
+  function syncTaille() {
+    const a = typeof selAnnot === "function" && sel ? selAnnot() : null;
+    tailleIn.value = a ? (a.taille || store.get("atelier-taille", 100)) : store.get("atelier-taille", 100);
+    document.getElementById("tailleQui").textContent = a ? "Taille du repère choisi" : "Taille des nouveaux repères";
+    tailleLabel();
+  }
+  function Ua(a) { return img.width / 1000 * ((a && a.taille ? a.taille : +tailleIn.value) / 100); }
   // Pixels de l'image par pixel d'écran : contours et poignées gardent la même
   // finesse à l'écran, quelle que soit la taille de la capture ou le zoom.
   function S() { const w = view.getBoundingClientRect().width; return w ? img.width / w : 1; }
@@ -485,7 +502,7 @@
   function boundsOf(o) {
     const it = itemOf(o);
     if (!it) return null;
-    const u = U();
+    const u = o.t === "a" ? Ua(it) : U();
     if (o.t === "z" || it.kind === "rect" || it.kind === "ellipse") return px(it);
     if (it.kind === "arrow") {
       const x1 = it.x1 * img.width, y1 = it.y1 * img.height, x2 = it.x2 * img.width, y2 = it.y2 * img.height;
@@ -546,6 +563,7 @@
       });
     }
     annots.forEach((a) => {
+      const u = Ua(a);
       let lb = null;
       if (a.kind === "rect" || a.kind === "ellipse") {
         const r = px(a);
@@ -598,6 +616,9 @@
         ctx.setLineDash([]);
       }
     }
+    // Sélection changée : le curseur de taille suit le repère choisi.
+    const selKey = sel ? sel.t + sel.i : "";
+    if (selKey !== lastSelKey) { lastSelKey = selKey; syncTaille(); }
     showSel();
     updateSave();
     updateMini();
@@ -710,6 +731,7 @@
     sel = o;
     const a = selAnnot();
     if (a) setCouleur(a.color || "rouge");
+    syncTaille();
     if (a && (a.kind === "rect" || a.kind === "ellipse")) { labelIn.value = a.text || ""; setSide(a.side || "auto"); }
     draw();
   }
@@ -893,7 +915,7 @@
     }
     if (tool === "num") {
       const n = annots.filter((a) => a.kind === "num" && (a.color || "rouge") === couleur).length + 1;
-      annots.push({ kind: "num", x: p.x, y: p.y, n, color: couleur });
+      annots.push({ kind: "num", x: p.x, y: p.y, n, color: couleur, taille: +tailleIn.value });
       history.push("annot"); choose({ t: "a", i: annots.length - 1 }); saveProfile(); return;
     }
     // Clic à côté de l'objet choisi (hors poignée) : on le désélectionne,
@@ -963,12 +985,12 @@
       return;
     }
     if (d.kind === "arrow") {
-      if (Math.hypot(d.x2 - d.x1, d.y2 - d.y1) > 0.01) { d.color = couleur; annots.push(d); history.push("annot"); sel = { t: "a", i: annots.length - 1 }; }
+      if (Math.hypot(d.x2 - d.x1, d.y2 - d.y1) > 0.01) { d.color = couleur; d.taille = +tailleIn.value; annots.push(d); history.push("annot"); sel = { t: "a", i: annots.length - 1 }; }
     } else if (d.w > 0.005 && d.h > 0.005) {
       if (d.kind === "clear" || d.kind === "blur") {
         zones.push({ type: d.kind, x: d.x, y: d.y, w: d.w, h: d.h }); history.push("zone"); sel = { t: "z", i: zones.length - 1 };
       } else {
-        annots.push({ kind: d.kind, x: d.x, y: d.y, w: d.w, h: d.h, text: labelIn.value, side, color: couleur }); history.push("annot"); sel = { t: "a", i: annots.length - 1 };
+        annots.push({ kind: d.kind, x: d.x, y: d.y, w: d.w, h: d.h, text: labelIn.value, side, color: couleur, taille: +tailleIn.value }); history.push("annot"); sel = { t: "a", i: annots.length - 1 };
       }
     }
     saveProfile(); draw();
