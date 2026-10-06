@@ -880,7 +880,7 @@ anvBranch.suite.checklist = {
           label: "Risque de prescription imminente ?",
           // Bouton posé sur la même ligne quand la réponse mène au RELDET.
           action: {
-            label: "FAIRE L'AMIABLE RELDET →",
+            label: "FAIRE RELDET →",
             toggle: "amiable-reldet",
             if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
           },
@@ -890,7 +890,7 @@ anvBranch.suite.checklist = {
           niveau: "danger",
           stop: true,
           if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
-          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE L'AMIABLE RELDET » juste au-dessus (VERSEMENT RÉCENT = OUI sera déjà choisi).",
+          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE RELDET » juste au-dessus (VERSEMENT RÉCENT = OUI sera déjà choisi).",
         },
         {
           type: "alerte",
@@ -910,6 +910,23 @@ anvBranch.suite.checklist = {
           stop: true,
           if: { "credit-present": ["oui"] },
           texte: "CRÉDIT PRÉSENT : PAS D'ANV. Reroutage au GCC pour régularisation (circuit CAF / CAV).",
+        },
+        {
+          type: "question",
+          id: "dette-exigible",
+          label: "Vérifier les dates d'exigibilité de l'ANV : dette exigible ?",
+          action: {
+            label: "FAIRE RELDET →",
+            toggle: "dette-non-exigible",
+            if: { "dette-exigible": ["non"] },
+          },
+        },
+        {
+          type: "alerte",
+          niveau: "danger",
+          stop: true,
+          if: { "dette-exigible": ["non"] },
+          texte: "DETTE NON EXIGIBLE : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE RELDET » juste au-dessus.",
         },
         {
           // Question « dretaf » : même variable que les textes ANV ({{dretaf}}).
@@ -1199,10 +1216,17 @@ amiableReldetToggle.whenOn.topQuestions = [
 // Même question pour DETTE NON EXIGIBLE (ses textes finissent aussi par {{phrase-reldet}}).
 detteNonExigibleToggle.whenOn.topQuestions = amiableReldetToggle.whenOn.topQuestions;
 
+// Bandeau orange + retour quand on arrive depuis « dette exigible ? » = NON.
+detteNonExigibleToggle.whenOn.bandeau = {
+  if: { "dette-exigible": ["non"] },
+  texte: "RELDET À FAIRE : dette non exigible, donc pas d'ANV.",
+  retour: { label: "← REVENIR À L'ANV", etape: "dette-exigible" },
+};
+
 // Bandeau orange dans AMIABLE RELDET quand on y arrive depuis la vérification ANV.
 amiableReldetToggle.whenOn.bandeau = {
   if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
-  texte: "AMIABLE RELDET À FAIRE : versement récent et pas de risque de prescription imminente, donc pas d'ANV.",
+  texte: "RELDET À FAIRE : versement récent et pas de risque de prescription imminente, donc pas d'ANV.",
   // Erreur de saisie ? Retour aux vérifications, sur la question du versement.
   retour: { label: "← REVENIR À L'ANV", etape: "versement-recent" },
 };
