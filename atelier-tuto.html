@@ -130,7 +130,7 @@
           <button class="btn" id="zoomIn" title="Zoomer (touche +)">+</button>
           <button class="btn" id="zoomFit" title="Revenir à l'image entière (touche 0)">Image entière</button>
         </div>
-        <div class="hint"><b>Ctrl + molette</b> sur l'image pour zoomer là où est la souris, <b>double-clic droit</b> pour revenir à l'image entière ; <b>clic maintenu sans bouger</b> (0,3 s), la <b>mini-carte</b> en bas à droite, <b>A (ou Espace) maintenu + glisser</b> ou clic molette pour se déplacer tout de suite.</div>
+        <div class="hint"><b>Ctrl + molette</b> sur l'image pour zoomer là où est la souris, <b>double-clic droit</b> pour revenir à l'image entière ; <b>clic maintenu sans bouger</b> (0,3 s), la <b>mini-carte</b> en bas à droite, <b>Alt + molette</b> pour aller de gauche à droite, <b>A (ou Espace) maintenu + glisser</b> ou clic molette pour se déplacer tout de suite.</div>
         <label class="lbl" for="force">Force du flou : <span id="forceVal"></span></label>
         <input type="range" id="force" min="6" max="40" step="1" value="16">
         <div class="hint">Le flou est une <b>pixelisation</b> : le texte devient illisible et on ne peut pas le retrouver.<br>Une zone trop grande ? Outil <b>↖ Modifier</b> : clique dessus, puis glisse-la ou tire ses poignées.</div>
@@ -810,6 +810,12 @@
   document.getElementById("zoomOut").addEventListener("click", () => setZoom(zoom / 1.5));
   document.getElementById("zoomFit").addEventListener("click", () => setZoom(1));
   stage.addEventListener("wheel", (e) => {
+    // Alt + molette : défiler de gauche à droite dans l'image zoomée.
+    if (img && zoom > 1 && e.altKey) {
+      e.preventDefault();
+      stage.scrollLeft += e.deltaY || e.deltaX;
+      return;
+    }
     if (!img || !(e.ctrlKey || e.metaKey)) return;
     e.preventDefault();
     setZoom(zoom * (e.deltaY < 0 ? 1.25 : 0.8), e.clientX, e.clientY);
@@ -856,6 +862,8 @@
     if (e.key === "-") { e.preventDefault(); setZoom(zoom / 1.5); }
     if (e.key === "0") { e.preventDefault(); setZoom(1); }
   });
+  // Alt seul ne doit pas ouvrir le menu du navigateur pendant qu'on défile.
+  document.addEventListener("keyup", (e) => { if (e.key === "Alt" && img && zoom > 1) e.preventDefault(); });
   document.addEventListener("keyup", (e) => { if (e.key === " " || e.key.toLowerCase() === "a") { spaceDown = false; stage.classList.remove("is-pan"); } });
 
   view.addEventListener("mousedown", (e) => {
