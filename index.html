@@ -3327,6 +3327,71 @@
           render();
         }
 
+        // Parcours ouvert depuis le mode opératoire : tout est-il fait ? Si oui,
+        // bouton « RÉCAP DES ÉTAPES » (même PDF que l'ANV) sous ses étapes de fin.
+        function recapParcours(entry, vars) {
+          const whenOn = entry.toggle.whenOn;
+          if (!whenOn.recapDocument) return null;
+          const visibles = (liste) => (liste || []).filter((it) => !it.if || contextMatches(it.if, vars));
+          let toutFait = true;
+          const verifier = (it) => {
+            if (it.type === "groupe") return (it.items || []).filter((x) => !x.if || contextMatches(x.if, vars)).forEach(verifier);
+            if (it.facultatif) return;
+            if (it.type === "check" && checkState[it.id] !== true) toutFait = false;
+            if (it.type === "question" && !checkState[it.id]) toutFait = false;
+          };
+          ["etapes", "etapesApres", "etapesFin"].forEach((cle) => visibles(whenOn[cle]).forEach(verifier));
+          (whenOn.topQuestions || []).forEach((q) => { if (!topAnswers[q.id]) toutFait = false; });
+          const feuille = getDeepestNode();
+          if (!feuille || !Array.isArray(feuille.resultats) || !feuille.resultats.length) toutFait = false;
+          if (!toutFait) return null;
+
+          const box = document.createElement("div");
+          box.className = "chk-recap is-ok";
+          const t = document.createElement("div");
+          t.className = "chk-recap-title";
+          t.textContent = "✓ TOUT EST FAIT";
+          box.appendChild(t);
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "chk-recap-go";
+          b.textContent = "📄 RÉCAP DES ÉTAPES (À ENREGISTRER EN PDF)";
+          b.addEventListener("click", () => {
+            // Étapes de l'ANV faites avant (jusqu'à la question qui a mené ici),
+            // puis celles du parcours, avec ses choix et saisies.
+            // (seulement celles faites : le justificatif, par exemple, ne sert pas au RELDET)
+            const fait = (it) => (it.type === "check" ? checkState[it.id] === true
+              : it.type === "question" ? !!checkState[it.id]
+              : it.type === "groupe" ? (it.items || []).some(fait) : false);
+            const avant = (entry.savedRootNode && entry.savedRootNode.checklist
+              ? buildChecklistModel(entry.savedRootNode, vars) : [])
+              .map((sec) => Object.assign({}, sec, { items: sec.items.filter(fait) }))
+              .filter((sec) => sec.items.length);
+            const items = [];
+            visibles(whenOn.etapes).forEach((it) => items.push(it));
+            (whenOn.topQuestions || []).forEach((q) =>
+              items.push({ type: "info", label: q.label, reponse: String(topAnswers[q.id] || "").toUpperCase() }));
+            visibles(whenOn.etapesApres).forEach((it) => items.push(it));
+            (whenOn.inputs || []).forEach((inp) => {
+              const v = String(nodeInputs[inp.id] || "").trim();
+              if (v) items.push({ type: "info", label: inp.label, reponse: v });
+            });
+            inlineChain.forEach((c, i) => {
+              const parent = i === 0 ? inlineRootNode : inlineChain[i - 1].node;
+              items.push({ type: "info", label: (parent && parent.choicesTitle) || "CHOIX", reponse: c.label });
+            });
+            visibles(whenOn.etapesFin).forEach((it) => items.push(it));
+            const sections = avant.concat([{ id: "parcours", titre: entry.toggle.label, items }]);
+            ouvrirRecap(whenOn.recapDocument.titre, sections, vars, [
+              ["Compte", vars.compte || "—"],
+              ["Statut", vars.statut || "—"],
+              ["Parcours", entry.toggle.label],
+            ]);
+          });
+          box.appendChild(b);
+          return box;
+        }
+
         function renderToggleEtapes() {
           toggleEtapes.innerHTML = "";
           toggleEtapesApres.innerHTML = "";
@@ -3340,6 +3405,8 @@
                 renderChecklistItem(item, vars, box, "toggle");
               });
             });
+            const recap = recapParcours(entry, vars);
+            if (recap) toggleEtapesFin.appendChild(recap);
           });
         }
 
@@ -5049,7 +5116,7 @@
             doc.className = "chk-recap-go";
             doc.textContent = "📄 RÉCAP DES ÉTAPES (À ENREGISTRER EN PDF)";
             doc.title = "Ouvre le récapitulatif daté des étapes : Ctrl+P → Enregistrer au format PDF, puis rattacher à l'affaire";
-            doc.addEventListener("click", () => ouvrirRecap(leaf, sections, vars));
+            doc.addEventListener("click", () => ouvrirRecap(leaf.checklist.recapDocument.titre, sections, vars));
             recap.appendChild(doc);
           }
           if (missing.length > 0) {
@@ -5099,9 +5166,9 @@
           }
         }
 
-        async function ouvrirRecap(leaf, sections, vars) {
+        async function ouvrirRecap(titreBase, sections, vars, contexteFourni) {
           const now = new Date();
-          const titre = (leaf.checklist.recapDocument.titre || "Mode opératoire complété") +
+          const titre = (titreBase || "Mode opératoire complété") +
             " - " + deux(now.getDate()) + "-" + deux(now.getMonth() + 1) + "-" + now.getFullYear() +
             " à " + deux(now.getHours()) + "h" + deux(now.getMinutes());
           const lignes = [];   // texte brut, base de l'empreinte
@@ -5127,6 +5194,13 @@
               (item.items || []).forEach((it) => visit(it, true));
               return;
             }
+            if (item.type === "info") {
+              // Choix ou saisie hors checklist (raison, écritures…) : pas d'heure.
+              rows.push("<tr><td>" + escapeHtml(item.label) + "</td><td>" +
+                escapeHtml(item.reponse).replace(/\n/g, "<br>") + "</td><td></td></tr>");
+              lignes.push(item.label + " | " + item.reponse);
+              return;
+            }
             if (item.type !== "check" && item.type !== "question") return;
             const label = fillPlain(item.label || "", vars);
             const val = checkState[item.id];
@@ -5144,7 +5218,7 @@
           };
           sections.forEach((sec) => sec.items.forEach((it) => visit(it, false)));
 
-          const contexte = [
+          const contexte = contexteFourni || [
             ["Compte", vars.compte || "—"],
             ["Statut", vars.statut || "—"],
             ["Motif", vars["motif-label"] || "—"],

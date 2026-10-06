@@ -1246,6 +1246,9 @@ const etapesReldetFin = [
 ];
 amiableReldetToggle.whenOn.etapesFin = etapesReldetFin;
 detteNonExigibleToggle.whenOn.etapesFin = etapesReldetFin;
+// Récap PDF du parcours quand tout est fait (titre = nom du fichier proposé).
+amiableReldetToggle.whenOn.recapDocument = { titre: "Mode opératoire RELDET (versement récent) complété" };
+detteNonExigibleToggle.whenOn.recapDocument = { titre: "Mode opératoire RELDET (dette non exigible) complété" };
 [amiableReldetToggle.whenOn, detteNonExigibleToggle.whenOn].forEach(function rangerWatt(node) {
   if (!node || typeof node !== "object") return;
   (node.resultats || []).forEach((r) => { if (r.label === "COMMENTAIRE AFFAIRE WATT") r.etape = "reldet-watt"; });
