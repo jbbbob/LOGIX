@@ -2156,7 +2156,7 @@
 
       #toggleEtapes:not(:empty),
       #toggleEtapesApres:not(:empty) {
-        padding: 4px 0;
+        padding: 0;
         border-bottom: 1px solid var(--hairline);
       }
 
@@ -3416,7 +3416,8 @@
         // Re-cliquer sur la valeur sélectionnée la désélectionne (retour au défaut).
         function createTopQuestionCard(q) {
           const card = document.createElement("section");
-          card.className = "card-row";
+          // Répondue : fond vert (dans le bloc ANV), comme les autres choix faits.
+          card.className = "card-row" + (topAnswers[q.id] ? " is-done" : "");
           const content = document.createElement("div");
           content.className = "card-row-content";
 
@@ -4913,12 +4914,19 @@
           // comme la DCD. Les sections gardent leurs ids, on les déplace juste
           // dans le bloc (et on les remet à leur place pour les autres catégories).
           const enHaut = !!(leaf && leaf.checklist.position === "haut");
-          if (enHaut && checklistContainer.parentElement !== processBloc) {
+          // Aussi un seul bloc pour les parcours ouverts depuis ce mode
+          // opératoire (VERSEMENT RÉCENT, DETTE NON EXIGIBLE) : barre du haut,
+          // écritures / raison et textes dans la même carte.
+          const depuisProcess = activeToggleStack.length > 0 &&
+            !!(activeToggleStack[0].savedRootNode && activeToggleStack[0].savedRootNode.checklist &&
+               activeToggleStack[0].savedRootNode.checklist.position === "haut");
+          const enBloc = enHaut || depuisProcess;
+          if (enBloc && checklistContainer.parentElement !== processBloc) {
             if (!resultsHome) resultsHome = { parent: resultsContainer.parentElement, next: resultsContainer.nextSibling };
-            cascadeFlow.before(processBloc);
-            processBloc.append(checklistContainer, cascadeFlow, leafQuestionsContainer, checklistBas, resultsContainer, checklistFin);
-          } else if (!enHaut && checklistContainer.parentElement === processBloc) {
-            processBloc.replaceWith(cascadeFlow, leafQuestionsContainer, checklistContainer, checklistBas);
+            togglesContainer.before(processBloc);
+            processBloc.append(togglesContainer, checklistContainer, cascadeFlow, leafQuestionsContainer, checklistBas, resultsContainer, checklistFin);
+          } else if (!enBloc && checklistContainer.parentElement === processBloc) {
+            processBloc.replaceWith(togglesContainer, cascadeFlow, leafQuestionsContainer, checklistContainer, checklistBas);
             resultsHome.parent.insertBefore(resultsContainer, resultsHome.next);
             checklistFin.innerHTML = "";
           }
