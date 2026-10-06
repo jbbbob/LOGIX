@@ -2066,6 +2066,24 @@
         right: 16px;
       }
 
+      /* Bouton d'action dans une ligne de checklist (ex : FAIRE L'AMIABLE RELDET). */
+      .chk-action {
+        margin-left: 18px;
+        min-height: 2.4rem;
+        padding: 0 16px;
+        border: 1.5px solid var(--danger);
+        border-radius: var(--r-md);
+        background: var(--danger);
+        color: #ffffff;
+        font-weight: 800;
+        letter-spacing: var(--ls-mid);
+        cursor: pointer;
+      }
+
+      .chk-action:hover {
+        box-shadow: 0 0 0 3px var(--danger-wash), 0 0 0 4px var(--danger-border);
+      }
+
       .chk-group {
         margin: 4px 13px 8px;
         border: 1px solid var(--border);
@@ -3082,6 +3100,21 @@
           `;
         }
 
+        function activateToggle(toggle) {
+          activeToggleStack.push({ savedRootNode: inlineRootNode, toggle: toggle });
+          inlineRootNode = toggle.whenOn;
+          inlineChain = [];
+          leafAnswers = {};
+          leafInputs = {};
+          const auto = toggle.whenOn.autoChoix;
+          if (auto && contextMatches(auto.if, buildTemplateVars())) {
+            const opt = (toggle.whenOn.choix || []).find((o) => o.id === auto.id);
+            if (opt) inlineChain = [{ id: opt.id, label: opt.label, option: opt, node: opt.suite }];
+          }
+          window.scrollTo(0, 0);
+          render();
+        }
+
         // Bandeau d'information d'un toggle actif (whenOn.bandeau = { texte, if }).
         function renderToggleBandeaux() {
           const vars = buildTemplateVars();
@@ -3137,23 +3170,8 @@
           if (inlineRootNode && Array.isArray(inlineRootNode.toggles)) {
             inlineRootNode.toggles.forEach((toggle) => {
               if (activeToggleStack.some((e) => e.toggle.id === toggle.id)) return;
-              const card = buildToggleCard(toggle, false, () => {
-                // Activation : push dans le stack et swap inlineRootNode
-                activeToggleStack.push({
-                  savedRootNode: inlineRootNode,
-                  toggle: toggle,
-                });
-                inlineRootNode = toggle.whenOn;
-                inlineChain = [];
-                leafAnswers = {};
-                leafInputs = {};
-                const auto = toggle.whenOn.autoChoix;
-                if (auto && contextMatches(auto.if, buildTemplateVars())) {
-                  const opt = (toggle.whenOn.choix || []).find((o) => o.id === auto.id);
-                  if (opt) inlineChain = [{ id: opt.id, label: opt.label, option: opt, node: opt.suite }];
-                }
-                render();
-              });
+              // Activation : push dans le stack et swap inlineRootNode
+              const card = buildToggleCard(toggle, false, () => activateToggle(toggle));
               togglesContainer.appendChild(card);
             });
           }
@@ -4402,6 +4420,17 @@
               });
               line.appendChild(btn);
             });
+            // Bouton d'action (ex : FAIRE L'AMIABLE RELDET) qui active un toggle.
+            const act = item.action;
+            const actToggle = act && inlineRootNode && (inlineRootNode.toggles || []).find((t) => t.id === act.toggle);
+            if (actToggle && (!act.if || contextMatches(act.if, vars))) {
+              const ab = document.createElement("button");
+              ab.type = "button";
+              ab.className = "chk-action";
+              ab.textContent = act.label;
+              ab.addEventListener("click", () => activateToggle(actToggle));
+              line.appendChild(ab);
+            }
             body.appendChild(line);
             if (item.aide) body.appendChild(makeChecklistAide(item.aide));
             row.appendChild(body);

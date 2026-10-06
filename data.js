@@ -916,12 +916,18 @@ anvBranch.suite.checklist = {
           if: { "versement-recent": ["oui"] },
           label: "Risque de prescription imminente ?",
           aide: "Si OUI, on passe quand même l'ANV malgré le versement récent.",
+          // Bouton posé sur la même ligne quand la réponse mène au RELDET.
+          action: {
+            label: "FAIRE L'AMIABLE RELDET →",
+            toggle: "amiable-reldet",
+            if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
+          },
         },
         {
           type: "alerte",
           niveau: "danger",
           if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
-          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → clique sur AMIABLE RELDET en haut de la page (VERSEMENT RÉCENT = OUI sera déjà choisi).",
+          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → bouton « FAIRE L'AMIABLE RELDET » juste au-dessus (VERSEMENT RÉCENT = OUI sera déjà choisi).",
         },
         {
           type: "alerte",
