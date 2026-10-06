@@ -495,6 +495,9 @@ const anvBranch = {
       {
         id: "motif-14-liquidation-judiciaire-cia",
         label: "14 - LIQUIDATION JUDICIAIRE (CIA)",
+        // todo : affiché « TODO » et non cliquable le temps de refaire ce motif
+        // (le parcours ci-dessous est gardé pour la reprise).
+        todo: true,
         description: "",
         // En A/C : pré-remplit DATE avec la date du jour (comme motif 13).
         // En PL : on n'applique PAS l'auto-remplissage (les 2 dates BODACC + LIQ CL IN

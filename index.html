@@ -2680,6 +2680,7 @@
 
         function isChoiceEmpty(option) {
           if (option && option.versCategorie) return false; // renvoi vers un autre onglet
+          if (option && option.todo) return true; // en cours de refonte
           if (!option || !option.suite || typeof option.suite !== "object") return true;
           const hasChoix = Array.isArray(option.suite.choix) && option.suite.choix.length > 0;
           const hasResultats = Array.isArray(option.suite.resultats) && option.suite.resultats.length > 0;
