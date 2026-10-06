@@ -1033,6 +1033,8 @@ detteNonExigibleToggle.whenOn.topQuestions = amiableReldetToggle.whenOn.topQuest
 amiableReldetToggle.whenOn.bandeau = {
   if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
   texte: "AMIABLE RELDET À FAIRE : versement récent et pas de risque de prescription imminente, donc pas d'ANV.",
+  // Erreur de saisie ? Retour aux vérifications, sur la question du versement.
+  retour: { label: "← REVENIR À L'ANV", etape: "versement-recent" },
 };
 
 // ============================================================================

@@ -3118,7 +3118,7 @@
         // Bandeau d'information d'un toggle actif (whenOn.bandeau = { texte, if }).
         function renderToggleBandeaux() {
           const vars = buildTemplateVars();
-          activeToggleStack.forEach((entry) => {
+          activeToggleStack.forEach((entry, idx) => {
             const b = entry.toggle.whenOn && entry.toggle.whenOn.bandeau;
             if (!b || (b.if && !contextMatches(b.if, vars))) return;
             const el = document.createElement("div");
@@ -3127,6 +3127,24 @@
             const txt = document.createElement("span");
             txt.textContent = b.texte;
             el.appendChild(txt);
+            // Bouton retour : désactive le toggle (comme le bouton du haut) et
+            // ramène sur l'étape à corriger dans la checklist.
+            if (b.retour) {
+              const r = document.createElement("button");
+              r.type = "button";
+              r.className = "context-option pill-btn";
+              r.textContent = b.retour.label;
+              r.addEventListener("click", () => {
+                inlineRootNode = entry.savedRootNode;
+                activeToggleStack = activeToggleStack.slice(0, idx);
+                inlineChain = [];
+                leafAnswers = {};
+                leafInputs = {};
+                render();
+                if (b.retour.etape) goToStep(b.retour.etape);
+              });
+              el.appendChild(r);
+            }
             togglesContainer.appendChild(el);
           });
         }
