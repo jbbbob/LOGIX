@@ -1329,6 +1329,12 @@ const etapesReldetFin = [
     attente: "Le texte apparaîtra ici une fois la raison choisie.",
     label: "Mettre le commentaire affaire WATT",
   },
+  {
+    // Phrase selon le parcours : SCRIBE ou V2, ANV SUSPEN (radié), WATT.
+    type: "check",
+    id: "reldet-double-check",
+    label: "Double vérification : {{double-check-reldet}}",
+  },
 ];
 amiableReldetToggle.whenOn.etapesFin = etapesReldetFin;
 detteNonExigibleToggle.whenOn.etapesFin = etapesReldetFin;

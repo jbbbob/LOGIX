@@ -3111,6 +3111,21 @@
               : parts[0];
           }
 
+          // 1 sexies. Parcours RELDET (VERSEMENT RÉCENT / DETTE NON EXIGIBLE) :
+          //   phrase de la double vérification selon les choix.
+          {
+            const parcours = activeToggleStack.length ? activeToggleStack[activeToggleStack.length - 1].toggle.id : "";
+            const p = [];
+            const enLigne = topAnswers["compte-en-ligne"];
+            if (enLigne === "oui") p.push("le relevé de dette bien envoyé par SCRIBE");
+            else if (enLigne === "non") p.push("le RELDET bien codifié en V2");
+            if (parcours === "amiable-reldet" && vars.compte === "RADIÉ") {
+              p.push("l'ANV SUSPEN bien codifiée", "son post-it bien renseigné");
+            }
+            p.push("le commentaire WATT bien renseigné");
+            vars["double-check-reldet"] = p.length > 1 ? p.slice(0, -1).join(", ") + " et " + p[p.length - 1] : p[0];
+          }
+
           // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
           //        premières étapes cochées toutes seules.
           vars["compte-affiche"] = vars.compte || "à choisir à gauche";
