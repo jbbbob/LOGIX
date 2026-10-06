@@ -877,6 +877,7 @@ amiableReldetToggle.whenOn.autoChoix = { id: "verse-oui", if: { "versement-recen
 // ============================================================================
 anvBranch.suite.checklist = {
   position: "haut",
+  recapOk: "✓ VÉRIFICATIONS FAITES : CHOISIS LE MOTIF CI-DESSOUS",
   stopIf: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
   sections: [
     {
@@ -884,30 +885,25 @@ anvBranch.suite.checklist = {
       titre: "VÉRIFICATIONS AVANT L'ANV",
       items: [
         {
+          // autoCoche : cochée toute seule dès que COMPTE est choisi à gauche.
           type: "check",
           id: "anv-verif-compte",
+          autoCoche: "compte",
           label: "Vérifier si le compte est ACTIF ou RADIÉ",
-          aide: "À sélectionner à gauche, dans CONTEXTE > COMPTE.",
+          aide: "Se coche tout seul quand tu choisis à gauche, dans CONTEXTE > COMPTE.",
         },
         {
           type: "check",
           id: "anv-verif-statut",
+          autoCoche: "statut",
           label: "Vérifier si le cotisant est A/C ou PL",
-          aide: "À sélectionner à gauche, dans CONTEXTE > STATUT.",
+          aide: "Se coche tout seul quand tu choisis à gauche, dans CONTEXTE > STATUT.",
         },
         {
           type: "check",
-          id: "anv-acte-ged-ac",
-          if: { statut: ["A/C", ""] },
-          label: "Trouver en GED un document qui permet de passer l'ANV",
-          champs: [{ id: "date", label: "DATE DU DOCUMENT TROUVÉ EN GED", placeholder: "JJ/MM/AA" }],
-        },
-        {
-          type: "check",
-          id: "anv-acte-ged-pl",
-          if: { statut: ["PL"] },
-          label: "Trouver en GED l'acte qui permet de passer l'ANV",
-          champs: [{ id: "date", label: "DATE DE RÉALISATION DE L'ACTE", placeholder: "JJ/MM/AA" }],
+          id: "anv-justificatif",
+          label: "Trouver un justificatif permettant de passer l'ANV",
+          champs: [{ id: "date", label: "DATE DU JUSTIFICATIF TROUVÉ", placeholder: "JJ/MM/AA" }],
         },
         {
           type: "question",
@@ -925,7 +921,7 @@ anvBranch.suite.checklist = {
           type: "alerte",
           niveau: "danger",
           if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
-          texte: "⛔ VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → clique sur AMIABLE RELDET en haut de la page (VERSEMENT RÉCENT = OUI sera déjà choisi).",
+          texte: "VERSEMENT RÉCENT : PAS D'ANV. RELDET À FAIRE → clique sur AMIABLE RELDET en haut de la page (VERSEMENT RÉCENT = OUI sera déjà choisi).",
         },
         {
           type: "alerte",
@@ -1010,8 +1006,8 @@ const detteNonExigibleToggle = {
   },
 };
 
-// On rend le toggle DETTE NON EXIGIBLE disponible quand AMIABLE RELDET est activé.
-amiableReldetToggle.whenOn.toggles = [detteNonExigibleToggle];
+// DETTE NON EXIGIBLE : bouton à part en haut de l'ANV (plus dans AMIABLE RELDET).
+anvBranch.suite.toggles.push(detteNonExigibleToggle);
 
 // Question optionnelle "COMPTE EN LIGNE OU MAIL ?" affichée dans la rangée des toggles,
 // entre AMIABLE RELDET et DETTE NON EXIGIBLE. Par défaut non répondue (= comportement
@@ -1024,6 +1020,14 @@ amiableReldetToggle.whenOn.topQuestions = [
     label: "COMPTE EN LIGNE OU MAIL ?",
   },
 ];
+// Même question pour DETTE NON EXIGIBLE (ses textes finissent aussi par {{phrase-reldet}}).
+detteNonExigibleToggle.whenOn.topQuestions = amiableReldetToggle.whenOn.topQuestions;
+
+// Bandeau orange dans AMIABLE RELDET quand on y arrive depuis la vérification ANV.
+amiableReldetToggle.whenOn.bandeau = {
+  if: { "versement-recent": ["oui"], "prescription-imminente": ["non"] },
+  texte: "AMIABLE RELDET À FAIRE : versement récent et pas de risque de prescription imminente, donc pas d'ANV.",
+};
 
 // ============================================================================
 // Branche DÉLAI : pour les demandes d'échéancier.

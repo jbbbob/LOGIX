@@ -224,23 +224,23 @@
           - `raison-frustratoires` — **FRAIS FRUSTRATOIRES**
             - [simple] `watt-frustr-sans-versements` — **COMMENTAIRE AFFAIRE WATT**
               - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car aucun justifi … »
-    - *toggles* :
-      - ☑ **DETTE NON EXIGIBLE** (`dette-non-exigible`)
-        - *TYPE* :
-          - `type-co` — **CO**
-            - *RAISON* :
-              - `raison-co-frustratoires` — **FRAIS FRUSTRATOIRES**
-                - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
-                  - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car dette non exi … »
-              - `raison-co-insolvable` — **INSOLVABLE**
-                - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
-                  - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif insolvable - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reld … »
-              - `raison-co-pv-659` — **PV 659**
-                - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
-                  - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée - Pas d'ANV car dette non exigible - Tentative de recouvr … »
-          - `type-md-psa` — **MD PSA**
+    - *topQuestions* : COMPTE EN LIGNE OU MAIL ? (`compte-en-ligne`)
+  - ☑ **DETTE NON EXIGIBLE** (`dette-non-exigible`)
+    - *TYPE* :
+      - `type-co` — **CO**
+        - *RAISON* :
+          - `raison-co-frustratoires` — **FRAIS FRUSTRATOIRES**
             - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
-              - « Compte {{compte-display}} - Pas de risque de prescription - MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reldet}} »
+              - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car frais frustratoires, en attente d'autres contraintes pour faire une réexécution groupée - Pas d'ANV car dette non exi … »
+          - `raison-co-insolvable` — **INSOLVABLE**
+            - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
+              - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif insolvable - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reld … »
+          - `raison-co-pv-659` — **PV 659**
+            - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
+              - « Compte {{compte-display}} - Pas de risque de prescription - Pas de réexécution car retour pour motif PV 659 et pas de nouvelle adresse trouvée - Pas d'ANV car dette non exigible - Tentative de recouvr … »
+      - `type-md-psa` — **MD PSA**
+        - [simple] `watt-dette-non-exigible` — **COMMENTAIRE AFFAIRE WATT**
+          - « Compte {{compte-display}} - Pas de risque de prescription - MD PSA et pas de nouvelle adresse trouvée - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reldet}} »
     - *topQuestions* : COMPTE EN LIGNE OU MAIL ? (`compte-en-ligne`)
 
 ### DÉLAI (`delai`)
@@ -351,5 +351,5 @@
 - Choix totaux (tous niveaux) : 39
 - Inputs : 7
 - Toggles : 2
-- TopQuestions : 2
+- TopQuestions : 3
 - Résultats (blocs texte) : 105

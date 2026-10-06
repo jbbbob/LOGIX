@@ -2938,6 +2938,16 @@
 
         // Checklist avec stopIf vérifié (ex : ANV + versement récent) : motifs,
         // questions et résultats sont masqués, seul le bandeau rouge reste.
+        function syncAutoChecks() {
+          const n = getChecklistNode();
+          if (!n || !Array.isArray(n.checklist.sections)) return;
+          const visit = (it) => {
+            if (Array.isArray(it.items)) it.items.forEach(visit);
+            if (it.autoCoche) checkState[it.id] = !!globalSelections[it.autoCoche];
+          };
+          n.checklist.sections.forEach((sec) => (sec.items || []).forEach(visit));
+        }
+
         function checklistStops() {
           const n = getChecklistNode();
           return !!(n && n.checklist.stopIf && contextMatches(n.checklist.stopIf, buildTemplateVars()));
@@ -3070,6 +3080,22 @@
               <h2 class="text-base md:text-lg font-bold text-muted">${escapeHtml(node.question)}</h2>
             </div>
           `;
+        }
+
+        // Bandeau d'information d'un toggle actif (whenOn.bandeau = { texte, if }).
+        function renderToggleBandeaux() {
+          const vars = buildTemplateVars();
+          activeToggleStack.forEach((entry) => {
+            const b = entry.toggle.whenOn && entry.toggle.whenOn.bandeau;
+            if (!b || (b.if && !contextMatches(b.if, vars))) return;
+            const el = document.createElement("div");
+            el.className = "chk-alert is-warning";
+            el.style.margin = "10px 13px";
+            const txt = document.createElement("span");
+            txt.textContent = b.texte;
+            el.appendChild(txt);
+            togglesContainer.appendChild(el);
+          });
         }
 
         function renderToggles() {
@@ -4394,6 +4420,10 @@
             box.className = "chk-box";
             box.id = "chk-" + item.id;
             box.checked = checked;
+            if (item.autoCoche) {
+              box.disabled = true;
+              box.title = "Se coche tout seul selon le CONTEXTE à gauche";
+            }
             box.addEventListener("change", () => {
               if (box.checked && openTutoKey === (item.tuto || item.id)) closeTutos();
               checkState[item.id] = box.checked;
@@ -4557,12 +4587,13 @@
 
           // BILAN en fin de checklist : tout est fait, ou la liste de ce qui
           // manque (chaque ligne est cliquable) + un bouton pour y remonter.
+          if (checklistStops()) return; // le bandeau rouge suffit
           const recap = document.createElement("div");
           recap.className = "chk-recap " + (missing.length === 0 ? "is-ok" : "is-todo");
           const rt = document.createElement("div");
           rt.className = "chk-recap-title";
           rt.textContent = missing.length === 0
-            ? "✓ TOUT EST FAIT : TU PEUX COPIER LE COMMENTAIRE WATT"
+            ? (leaf.checklist.recapOk || "✓ TOUT EST FAIT : TU PEUX COPIER LE COMMENTAIRE WATT")
             : "IL MANQUE " + missing.length + (missing.length > 1 ? " ÉTAPES" : " ÉTAPE");
           recap.appendChild(rt);
           if (missing.length > 0) {
@@ -5248,6 +5279,7 @@
           // disparaît du DOM et que la hauteur totale change.
           const _scrollY = window.scrollY;
 
+          syncAutoChecks();
           const node = getDisplayNode();
           const deepestNode = getDeepestNode();
 
@@ -5256,6 +5288,7 @@
           renderQuestion(node);
           renderContextPanel();
           renderToggles();
+          renderToggleBandeaux();
           renderCascade();
           renderLeafQuestions();
           renderChecklist();

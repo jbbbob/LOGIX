@@ -378,9 +378,9 @@ Construit par `getCurrentPathString()` : COMPTE / STATUT, catégorie, toggles ac
 ### Vérifications avant l'ANV (catégorie ANV)
 
 - `anvBranch.suite.checklist` (même moteur que la DCD) avec `position: "haut"` : affichée **au-dessus des motifs** et gardée pendant toute la cascade (`getChecklistNode()` = feuille avec checklist, sinon racine de la catégorie).
-- Étapes : compte actif/radié, A/C ou PL, document (A/C) / acte (PL) trouvé en GED + sa date (champ `date` = `{{date}}` des textes ANV ; la DATE générique de la cascade a été retirée), versement récent ?, puis risque de prescription imminente ? si OUI.
+- Étapes : compte actif/radié et A/C ou PL (**`autoCoche`** : cochées toutes seules par `syncAutoChecks()` dès que COMPTE / STATUT sont choisis à gauche, case grisée), justificatif permettant de passer l'ANV + DATE DU JUSTIFICATIF TROUVÉ (champ `date` = `{{date}}` des textes ANV ; la DATE générique de la cascade a été retirée), versement récent ?, puis risque de prescription imminente ? si OUI. Bilan propre (`recapOk`), masqué quand le traitement s'arrête.
 - `stopIf` (versement récent OUI + prescription NON) : bandeau rouge « RELDET À FAIRE », motifs / questions / résultats masqués (`checklistStops()`).
-- Le toggle AMIABLE RELDET a un `autoChoix` : activé après « versement récent = OUI », VERSEMENT RÉCENT = OUI est déjà choisi. DETTE NON EXIGIBLE reste disponible (à revoir).
+- Le toggle AMIABLE RELDET a un `autoChoix` (VERSEMENT RÉCENT = OUI déjà choisi après la vérification) et un `bandeau` orange « AMIABLE RELDET À FAIRE » (`whenOn.bandeau`, rendu par `renderToggleBandeaux()`). **DETTE NON EXIGIBLE est maintenant un bouton à part en haut de l'ANV** (plus dans AMIABLE RELDET), avec la même question COMPTE EN LIGNE OU MAIL ?.
 - Raisons : PSA renommé **PV 659** (versements et dette non exigible), MD PSA inchangé.
 
 ### Checklist MODE OPÉRATOIRE (catégorie DCD)
