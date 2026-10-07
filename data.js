@@ -924,6 +924,7 @@ anvBranch.suite.checklist = {
           id: "anv-stade-in-cra",
           if: { statut: ["A/C", ""] },
           label: "Codifier l'ANV au stade IN CRA",
+          rappel: "{{rappel-motif}}", // ex. « MOTIF 12 · SOUS-MOTIF 25 »
         },
         {
           // montre : le texte POST-IT généré s'affiche dans l'étape (à copier).
@@ -946,12 +947,14 @@ anvBranch.suite.checklist = {
           id: "anv-stade-repris",
           if: { statut: ["PL"], "anv-tc08": ["oui"] },
           label: "Codifier l'ANV au stade REPRIS",
+          rappel: "{{rappel-motif}}", // PL : motif seul
         },
         {
           type: "check",
           id: "anv-stade-demand",
           if: { statut: ["PL"], "anv-tc08": ["non"] },
           label: "Codifier l'ANV au stade DEMAND",
+          rappel: "{{rappel-motif}}",
         },
         {
           type: "check",
@@ -972,6 +975,7 @@ anvBranch.suite.checklist = {
           id: "anv-suspen-codif",
           if: { compte: ["RADIÉ"], suspen: ["oui"] },
           label: "Codifier l'ANV SUSPEN",
+          rappel: "{{rappel-motif-seul}}", // motif seul, sans sous-motif
         },
         {
           type: "check",
