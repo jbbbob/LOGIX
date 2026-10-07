@@ -2369,8 +2369,11 @@ const dcd1ereEnqueteInconnusLeaf = {
 //   - courrier aux héritiers : modèle « SUCCESSION - RELANCE HÉRITIERS » ;
 //   - justificatif : seulement la page SNGI en PDF (plus de question GED, plus
 //     de relevé n° d'acte / lieu, plus de demande d'acte à la mairie) ;
-//   - codifications : ESDC « RECHERCHE HERITIERS : RELANCE », ENQ R DIV au
-//     stade NFRUCT ; WATT avec le même titre.
+//   - codifications : d'abord l'ANV motif 13 (A/C : sous-motif 18 ou 19, stade
+//     IN CRA + post-it ; PL : 3 cas, stade REPRIS / DEMAND + ESDC code ANV),
+//     à la place de l'ADM NV SUSPEN ; puis ESDC « RECHERCHE HERITIERS :
+//     RELANCE », ENQ R DIV au stade NFRUCT ; WATT avec le même titre.
+//     Textes de l'ANV calculés dans index.html ({{dcd-anv-texte}}…).
 // checklist.relance = true : lu dans index.html (double vérification, DLP / GCC).
 // ============================================================================
 const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusLeaf));
@@ -2390,7 +2393,7 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
         type: "alerte",
         niveau: "warning",
         if: { "dcd-dlp-proche": ["oui"] },
-        texte: "DLP PROCHE : PASSER L'ANV QUOI QU'IL ARRIVE, EN PLUS DE LA RELANCE (ÉTAPES DE L'ANV À COMPLÉTER).",
+        texte: "DLP PROCHE : PASSER L'ANV QUOI QU'IL ARRIVE (6. CODIFICATIONS).",
       };
     }
     if (it.if) delete it.if["dcd-dlp-proche"];
@@ -2432,18 +2435,50 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   sc.items.forEach((g) => (g.items || []).forEach((it) => {
     if (it.id === "dcd-scribe-modele") it.copie = [{ label: "MODÈLE", texte: "SUCCESSION - RELANCE HÉRITIERS" }];
   }));
-  // 6. Codifications.
-  sec("dcd-codifications").items.forEach((it) => {
+  // 6. Codifications : l'ANV motif 13 en premier, à la place de l'ADM NV SUSPEN.
+  const codif = sec("dcd-codifications");
+  const anvRelance = [
+    {
+      type: "question",
+      id: "dcd-rel-ss-motif",
+      if: { statut: ["A/C"] },
+      label: "ANV MOTIF 13 : SOUS-MOTIF ?",
+      choix: [{ val: "18", label: "18" }, { val: "19", label: "19" }],
+    },
+    {
+      type: "question",
+      id: "dcd-rel-motif-pl",
+      if: { statut: ["PL"] },
+      label: "ANV MOTIF 13 : CAS ?",
+      choix: [
+        { val: "attestation", label: "ATTESTATION NOTAIRE" },
+        { val: "infructueuse", label: "ENQUÊTE INFRUCTUEUSE" },
+        { val: "renonciation", label: "RENONCIATION HÉRITIERS" },
+      ],
+    },
+    { type: "check", id: "dcd-rel-anv-incra", if: { statut: ["A/C"] }, label: "CODIFIER L'ANV AU STADE IN CRA", rappel: "{{dcd-anv-rappel}}" },
+    { type: "check", id: "dcd-rel-anv-postit", if: { statut: ["A/C"] }, label: "AJOUTER LE POST-IT", copie: [{ label: "POST-IT", texte: "{{dcd-anv-texte}}" }] },
+    { type: "question", id: "dcd-rel-tc08", if: { statut: ["PL"] }, label: "ANV CRÉÉE PAR TC08 OU RC08 ?" },
+    { type: "check", id: "dcd-rel-anv-repris", if: { statut: ["PL"], "dcd-rel-tc08": ["oui"] }, label: "CODIFIER L'ANV AU STADE REPRIS", rappel: "{{dcd-anv-rappel}}" },
+    { type: "check", id: "dcd-rel-anv-demand", if: { statut: ["PL"], "dcd-rel-tc08": ["non"] }, label: "CODIFIER L'ANV AU STADE DEMAND", rappel: "{{dcd-anv-rappel}}" },
+    { type: "check", id: "dcd-rel-anv-esdc", if: { statut: ["PL"] }, label: "RENSEIGNÉ EN ESDC AVEC LE CODE ANV", copie: [{ label: "ESDC", texte: "{{dcd-anv-texte}}" }] },
+  ];
+  codif.items = anvRelance.concat(codif.items.filter((it) => it.id !== "dcd-adm-nv"));
+  codif.items.forEach((it) => {
     if (it.id === "dcd-esdc") it.copie = [{ texte: "RECHERCHE HERITIERS : RELANCE" }];
     if (it.id === "dcd-enq") it.label = "ENQ R DIV CODIFIÉE AU STADE NFRUCT";
   });
-  // Commentaire WATT.
-  leaf.resultats = leaf.resultats.filter((r) => r.id !== "dcd-watt-mairie");
+  // Commentaire WATT : ligne ANV à la place de l'ADM NV, plus de mairie.
+  leaf.resultats = leaf.resultats.filter((r) => r.id !== "dcd-watt-mairie" && r.id !== "dcd-watt-adm");
+  leaf.resultats.unshift({ id: "dcd-watt-anv", type: "fragment", if: { "dcd-anv-fait": ["oui"] }, texte: "{{dcd-anv-watt}}" });
   leaf.resultats.forEach((r) => {
     if (r.id === "dcd-watt-titre") r.texte = "RECHERCHE HERITIERS : RELANCE";
     if (r.id === "dcd-watt-esdc") r.texte = "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : RELANCE";
     if (r.id === "dcd-watt-enq") r.texte = "ENQ R DIV codifiée au stade NFRUCT";
-    if (r.id === "dcd-watt") r.combine = r.combine.filter((c) => c !== "dcd-watt-mairie");
+    if (r.id === "dcd-watt") {
+      r.combine = r.combine.filter((c) => c !== "dcd-watt-mairie" && c !== "dcd-watt-adm");
+      r.combine.splice(1, 0, "dcd-watt-anv"); // juste après le titre
+    }
   });
 })(dcdRelanceInconnusLeaf);
 

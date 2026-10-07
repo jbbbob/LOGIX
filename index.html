@@ -3023,6 +3023,28 @@
           const motifReroutage = vars["dcd-radie-dcd"] === "non" || vars["dcd-affaire-gcc"] === "oui";
           vars["reroutage-gcc"] = motifReroutage && !dlpProche ? "oui" : "non";
           vars["gcc-parallele"] = relanceDcd && dlpProche && motifReroutage ? "oui" : "non";
+
+          // 4 bis. RELANCE : textes de l'ANV motif 13 (date du jour JJ/MM/AA).
+          //   A/C : post-it selon le sous-motif 18 / 19 ; PL : ESDC code ANV selon le cas.
+          {
+            const pl = vars.statut === "PL";
+            const auj = vars.today;
+            const ss = checkState["dcd-rel-ss-motif"];
+            const casPl = {
+              attestation: "ANV 13: DCD-CONSTAT DU " + auj + "-ACTIF SUCCESSORAL SANS PROFIT POUR UR",
+              infructueuse: "ANV 13: DCD - CONSTAT DU " + auj + " - PAS D HERITIERS ET D ACTIF CONNU",
+              renonciation: "ANV 13: DCD - CONSTAT DU " + auj + " - RENONCIATION DES HERITIERS",
+            }[checkState["dcd-rel-motif-pl"]];
+            vars["dcd-anv-texte"] = pl
+              ? casPl || "… (choisir le cas ci-dessus)"
+              : ss ? "ANV 13 SS MOTIF " + ss + " COU PAS ACTIF GED DU " + auj : "… (choisir le sous-motif ci-dessus)";
+            vars["dcd-anv-rappel"] = !pl && ss ? "MOTIF 13 · SOUS-MOTIF " + ss : "MOTIF 13";
+            const stade = pl
+              ? checkState["dcd-rel-anv-repris"] === true ? "REPRIS" : checkState["dcd-rel-anv-demand"] === true ? "DEMAND" : ""
+              : checkState["dcd-rel-anv-incra"] === true ? "IN CRA" : "";
+            vars["dcd-anv-fait"] = relanceDcd && stade ? "oui" : "non";
+            vars["dcd-anv-watt"] = "ANV codifiée au stade " + stade + " : " + vars["dcd-anv-texte"];
+          }
           vars["traitement-stop"] = vars["reroutage-gcc"] === "oui" || bloque ? "oui" : "non";
 
           // 5 ter. Relevés SNGI rappelés (en lecture seule) sous la demande à la
@@ -3093,7 +3115,14 @@
             L.push({ k: "doc-sngi", l: "Page SNGI (PDF) rattachée à l'affaire" });
             if (nbChambresForm) L.push({ k: "doc-chambres", l: nbChambresForm > 1 ? "PDF des formulaires des chambres rattachés" : "PDF du formulaire de la chambre rattaché" });
             if (vars["deces-plus-6-mois"] !== "non") L.push({ k: "doc-succession", l: "Recherche succession vacante (PDF) rattachée" });
-            L.push({ k: "codifs", l: "ESDC, ENQ et ADM NV codifiés" }, { k: "watt", l: "Commentaire affaire WATT renseigné" });
+            if (relanceDcd) {
+              L.push({ k: "anv", l: "ANV motif 13 codifiée" },
+                vars.statut === "PL" ? { k: "anv-esdc", l: "ESDC code ANV renseigné" } : { k: "anv-postit", l: "Post-it ANV renseigné" },
+                { k: "codifs", l: "ESDC (code DCD) et ENQ codifiés" });
+            } else {
+              L.push({ k: "codifs", l: "ESDC, ENQ et ADM NV codifiés" });
+            }
+            L.push({ k: "watt", l: "Commentaire affaire WATT renseigné" });
             vars["dc-liste-dcd"] = L;
           }
 
