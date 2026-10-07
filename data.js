@@ -2468,13 +2468,7 @@ const dcdRetourPositifLeaf = {
       id: "dcd-rp-watt-adm",
       type: "fragment",
       if: { "dcd-rp-adm-nv": ["oui"] },
-      texte: "ADM NV SUSPEN recodifiée avec date d'effet au {{date-effet-m1}}",
-    },
-    {
-      id: "dcd-rp-watt-postit",
-      type: "fragment",
-      if: { "dcd-rp-postit": ["oui"] },
-      texte: "Post-it : SUSPEN décalé au M+1 car retour du notaire",
+      texte: "ADM NV SUSPEN recodifiée avec date d'effet à M+1 au {{date-effet-m1}}",
     },
     {
       id: "dcd-rp-watt",
@@ -2488,7 +2482,6 @@ const dcdRetourPositifLeaf = {
         "dcd-rp-watt-oppdcp",
         "dcd-rp-watt-enq",
         "dcd-rp-watt-adm",
-        "dcd-rp-watt-postit",
       ],
       separator: "<br>",
     },
