@@ -2538,6 +2538,47 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
 })(dcdRelanceInconnusLeaf);
 
 // ============================================================================
+// DCD — RELANCE → NOTAIRE CONNU
+// Copie de la RELANCE (héritiers et notaire inconnus) : la section « 4. CHAMBRE(S)
+// DES NOTAIRES » est remplacée par le courrier de relance au notaire (SCRIBE),
+// le reste (succession vacante, ANV motif 13, codifications, 25 000 €) est pareil.
+// checklist.relanceNotaire = true : lu dans index.html (double vérification).
+// ============================================================================
+const dcdRelanceNotaireLeaf = JSON.parse(JSON.stringify(dcdRelanceInconnusLeaf));
+(function adapterRelanceNotaire(leaf) {
+  const cl = leaf.checklist;
+  cl.relanceNotaire = true;
+  cl.recapDocument = { titre: "Mode opératoire DCD relance notaire connu complété" };
+  const i = cl.sections.findIndex((x) => x.id === "dcd-notaires");
+  cl.sections[i] = {
+    id: "dcd-relance-notaire",
+    titre: "4. COURRIER AU NOTAIRE (SCRIBE)",
+    if: { "traitement-stop": ["non"] },
+    items: [
+      { type: "check", id: "dcd-reln-scribe-ouvrir", label: "OUVRIR SCRIBE" },
+      {
+        type: "check",
+        id: "dcd-reln-modele",
+        label: "CHOISIR LE MODÈLE",
+        copie: [{ label: "MODÈLE", texte: "Succession - Notaire ou Tribunal (Relance suite à opposition) - réf. bnc « 1 | 1109 | 365 »" }],
+      },
+      {
+        type: "check",
+        id: "dcd-reln-coordonnees",
+        label: "ENLEVER LE COMPTE DESTINATAIRE, SAISIR LES COORDONNÉES DU NOTAIRE PUIS COMPLÉTER LE COURRIER",
+      },
+      { type: "check", id: "dcd-reln-envoye", label: "COURRIER ENVOYÉ" },
+    ],
+  };
+  // WATT : la ligne des chambres devient celle du courrier au notaire.
+  leaf.resultats = leaf.resultats.map((r) =>
+    r.id === "dcd-watt-notaires"
+      ? { id: "dcd-watt-notaires", type: "fragment", if: { "dcd-reln-envoye": ["oui"] }, texte: "Courrier de relance suite à opposition envoyé au notaire" }
+      : r
+  );
+})(dcdRelanceNotaireLeaf);
+
+// ============================================================================
 // DCD — RETOUR POSITIF (RÉPONSE DU NOTAIRE)
 // Le notaire a répondu : opposition sur l'actif de la succession par SCRIBE,
 // codifications (OPPDCD / OPPDCP selon le statut, ENQ, ADM NV SUSPEN au M+1).
@@ -2740,7 +2781,12 @@ const dcdBranch = {
               suite: dcdRelanceInconnusLeaf,
             },
             // TODO: à coder — autres situations
-            { id: "dcd-relance-notaire-connu", label: "NOTAIRE CONNU", description: "" },
+            {
+              id: "dcd-relance-notaire-connu",
+              label: "NOTAIRE CONNU",
+              description: "",
+              suite: dcdRelanceNotaireLeaf,
+            },
             { id: "dcd-relance-heritiers-connus", label: "HÉRITIERS CONNUS", description: "" },
           ],
         },

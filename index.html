@@ -3113,9 +3113,12 @@
             L.push({ k: "heritiers", l: "Courrier aux héritiers envoyé" });
             // RELANCE : plus de demande d'acte à la mairie.
             if (!relanceDcd && vars["dcd-acte-ged"] !== "oui") L.push({ k: "mairie", l: "Demande d'acte à la mairie envoyée" });
-            if (nbChambres) L.push({ k: "chambres", l: nbChambres > 1 ? "Demandes aux " + nbChambres + " chambres des notaires envoyées" : "Demande à la chambre des notaires envoyée" });
+            // RELANCE notaire connu : courrier au notaire à la place des chambres.
+            const relanceNotaire = !!(leaf && leaf.checklist && leaf.checklist.relanceNotaire);
+            if (relanceNotaire) L.push({ k: "notaire", l: "Courrier de relance envoyé au notaire" });
+            else if (nbChambres) L.push({ k: "chambres", l: nbChambres > 1 ? "Demandes aux " + nbChambres + " chambres des notaires envoyées" : "Demande à la chambre des notaires envoyée" });
             L.push({ k: "doc-sngi", l: "Page SNGI (PDF) rattachée à l'affaire" });
-            if (nbChambresForm) L.push({ k: "doc-chambres", l: nbChambresForm > 1 ? "PDF des formulaires des chambres rattachés" : "PDF du formulaire de la chambre rattaché" });
+            if (nbChambresForm && !relanceNotaire) L.push({ k: "doc-chambres", l: nbChambresForm > 1 ? "PDF des formulaires des chambres rattachés" : "PDF du formulaire de la chambre rattaché" });
             if (vars["deces-plus-6-mois"] !== "non") L.push({ k: "doc-succession", l: "Recherche succession vacante (PDF) rattachée" });
             if (relanceDcd) {
               L.push({ k: "anv", l: "ANV motif 13 codifiée" },
