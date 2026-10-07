@@ -740,7 +740,7 @@ anvBranch.suite.checklist = {
           type: "alerte",
           niveau: "danger",
           stop: true,
-          if: { "psa-adresses-exploitees": ["non"] },
+          if: { "motif-id": ["motif-12-psa"], "psa-adresses-exploitees": ["non"] },
           texte: "PAS D'ANV : FAIRE LA RÉEXÉCUTION À LA NOUVELLE ADRESSE.",
         },
         {
@@ -761,7 +761,7 @@ anvBranch.suite.checklist = {
           type: "alerte",
           niveau: "danger",
           stop: true,
-          if: { "psa-eopps-adresse": ["oui"] },
+          if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["oui"] },
           texte: "PAS D'ANV : FAIRE LA RÉEXÉCUTION À LA NOUVELLE ADRESSE TROUVÉE SUR EOPPS.",
         },
         {
