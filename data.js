@@ -2347,6 +2347,90 @@ const dcd1ereEnqueteInconnusLeaf = {
   ],
 };
 
+// ============================================================================
+// DCD — RETOUR POSITIF (RÉPONSE DU NOTAIRE)
+// Le notaire a répondu : opposition sur l'actif de la succession par SCRIBE,
+// codifications (OPPDCD / OPPDCP selon le statut, ENQ, ADM NV SUSPEN au M+1).
+// ============================================================================
+const dcdRetourPositifLeaf = {
+  checklist: {
+    recapOk: "✓ TOUT EST FAIT",
+    recapDocument: { titre: "Mode opératoire DCD retour positif complété" },
+    sections: [
+      {
+        id: "dcd-rp-statut",
+        titre: "",
+        items: [
+          { type: "question", id: "dcd-rp-statut-q", contexte: "statut", label: "STATUT" },
+          {
+            type: "alerte",
+            niveau: "warning",
+            stop: true,
+            if: { statut: [""] },
+            texte: "CHOISIS LE STATUT (A/C OU PL) POUR LA SUITE.",
+          },
+        ],
+      },
+      {
+        id: "dcd-rp-courrier",
+        titre: "1. COURRIER AU NOTAIRE (SCRIBE)",
+        items: [
+          { type: "check", id: "dcd-rp-scribe-ouvrir", label: "OUVRIR SCRIBE" },
+          {
+            type: "check",
+            id: "dcd-rp-modele",
+            label: "CHOISIR LE MODÈLE",
+            // Espace volontaire après « L' » : c'est le nom exact du modèle.
+            copie: [{ label: "MODÈLE", texte: "SUCCESSION - OPPOSITION SUR L' ACTIF DE LA SUCCESSION" }],
+          },
+          {
+            type: "check",
+            id: "dcd-rp-coordonnees",
+            label: "SAISIR LES COORDONNÉES DU NOTAIRE EN ENLEVANT LE COMPTE DESTINATAIRE",
+          },
+          { type: "check", id: "dcd-rp-envoye", label: "COURRIER ENVOYÉ" },
+        ],
+      },
+      {
+        id: "dcd-rp-codifications",
+        titre: "2. CODIFICATIONS",
+        items: [
+          { type: "check", id: "dcd-rp-oppdcd", if: { statut: ["A/C"] }, label: "CODIFIER OPPDCD AU STADE DEBUT" },
+          { type: "check", id: "dcd-rp-oppdcp", if: { statut: ["PL"] }, label: "CODIFIER OPPDCP AU STADE OPP" },
+          { type: "check", id: "dcd-rp-enq", label: "ENQ R DIV CODIFIÉE AU STADE FRUCT" },
+          {
+            type: "check",
+            id: "dcd-rp-adm-nv",
+            label: "RECODIFIER L'ADM NV SUSPEN, DATE D'EFFET AU {{date-effet-m1}}",
+            aide: "Date du jour + 1 mois.",
+            copie: [{ label: "DATE", texte: "{{date-effet-m1}}" }],
+          },
+          {
+            type: "check",
+            id: "dcd-rp-postit",
+            label: "AJOUTER LE POST-IT",
+            copie: [{ label: "POST-IT", texte: "SUSPEN décalé au M+1 car retour du notaire" }],
+          },
+          {
+            type: "check",
+            id: "dcd-rp-double-check",
+            label: "DOUBLE VÉRIFICATION",
+            sousCoches: [
+              { id: "dc-dcd-rp-courrier", label: "Courrier d'opposition envoyé au notaire" },
+              { id: "dc-dcd-rp-oppdcd", label: "OPPDCD codifiée au stade DEBUT", if: { statut: ["A/C"] } },
+              { id: "dc-dcd-rp-oppdcp", label: "OPPDCP codifiée au stade OPP", if: { statut: ["PL"] } },
+              { id: "dc-dcd-rp-enq", label: "ENQ R DIV au stade FRUCT" },
+              { id: "dc-dcd-rp-adm", label: "ADM NV SUSPEN recodifiée au M+1" },
+              { id: "dc-dcd-rp-postit", label: "Post-it renseigné" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  resultats: [],
+};
+
 const dcdBranch = {
   id: "dcd",
   label: "DCD",
@@ -2373,6 +2457,12 @@ const dcdBranch = {
             { id: "dcd-heritiers-connus", label: "HÉRITIERS CONNUS", description: "" },
           ],
         },
+      },
+      {
+        id: "dcd-retour-positif",
+        label: "RETOUR POSITIF (RÉPONSE NOTAIRE)",
+        description: "",
+        suite: dcdRetourPositifLeaf,
       },
       // TODO: à coder — étape RELANCE (dont la codification ANV si DLP proche)
       { id: "dcd-relance", label: "RELANCE", description: "" },
