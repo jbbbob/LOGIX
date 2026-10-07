@@ -1004,19 +1004,19 @@ anvBranch.suite.checklist = {
             {
               type: "check",
               id: "anv-rattacher-justificatif",
-              label: "Le justificatif (PDF)",
+              label: "Le justificatif pour passer l'ANV",
             },
             {
               type: "check",
               id: "anv-rattacher-eopps",
               if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] },
-              label: "La page EOPPS (PDF)",
+              label: "La recherche EOPPS",
             },
             {
               type: "check",
               id: "anv-rattacher-ficoba",
               if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] },
-              label: "La page FICOBA (PDF)",
+              label: "La recherche FICOBA",
             },
           ],
         },
