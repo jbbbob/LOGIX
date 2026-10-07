@@ -2412,6 +2412,14 @@ const dcdRetourPositifLeaf = {
             copie: [{ label: "POST-IT", texte: "SUSPEN décalé au M+1 car retour du notaire" }],
           },
           {
+            // Commentaire WATT construit à partir des étapes cochées (une ligne
+            // par étape faite), affiché dans l'étape, prêt à copier.
+            type: "check",
+            id: "dcd-rp-watt-mis",
+            montre: "dcd-rp-watt",
+            label: "METTRE LE COMMENTAIRE AFFAIRE WATT",
+          },
+          {
             type: "check",
             id: "dcd-rp-double-check",
             label: "DOUBLE VÉRIFICATION",
@@ -2422,13 +2430,69 @@ const dcdRetourPositifLeaf = {
               { id: "dc-dcd-rp-enq", label: "ENQ R DIV au stade FRUCT" },
               { id: "dc-dcd-rp-adm", label: "ADM NV SUSPEN recodifiée au M+1" },
               { id: "dc-dcd-rp-postit", label: "Post-it renseigné" },
+              { id: "dc-dcd-rp-watt", label: "Commentaire affaire WATT renseigné" },
             ],
           },
         ],
       },
     ],
   },
-  resultats: [],
+  resultats: [
+    // Une ligne par étape cochée, dans l'ordre (comme la 1ÈRE ENQUÊTE).
+    { id: "dcd-rp-watt-titre", type: "fragment", texte: "RETOUR POSITIF DU NOTAIRE" },
+    {
+      id: "dcd-rp-watt-courrier",
+      type: "fragment",
+      if: { "dcd-rp-envoye": ["oui"] },
+      texte: "Courrier d'opposition sur l'actif de la succession envoyé au notaire",
+    },
+    {
+      id: "dcd-rp-watt-oppdcd",
+      type: "fragment",
+      if: { "dcd-rp-oppdcd": ["oui"], statut: ["A/C"] },
+      texte: "OPPDCD codifiée au stade DEBUT",
+    },
+    {
+      id: "dcd-rp-watt-oppdcp",
+      type: "fragment",
+      if: { "dcd-rp-oppdcp": ["oui"], statut: ["PL"] },
+      texte: "OPPDCP codifiée au stade OPP",
+    },
+    {
+      id: "dcd-rp-watt-enq",
+      type: "fragment",
+      if: { "dcd-rp-enq": ["oui"] },
+      texte: "ENQ R DIV codifiée au stade FRUCT",
+    },
+    {
+      id: "dcd-rp-watt-adm",
+      type: "fragment",
+      if: { "dcd-rp-adm-nv": ["oui"] },
+      texte: "ADM NV SUSPEN recodifiée avec date d'effet au {{date-effet-m1}}",
+    },
+    {
+      id: "dcd-rp-watt-postit",
+      type: "fragment",
+      if: { "dcd-rp-postit": ["oui"] },
+      texte: "Post-it : SUSPEN décalé au M+1 car retour du notaire",
+    },
+    {
+      id: "dcd-rp-watt",
+      label: "COMMENTAIRE AFFAIRE WATT",
+      etape: "dcd-rp-watt", // affiché dans l'étape « METTRE LE COMMENTAIRE AFFAIRE WATT »
+      type: "composite",
+      combine: [
+        "dcd-rp-watt-titre",
+        "dcd-rp-watt-courrier",
+        "dcd-rp-watt-oppdcd",
+        "dcd-rp-watt-oppdcp",
+        "dcd-rp-watt-enq",
+        "dcd-rp-watt-adm",
+        "dcd-rp-watt-postit",
+      ],
+      separator: "<br>",
+    },
+  ],
 };
 
 const dcdBranch = {
