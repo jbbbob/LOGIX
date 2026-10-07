@@ -4413,6 +4413,14 @@
           // Une alerte « stop » visible arrête la checklist : rien n'est
           // affiché après elle (et checklistStops() masque motifs / résultats).
           let stopped = false;
+          // Lignes d'un groupe : mêmes règles if / sauf que les étapes, pour que
+          // l'écran, le compteur, « il manque » et le récap voient la même chose.
+          const garde = (it) => (!it.if || contextMatches(it.if, vars)) && !(it.sauf && contextMatches(it.sauf, vars));
+          const filtrer = (it) =>
+            it.type === "groupe" && Array.isArray(it.items)
+              ? Object.assign({}, it, { items: it.items.filter(garde).map(filtrer) })
+              : it;
+          const vide = (it) => it.type === "groupe" && Array.isArray(it.items) && it.items.length === 0;
           cl.sections.forEach((section) => {
             if (stopped) return;
             if (section.if && !contextMatches(section.if, vars)) return;
@@ -4422,11 +4430,11 @@
               if (item.if && !contextMatches(item.if, vars)) return;
               if (item.sauf && contextMatches(item.sauf, vars)) return; // ex : pas pour le motif 16
               if (item.type === "chambres") {
-                items.push(...buildChambresItems(cl, vars));
+                items.push(...buildChambresItems(cl, vars).map(filtrer).filter((x) => !vide(x)));
               } else if (item.type === "liste") {
-                items.push(...buildListeItems(item));
-              } else {
-                items.push(item);
+                items.push(...buildListeItems(item).map(filtrer).filter((x) => !vide(x)));
+              } else if (!vide(filtrer(item))) {
+                items.push(filtrer(item));
               }
               if (item.type === "alerte" && item.stop) stopped = true;
             });

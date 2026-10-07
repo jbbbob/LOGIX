@@ -18,8 +18,11 @@
 // ============================================================================
 (function () {
   // Catégorie (texte du bouton) et nombre de dossiers à rejouer.
+  // « … SANS ARRÊT » : le robot choisit les réponses qui laissent continuer
+  // (pas de bandeau rouge), pour aller au bout du parcours de chaque motif.
   const PLAN = [
     ["ANV", 120],
+    ["ANV SANS ARRÊT", 60],
     ["DCD", 80],
     ["DÉLAI", 50],
     ["RÉEXÉCUTION", 30],
@@ -102,7 +105,13 @@
         if (el.classList.contains("is-checked")) continue;
         const b = [...el.querySelectorAll(".chk-line > .pill-btn")];
         if (!b.length) continue;
-        const choisi = pick(b);
+        let choisi = pick(b);
+        if (etat.prudent) {
+          const lab = texte(el.querySelector(".chk-label"));
+          const pref = /ADRESSES CONNUES|EXIGIBLE|SUSPEN|FICOBA DISPONIBLE/i.test(lab) ? "OUI"
+            : /TC08|25 000|CONTRAINTE|^COMPTE$|^STATUT$/i.test(lab) ? null : "NON";
+          if (pref) choisi = b.find((x) => texte(x) === pref) || choisi;
+        }
         choisi.click();
         return "question « " + texte(el.querySelector(".chk-label")) + " » → " + texte(choisi);
       }
@@ -198,6 +207,9 @@
   // Comment le dossier s'est terminé.
   function bilan() {
     if ([...document.querySelectorAll(".chk-recap.is-ok")].some(visible)) return "fini";
+    // « IL MANQUE … » alors que le robot a tout fait = étape fantôme (comptée
+    // mais pas affichée) ou étape impossible à cocher.
+    if ([...document.querySelectorAll(".chk-recap.is-todo")].some(visible)) return "incomplet";
     if ([...document.querySelectorAll(".chk-alert.is-danger")].some(visible)) return "arrêt";
     const restantes = [...document.querySelectorAll(".chk-box")].filter((b) => visible(b) && !b.checked);
     if (!restantes.length && [...document.querySelectorAll(".copy-btn")].some(visible)) return "textes";
@@ -211,11 +223,12 @@
     erreurs = [];
     recaps.forEach((f) => f.remove());
     recaps = [];
-    const etat = { essais: {}, ajouts: 0 };
+    const prudent = / SANS ARRÊT$/.test(categorie);
+    const etat = { essais: {}, ajouts: 0, prudent };
     const journal = [];
     let probleme = null;
     try {
-      nouveauDossier(categorie);
+      nouveauDossier(categorie.replace(/ SANS ARRÊT$/, ""));
       for (let k = 0; k < MAX_ACTIONS; k++) {
         const a = uneAction(alea, etat);
         if (!a) break;
@@ -253,7 +266,7 @@
     for (const [categorie, nombre] of PLAN) {
       stats[categorie] = { dossiers: 0, fini: 0, "arrêt": 0, textes: 0, incomplet: 0, actions: 0 };
       for (let i = 0; i < nombre; i++) {
-        const graine = (categorie.charCodeAt(0) * 1000 + i) | 0;
+        const graine = (categorie.charCodeAt(0) * 1000 + (/ SANS ARRÊT$/.test(categorie) ? 500 : 0) + i) | 0;
         const r = await unDossier(categorie, graine);
         const s = stats[categorie];
         s.dossiers += 1;

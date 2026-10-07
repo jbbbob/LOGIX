@@ -457,7 +457,7 @@ La colonne de gauche (CONTEXTE + CHEMIN + « COPIER LE CHEMIN ») a été retir�
 - [ ] Aucune animation de déplacement / taille / apparition ajoutée
 - [ ] Les blocs COURRIER / OBJET sont toujours en 13pt avec leur casse d'origine ; les autres blocs (WATT, post-it) au style de la page
 - [ ] Taper dans un champ ne fait pas perdre le focus
-- [ ] **Tests automatiques au vert** : ouvrir `index.html?tests` (280 dossiers rejoués, ~1 min)
+- [ ] **Tests automatiques au vert** : ouvrir `index.html?tests` (340 dossiers rejoués, ~1 min)
 - [ ] RETOUR recule d'un seul niveau, RECOMMENCER remet tout à zéro
 - [ ] Parcours complet testé + bouton Copier testé dans Word
 - [ ] Testé en mode JOUR **et** en mode NUIT
@@ -550,7 +550,7 @@ La colonne de gauche (CONTEXTE + CHEMIN + « COPIER LE CHEMIN ») a été retir�
 - **Lancer en local** : double-clic sur `index.html`, aucun serveur requis, aucune connexion requise. Après une mise à jour : **Ctrl+F5**.
 - **Sauvegarde** : dépôt Git local initialisé (`git log` pour l'historique, `git diff` avant chaque commit). Copie de secours de l'ancienne UI dans `index.html.bak` (ignorée par Git).
 - **Publier** : `git remote add origin …` puis `git push` sur `main` + activer GitHub Pages dans Settings → Pages *(aucun remote configuré pour l'instant)*
-- **Tests automatiques** : ouvrir `index.html?tests` (ajouter `?tests` à l'adresse). `tests.js` (chargé seulement dans ce cas) rejoue 280 dossiers « au hasard » mais toujours les mêmes (graine) : ANV 120, DCD 80, DÉLAI 50, RÉEXÉCUTION 30. Il répond, choisit, remplit les champs, coche, ajoute des contraintes, ouvre le récap (dans un cadre invisible), puis signale erreur JS, texte cassé (`{{`, `undefined`, `NaN`), dossier pas terminé ou récap qui ne s'ouvre pas. Panneau de résultats en bas à gauche, bouton « REVOIR CE DOSSIER » par problème. À lancer avant chaque push.
+- **Tests automatiques** : ouvrir `index.html?tests` (ajouter `?tests` à l'adresse). `tests.js` (chargé seulement dans ce cas) rejoue 340 dossiers « au hasard » mais toujours les mêmes (graine) : ANV 120, ANV SANS ARRÊT 60 (réponses qui laissent continuer, pour aller au bout de chaque motif), DCD 80, DÉLAI 50, RÉEXÉCUTION 30. Un bilan « IL MANQUE … » restant alors que le robot a tout fait = étape fantôme (comptée mais pas affichée) → signalé. Il répond, choisit, remplit les champs, coche, ajoute des contraintes, ouvre le récap (dans un cadre invisible), puis signale erreur JS, texte cassé (`{{`, `undefined`, `NaN`), dossier pas terminé ou récap qui ne s'ouvre pas. Panneau de résultats en bas à gauche, bouton « REVOIR CE DOSSIER » par problème. À lancer avant chaque push.
 - **Régénérer la doc de l'arbre** : `node scripts/generate-motifs.js`
 - **Vérifier le français des textes** : `node scripts/lint-fr.js`
 - **Debug console** (F12) :
