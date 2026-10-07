@@ -2389,6 +2389,12 @@ const dcdRetourPositifLeaf = {
             label: "ENLEVER LE COMPTE DESTINATAIRE, SAISIR LES COORDONNÉES DU NOTAIRE PUIS COMPLÉTER LE COURRIER",
           },
           { type: "check", id: "dcd-rp-envoye", label: "COURRIER ENVOYÉ" },
+          {
+            type: "check",
+            id: "dcd-rp-esdc",
+            label: "RENSEIGNÉ EN ESDC AVEC LE CODE DCD",
+            copie: [{ label: "ESDC", texte: "Opposition à succession faite auprès du notaire" }],
+          },
         ],
       },
       {
@@ -2425,6 +2431,7 @@ const dcdRetourPositifLeaf = {
             label: "DOUBLE VÉRIFICATION",
             sousCoches: [
               { id: "dc-dcd-rp-courrier", label: "Courrier d'opposition envoyé au notaire" },
+              { id: "dc-dcd-rp-esdc", label: "ESDC renseigné (code DCD)" },
               { id: "dc-dcd-rp-oppdcd", label: "OPPDCD codifiée au stade DEBUT", if: { statut: ["A/C"] } },
               { id: "dc-dcd-rp-oppdcp", label: "OPPDCP codifiée au stade OPP", if: { statut: ["PL"] } },
               { id: "dc-dcd-rp-enq", label: "ENQ R DIV au stade FRUCT" },
@@ -2445,6 +2452,12 @@ const dcdRetourPositifLeaf = {
       type: "fragment",
       if: { "dcd-rp-envoye": ["oui"] },
       texte: "Courrier d'opposition sur l'actif de la succession envoyé au notaire",
+    },
+    {
+      id: "dcd-rp-watt-esdc",
+      type: "fragment",
+      if: { "dcd-rp-esdc": ["oui"] },
+      texte: "ESDC renseigné avec le code DCD : Opposition à succession faite auprès du notaire",
     },
     {
       id: "dcd-rp-watt-oppdcd",
@@ -2478,6 +2491,7 @@ const dcdRetourPositifLeaf = {
       combine: [
         "dcd-rp-watt-titre",
         "dcd-rp-watt-courrier",
+        "dcd-rp-watt-esdc",
         "dcd-rp-watt-oppdcd",
         "dcd-rp-watt-oppdcp",
         "dcd-rp-watt-enq",
