@@ -2366,6 +2366,7 @@ const dcd1ereEnqueteInconnusLeaf = {
 //     bandeau orange : signaler au GCC et passer l'ANV en parallèle ;
 //   - blocage : A/C « passer l'ARRÊT DEBUT au stade FIN » ; PL « voir avec
 //     l'ATC (transaction TOP 06 si présente) » (à confirmer) ;
+//   - courrier aux héritiers : modèle « SUCCESSION - RELANCE HÉRITIERS » ;
 //   - justificatif : seulement la page SNGI en PDF (plus de question GED, plus
 //     de relevé n° d'acte / lieu, plus de demande d'acte à la mairie) ;
 //   - codifications : ESDC « RECHERCHE HERITIERS : RELANCE », ENQ R DIV au
@@ -2427,6 +2428,10 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   // 3. Courriers : plus de demande d'acte à la mairie.
   const sc = sec("dcd-scribe");
   sc.items = sc.items.filter((it) => !(it.type === "groupe" && /MAIRIE/.test(it.label)));
+  // Courrier aux héritiers : modèle de relance.
+  sc.items.forEach((g) => (g.items || []).forEach((it) => {
+    if (it.id === "dcd-scribe-modele") it.copie = [{ label: "MODÈLE", texte: "SUCCESSION - RELANCE HÉRITIERS" }];
+  }));
   // 6. Codifications.
   sec("dcd-codifications").items.forEach((it) => {
     if (it.id === "dcd-esdc") it.copie = [{ texte: "RECHERCHE HERITIERS : RELANCE" }];
