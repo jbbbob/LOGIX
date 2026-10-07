@@ -1278,7 +1278,8 @@
       }
 
       /* Étape atteinte via le bilan : surlignée un instant (couleur seule). */
-      .chk-row.is-flash {
+      .chk-row.is-flash,
+      .card-row.is-flash {
         background: var(--todo-wash);
         box-shadow: inset 4px 0 0 var(--todo);
       }
@@ -1297,6 +1298,12 @@
         letter-spacing: var(--ls-mid);
         color: var(--todo);
         font-variant-numeric: tabular-nums;
+      }
+
+      /* Emplacement du compteur en haut du bloc : transparent pour la mise en
+         page, la barre reste collée en haut sur toute la hauteur du bloc. */
+      #chkHeadSlot {
+        display: contents;
       }
 
       .chk-head-count.is-complete {
@@ -2358,6 +2365,9 @@
         // Bloc unique du mode opératoire ANV (créé une fois, inséré au besoin).
         const processBloc = document.createElement("div");
         processBloc.id = "processBloc";
+        // Compteur « X / Y ÉTAPES FAITES » tout en haut du bloc.
+        const chkHeadSlot = document.createElement("div");
+        chkHeadSlot.id = "chkHeadSlot";
         // Étapes à cocher d'un toggle actif (whenOn.etapes), dans la barre du haut.
         const toggleEtapes = document.createElement("div");
         toggleEtapes.id = "toggleEtapes";
@@ -2910,6 +2920,22 @@
                 " : validation des listes DG-DCF le " + fr(per.validation) +
                 (per.tc18 ? " (TC18 le " + fr(per.tc18) + " : ne pas codifier d'ANV ce jour-là)" : "") + ".";
             }
+            // Calendrier bientôt fini (moins de 45 jours avant la fin de la
+            // dernière période A/C ou PL) : rappel d'ajouter l'année suivante.
+            vars["calendrier-fin-proche"] = "non";
+            if (cal) {
+              const fins = [["A/C", cal.ac], ["PL", cal.pl]]
+                .filter(([, l]) => Array.isArray(l) && l.length)
+                .map(([nom, l]) => ({ nom, fin: l[l.length - 1].fin }))
+                .sort((a, b) => (a.fin < b.fin ? -1 : 1));
+              const limite = new Date();
+              limite.setDate(limite.getDate() + 45);
+              if (fins.length && fins[0].fin <= iso(limite)) {
+                vars["calendrier-fin-proche"] = "oui";
+                vars["info-calendrier-fin"] = "Calendrier ANV bientôt fini : les dates " + fins[0].nom +
+                  " s'arrêtent le " + fr(fins[0].fin) + ". Ajouter le calendrier suivant dans prive/calendrier-anv.js.";
+              }
+            }
           }
 
           // 1 ter. ANV : ce qui est choisi à gauche (CONTEXTE), pour les deux
@@ -3097,6 +3123,44 @@
           else delete checkState["@t:" + id];
         }
 
+        // Étape par étape : modifier une étape déjà faite (changer une réponse,
+        // décocher, changer de motif…) remet à zéro, après confirmation, les
+        // étapes faites APRÈS elle dans la page. Renvoie une remise à zéro par
+        // étape faite trouvée sous « anchor ».
+        function etapesFaitesApres(anchor) {
+          const out = [];
+          if (!anchor) return out;
+          const suit = (el) => el !== anchor && !anchor.contains(el) && !el.contains(anchor) &&
+            !!(anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+          document.querySelectorAll("[id^='chk-row-'], [data-top], [data-sous-id], #cascadeFlow").forEach((el) => {
+            if (!suit(el)) return;
+            if (el === cascadeFlow) {
+              if (inlineChain.length) out.push(() => { inlineChain = []; leafAnswers = {}; leafInputs = {}; });
+              return;
+            }
+            const cle = el.dataset.top ? null : el.dataset.sousId || (el.dataset.contexte ? null : el.id.slice(8));
+            if (el.dataset.top) {
+              if (topAnswers[el.dataset.top]) {
+                out.push(() => { delete topAnswers[el.dataset.top]; noterHeure("top-" + el.dataset.top, false); });
+              }
+            } else if (cle && checkState[cle]) {
+              out.push(() => { delete checkState[cle]; noterHeure(cle, false); });
+            }
+          });
+          return out;
+        }
+
+        function confirmerRetourArriere(anchor) {
+          const apres = etapesFaitesApres(anchor);
+          if (!apres.length) return true;
+          const n = apres.length;
+          const ok = window.confirm("Tu modifies une étape déjà passée.\n\n" +
+            (n > 1 ? "Les " + n + " étapes faites après vont être remises à zéro" : "L'étape faite après va être remise à zéro") +
+            " pour tout refaire dans l'ordre.\n\nContinuer ?");
+          if (ok) apres.forEach((f) => f());
+          return ok;
+        }
+
         function choisirContexte(groupId, value) {
           if (globalSelections[groupId] === value) return;
           globalSelections[groupId] = value;
@@ -3258,22 +3322,38 @@
 
         // Parcours ouvert depuis le mode opératoire : tout est-il fait ? Si oui,
         // bouton « RÉCAP DES ÉTAPES » (même PDF que l'ANV) sous ses étapes de fin.
+        // Étapes d'un parcours ouvert depuis le mode opératoire, dans l'ordre de
+        // la page : faites / total, et ce qui manque (pour « → ÉTAPE MANQUANTE »).
+        function etatParcours(entry, vars) {
+          const whenOn = entry.toggle.whenOn;
+          const etat = { done: 0, total: 0, manque: [] };
+          const compter = (fait, id) => {
+            etat.total += 1;
+            if (fait) etat.done += 1;
+            else etat.manque.push(id);
+          };
+          const visibles = (liste) => (liste || []).filter((it) => !it.if || contextMatches(it.if, vars));
+          const verifier = (it) => {
+            if (it.type === "groupe") return visibles(it.items).forEach(verifier);
+            if (it.facultatif) return;
+            if (it.type === "check") compter(checkState[it.id] === true, it.id);
+            if (it.type === "question") compter(!!checkState[it.id], it.id);
+          };
+          visibles(whenOn.etapes).forEach(verifier);
+          (whenOn.topQuestions || []).forEach((q) => compter(!!topAnswers[q.id], "top-" + q.id));
+          visibles(whenOn.etapesApres).forEach(verifier);
+          const feuille = getDeepestNode();
+          compter(!!(feuille && Array.isArray(feuille.resultats) && feuille.resultats.length), "__cascade");
+          visibles(whenOn.etapesFin).forEach(verifier);
+          return etat;
+        }
+
         function recapParcours(entry, vars) {
           const whenOn = entry.toggle.whenOn;
           if (!whenOn.recapDocument) return null;
+          const etat = etatParcours(entry, vars);
+          if (etat.done !== etat.total) return null;
           const visibles = (liste) => (liste || []).filter((it) => !it.if || contextMatches(it.if, vars));
-          let toutFait = true;
-          const verifier = (it) => {
-            if (it.type === "groupe") return (it.items || []).filter((x) => !x.if || contextMatches(x.if, vars)).forEach(verifier);
-            if (it.facultatif) return;
-            if (it.type === "check" && checkState[it.id] !== true) toutFait = false;
-            if (it.type === "question" && !checkState[it.id]) toutFait = false;
-          };
-          ["etapes", "etapesApres", "etapesFin"].forEach((cle) => visibles(whenOn[cle]).forEach(verifier));
-          (whenOn.topQuestions || []).forEach((q) => { if (!topAnswers[q.id]) toutFait = false; });
-          const feuille = getDeepestNode();
-          if (!feuille || !Array.isArray(feuille.resultats) || !feuille.resultats.length) toutFait = false;
-          if (!toutFait) return null;
 
           const box = document.createElement("div");
           box.className = "chk-recap is-ok";
@@ -3458,6 +3538,7 @@
           const card = document.createElement("section");
           // Répondue : fond vert (dans le bloc ANV), comme les autres choix faits.
           card.className = "card-row" + (topAnswers[q.id] ? " is-done" : "");
+          card.dataset.top = q.id;
           const content = document.createElement("div");
           content.className = "card-row-content";
 
@@ -3474,6 +3555,7 @@
             btn.className = `context-option pill-btn ${currentAnswer === val ? "is-selected" : ""}`;
             btn.setAttribute("aria-pressed", currentAnswer === val ? "true" : "false");
             btn.addEventListener("click", () => {
+              if (topAnswers[q.id] && !confirmerRetourArriere(card)) return;
               if (topAnswers[q.id] === val) {
                 delete topAnswers[q.id];
               } else {
@@ -3726,6 +3808,8 @@
               applyDefaultInputs(option);
 
               if (isInline) {
+                const avant = inlineChain[levelIdx];
+                if (avant && avant.id !== option.id && !confirmerRetourArriere(card)) return;
                 noterHeure("choix-" + (levelNode.choicesTitle || levelIdx), true);
                 const nextNode = option.suite && typeof option.suite === "object" ? option.suite : null;
                 inlineChain = inlineChain.slice(0, levelIdx).concat([{ id: option.id, label: option.label, option: option, node: nextNode }]);
@@ -4750,6 +4834,7 @@
             const row = document.createElement("div");
             row.className = "chk-row chk-question" + (checkState[item.id] ? " is-checked" : "");
             row.id = "chk-row-" + item.id;
+            if (item.contexte) row.dataset.contexte = item.contexte;
             const body = document.createElement("div");
             body.className = "chk-body";
             const line = document.createElement("div");
@@ -4774,6 +4859,7 @@
               btn.className = `context-option pill-btn ${current === val ? "is-selected" : ""}`;
               btn.setAttribute("aria-pressed", current === val ? "true" : "false");
               btn.addEventListener("click", () => {
+                if (current && !(groupeCtx && current === val) && !confirmerRetourArriere(row)) return;
                 if (groupeCtx) { choisirContexte(item.contexte, val); return; }
                 // Re-cliquer sur la réponse choisie l'efface (comme les topQuestions).
                 if (checkState[item.id] === val) delete checkState[item.id];
@@ -4817,6 +4903,7 @@
             box.id = "chk-" + item.id;
             box.checked = checked;
             box.addEventListener("change", () => {
+              if (!box.checked && !confirmerRetourArriere(row)) { box.checked = true; return; }
               // Champs obligatoires (ex : DATE DU JUSTIFICATIF) : pas de coche sans eux.
               if (box.checked && item.champsObligatoires && !champsRemplis(item)) {
                 box.checked = false;
@@ -4885,6 +4972,7 @@
                 const cb = document.createElement("input");
                 cb.type = "checkbox";
                 cb.checked = checkState[sc.id] === true;
+                cb.dataset.sousId = sc.id;
                 cb.addEventListener("change", () => {
                   checkState[sc.id] = cb.checked;
                   noterHeure(sc.id, cb.checked);
@@ -4958,11 +5046,44 @@
         // Fait défiler jusqu'à une étape et la fait clignoter une fois (couleur
         // seulement) pour que l'œil la trouve.
         function goToStep(id) {
-          const el = document.getElementById("chk-row-" + id);
+          const el = id === "__cascade" ? cascadeFlow.lastElementChild
+            : id.startsWith("top-") ? document.querySelector(`[data-top="${id.slice(4)}"]`)
+            : document.getElementById("chk-row-" + id);
           if (!el) return;
           el.scrollIntoView({ behavior: "auto", block: "center" });
           el.classList.add("is-flash");
           setTimeout(() => el.classList.remove("is-flash"), 1400);
+        }
+
+        // Barre « MODE OPÉRATOIRE  → ÉTAPE MANQUANTE  X / Y ÉTAPES FAITES ».
+        function makeChkHead(done, total, premierManquant) {
+          const head = document.createElement("div");
+          head.className = "chk-head";
+          const title = document.createElement("span");
+          title.className = "chk-head-title";
+          title.textContent = "MODE OPÉRATOIRE";
+          head.appendChild(title);
+          if (premierManquant) {
+            // Aller directement à ce qui manque.
+            const go = document.createElement("button");
+            go.type = "button";
+            go.className = "chk-head-go";
+            go.textContent = "→ ÉTAPE MANQUANTE";
+            go.title = "Aller à la première étape pas encore faite";
+            go.addEventListener("click", () => goToStep(premierManquant));
+            head.appendChild(go);
+          }
+          const count = document.createElement("span");
+          count.className = "chk-head-count" + (total > 0 && done === total ? " is-complete" : "");
+          count.textContent = done + " / " + total + (done > 1 ? " ÉTAPES FAITES" : " ÉTAPE FAITE");
+          head.appendChild(count);
+          const bar = document.createElement("div");
+          bar.className = "chk-bar";
+          const fill = document.createElement("span");
+          fill.style.width = (total > 0 ? Math.round((done / total) * 100) : 0) + "%";
+          bar.appendChild(fill);
+          head.appendChild(bar);
+          return head;
         }
 
         let resultsHome = null; // place d'origine des résultats (hors bloc ANV)
@@ -4970,6 +5091,7 @@
           checklistContainer.innerHTML = "";
           checklistBas.innerHTML = "";
           checklistFin.innerHTML = "";
+          chkHeadSlot.innerHTML = "";
           syncAutoChecks();
           const leaf = getChecklistNode();
           // Checklist de la racine (position "haut", ANV) : UN SEUL BLOC qui
@@ -4987,46 +5109,33 @@
           if (enBloc && checklistContainer.parentElement !== processBloc) {
             if (!resultsHome) resultsHome = { parent: resultsContainer.parentElement, next: resultsContainer.nextSibling };
             togglesContainer.before(processBloc);
-            processBloc.append(togglesContainer, checklistContainer, cascadeFlow, leafQuestionsContainer, checklistBas, resultsContainer, checklistFin);
+            processBloc.append(chkHeadSlot, togglesContainer, checklistContainer, cascadeFlow, leafQuestionsContainer, checklistBas, resultsContainer, checklistFin);
           } else if (!enBloc && checklistContainer.parentElement === processBloc) {
             processBloc.replaceWith(togglesContainer, cascadeFlow, leafQuestionsContainer, checklistContainer, checklistBas);
             resultsHome.parent.insertBefore(resultsContainer, resultsHome.next);
             checklistFin.innerHTML = "";
+          }
+          // Parcours ouvert depuis le mode opératoire (VERSEMENT RÉCENT…) : son
+          // propre compteur (étapes, questions du haut, raison).
+          if (!leaf && depuisProcess) {
+            const vars = buildTemplateVars();
+            const etat = { done: 0, total: 0, manque: [] };
+            activeToggleStack.forEach((entry) => {
+              const e = etatParcours(entry, vars);
+              etat.done += e.done;
+              etat.total += e.total;
+              etat.manque.push(...e.manque);
+            });
+            if (etat.total) chkHeadSlot.appendChild(makeChkHead(etat.done, etat.total, etat.manque[0]));
           }
           if (!leaf) return;
 
           const vars = buildTemplateVars();
           const sections = buildChecklistModel(leaf, vars);
           const { done, total } = countChecklist(sections);
-
-          const head = document.createElement("div");
-          head.className = "chk-head";
-          const title = document.createElement("span");
-          title.className = "chk-head-title";
-          title.textContent = "MODE OPÉRATOIRE";
-          head.appendChild(title);
-          const count = document.createElement("span");
-          count.className = "chk-head-count" + (total > 0 && done === total ? " is-complete" : "");
-          count.textContent = done + " / " + total;
-          head.appendChild(count);
-          const bar = document.createElement("div");
-          bar.className = "chk-bar";
-          const fill = document.createElement("span");
-          fill.style.width = (total > 0 ? Math.round((done / total) * 100) : 0) + "%";
           const missing = listMissing(sections, vars);
-          // Bouton dans la barre collée en haut : aller directement à ce qui manque.
-          if (missing.length > 0) {
-            const go = document.createElement("button");
-            go.type = "button";
-            go.className = "chk-head-go";
-            go.textContent = "→ ÉTAPE MANQUANTE";
-            go.title = "Aller à la première étape pas encore faite";
-            go.addEventListener("click", () => goToStep(missing[0].id));
-            head.insertBefore(go, count);
-          }
-          bar.appendChild(fill);
-          head.appendChild(bar);
-          checklistContainer.appendChild(head);
+          const head = makeChkHead(done, total, missing.length ? missing[0].id : null);
+          (enBloc ? chkHeadSlot : checklistContainer).appendChild(head);
 
           let zoneFin = checklistContainer;
           sections.forEach((section) => {
@@ -5550,9 +5659,8 @@
           }
         }
 
-        // RECOMMENCER = dossier suivant. On remet tout le parcours à zéro MAIS on
-        // garde COMPTE et STATUT (globalSelections), qui ne changent pas d'un
-        // dossier à l'autre : ça économise 2 clics à chaque dossier.
+        // RECOMMENCER = dossier suivant. On remet tout le parcours à zéro, COMPTE
+        // et STATUT compris (ils sont redemandés dans le mode opératoire).
         // Garde-fou du MODE OPÉRATOIRE : s'il reste des étapes non cochées, le
         // 1er clic sur RECOMMENCER prévient seulement (pas de fenêtre à
         // valider) ; un 2e clic dans les 4 secondes lance le dossier suivant.
@@ -5708,10 +5816,17 @@
           reader.readAsDataURL(blob);
         });
 
-        // Listener du bouton "📋 chemin"
-
         render();
       })();
+    </script>
+    <!-- Tests automatiques : seulement avec « ?tests » à la fin de l'adresse
+         (index.html?tests). Voir l'en-tête de tests.js. -->
+    <script>
+      if (/[?&]tests\b/.test(location.search)) {
+        const t = document.createElement("script");
+        t.src = "./tests.js";
+        document.body.appendChild(t);
+      }
     </script>
   </body>
 </html>

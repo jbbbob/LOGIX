@@ -862,6 +862,12 @@ anvBranch.suite.checklist = {
         },
         {
           type: "alerte",
+          niveau: "warning",
+          if: { "calendrier-fin-proche": ["oui"] },
+          texte: "{{info-calendrier-fin}}",
+        },
+        {
+          type: "alerte",
           niveau: "danger",
           if: { "dgdcf-tc18-aujourdhui": ["oui"] },
           texte: "AUJOURD'HUI = JOUR TC18 : NE PAS CODIFIER D'ANV.",
