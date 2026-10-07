@@ -851,7 +851,7 @@ anvBranch.suite.checklist = {
           type: "question",
           id: "dette-exigible",
           label: "Vérifier les dates d'exigibilité de l'ANV : dette exigible ?",
-          // Rappel du calendrier ANV (prive/calendrier-anv.js) : période en cours
+          // Rappel du calendrier ANV (calendrier-anv.js) : période en cours
           // et prochaine validation des listes DG-DCF selon A/C ou PL.
           aide: "{{info-dgdcf}}",
           action: {

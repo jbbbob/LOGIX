@@ -2335,8 +2335,8 @@
     <!-- Tutos en images : dossier tutos/ gardé sur le PC (jamais envoyé sur
          GitHub, voir .gitignore). S'il n'existe pas, aucun « i » n'apparaît. -->
     <script src="./tutos/tutos.js" onerror="window.logixTutos = window.logixTutos || {}"></script>
-    <!-- Calendrier ANV (fichier local, dossier prive/ non publié). -->
-    <script src="./prive/calendrier-anv.js" onerror="window.logixCalendrierANV = window.logixCalendrierANV || null"></script>
+    <!-- Calendrier ANV (dates DG-DCF / TC18, voir calendrier-anv.js). -->
+    <script src="./calendrier-anv.js" onerror="window.logixCalendrierANV = window.logixCalendrierANV || null"></script>
     <script>
       (function () {
         if (!window.treeData) {
@@ -2900,7 +2900,7 @@
             vars["dc-liste-reldet"] = L;
           }
 
-          // 1 septies. Calendrier ANV (prive/calendrier-anv.js) : période qui
+          // 1 septies. Calendrier ANV (calendrier-anv.js) : période qui
           //   contient aujourd'hui (sinon la prochaine) selon A/C ou PL, et sa
           //   date de validation des listes DG-DCF ; en PL, le jour TC18.
           {
@@ -2912,9 +2912,9 @@
             const auj = iso(new Date());
             const per = liste.find((p) => p.debut <= auj && auj <= p.fin) || liste.find((p) => p.debut > auj);
             vars["dgdcf-tc18-aujourdhui"] = per && per.tc18 === auj ? "oui" : "non";
-            if (!cal) vars["info-dgdcf"] = "Calendrier ANV non chargé (fichier prive/calendrier-anv.js absent).";
+            if (!cal) vars["info-dgdcf"] = "Calendrier ANV non chargé (fichier calendrier-anv.js absent).";
             else if (!vars.statut) vars["info-dgdcf"] = "Choisis le statut (A/C ou PL) pour voir la prochaine validation DG-DCF.";
-            else if (!per) vars["info-dgdcf"] = "⚠ Calendrier ANV " + (pl ? "PL" : "A/C") + " terminé : ajouter les dates suivantes dans prive/calendrier-anv.js.";
+            else if (!per) vars["info-dgdcf"] = "⚠ Calendrier ANV " + (pl ? "PL" : "A/C") + " terminé : ajouter les dates suivantes dans calendrier-anv.js.";
             else {
               vars["info-dgdcf"] = (pl ? "PL" : "A/C") + " — période du " + fr(per.debut) + " au " + fr(per.fin) +
                 " : validation des listes DG-DCF le " + fr(per.validation) +
@@ -2933,7 +2933,7 @@
               if (fins.length && fins[0].fin <= iso(limite)) {
                 vars["calendrier-fin-proche"] = "oui";
                 vars["info-calendrier-fin"] = "Calendrier ANV bientôt fini : les dates " + fins[0].nom +
-                  " s'arrêtent le " + fr(fins[0].fin) + ". Ajouter le calendrier suivant dans prive/calendrier-anv.js.";
+                  " s'arrêtent le " + fr(fins[0].fin) + ". Ajouter le calendrier suivant dans calendrier-anv.js.";
               }
             }
           }
