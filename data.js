@@ -2337,6 +2337,13 @@ const dcd1ereEnqueteInconnusLeaf = {
       texte: "Recherche de succession vacante effectuée et justificatif rattaché à l'affaire",
     },
     {
+      // Décès de moins de 6 mois : la recherche n'est pas faite, on le dit.
+      id: "dcd-watt-succession-non",
+      type: "fragment",
+      if: { "deces-plus-6-mois": ["non"] },
+      texte: "Pas de recherche de succession vacante car décès de moins de 6 mois",
+    },
+    {
       id: "dcd-watt",
       label: "COMMENTAIRE AFFAIRE WATT",
       etape: "dcd-watt", // affiché dans l'étape « METTRE LE COMMENTAIRE AFFAIRE WATT »
@@ -2352,6 +2359,7 @@ const dcd1ereEnqueteInconnusLeaf = {
         "dcd-watt-heritiers",
         "dcd-watt-notaires",
         "dcd-watt-succession",
+        "dcd-watt-succession-non",
       ],
       separator: "<br>",
     },
