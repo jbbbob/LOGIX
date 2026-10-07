@@ -1156,7 +1156,8 @@ function makeDetteNonExigibleLeaf(phraseMiddle) {
         texte:
           "Compte {{compte-display}} - Pas de risque de prescription - " +
           phraseMiddle +
-          " - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reldet}}",
+          " - Pas d'ANV car dette non exigible - Tentative de recouvrement à l'amiable {{phrase-reldet}}" +
+          "{{ligne-suspen-dne}}", // + « ANV SUSPEN … » à la ligne si codifiée (radié)
       },
     ],
   };
@@ -1209,6 +1210,41 @@ const detteNonExigibleToggle = {
     ],
   },
 };
+
+// Compte RADIÉ + dette non exigible : parfois une ANV SUSPEN à codifier.
+// Question OUI / NON en haut du parcours ; OUI → codification + post-it (A/C)
+// ou ESDC code INCX (PL), même texte que l'ANV ; la ligne s'ajoute au WATT
+// ({{ligne-suspen-dne}}) et à la double vérification (index.html).
+detteNonExigibleToggle.whenOn.etapes = [
+  {
+    type: "question",
+    id: "dne-suspen",
+    if: { compte: ["RADIÉ"] },
+    label: "ANV SUSPEN nécessaire ?",
+  },
+  {
+    type: "groupe",
+    label: "ANV SUSPEN (COMPTE RADIÉ)",
+    if: { compte: ["RADIÉ"], "dne-suspen": ["oui"] },
+    items: [
+      { type: "check", id: "dne-suspen-codif", label: "Codifier l'ANV SUSPEN" },
+      {
+        type: "check",
+        id: "dne-suspen-postit",
+        if: { statut: ["A/C", ""] },
+        label: "Ajouter le post-it",
+        copie: [{ label: "POST-IT", texte: "ANV SUSPEN pour exigibilité inférieure à un an" }],
+      },
+      {
+        type: "check",
+        id: "dne-suspen-esdc",
+        if: { statut: ["PL"] },
+        label: "Renseigné en ESDC avec le code INCX",
+        copie: [{ label: "ESDC", texte: "ANV SUSPEN pour exigibilité inférieure à un an" }],
+      },
+    ],
+  },
+];
 
 // DETTE NON EXIGIBLE : parcours à part, caché en haut (ouvert depuis le mode opératoire).
 anvBranch.suite.toggles.push(detteNonExigibleToggle);

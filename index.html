@@ -2907,6 +2907,15 @@
             if (parcours === "amiable-reldet" && vars.compte === "RADIÉ") {
               L.push({ k: "suspen", l: "ANV SUSPEN codifiée" }, { k: "suspen-postit", l: "Post-it ANV SUSPEN renseigné" });
             }
+            // Dette non exigible + radié : ANV SUSPEN si la question dit OUI.
+            const suspenDne = parcours === "dette-non-exigible" && vars.compte === "RADIÉ" && checkState["dne-suspen"] === "oui";
+            if (suspenDne) {
+              L.push({ k: "suspen", l: "ANV SUSPEN codifiée" },
+                vars.statut === "PL"
+                  ? { k: "suspen-esdc", l: "ESDC renseigné (code INCX)" }
+                  : { k: "suspen-postit", l: "Post-it ANV SUSPEN renseigné" });
+            }
+            vars["ligne-suspen-dne"] = suspenDne ? "\nANV SUSPEN pour exigibilité inférieure à un an" : "";
             L.push({ k: "watt", l: "Commentaire affaire WATT renseigné" });
             vars["dc-liste-reldet"] = L;
           }
@@ -4815,7 +4824,11 @@
               }
               grp.appendChild(aide);
             }
-            (item.items || []).forEach((sub) => renderChecklistItem(sub, vars, grp, sectionId));
+            // Conditions des lignes du groupe (déjà filtrées dans la checklist, pas
+            // dans les étapes des parcours VERSEMENT RÉCENT / DETTE NON EXIGIBLE).
+            (item.items || [])
+              .filter((sub) => (!sub.if || contextMatches(sub.if, vars)) && !(sub.sauf && contextMatches(sub.sauf, vars)))
+              .forEach((sub) => renderChecklistItem(sub, vars, grp, sectionId));
             parent.appendChild(grp);
             return;
           }
