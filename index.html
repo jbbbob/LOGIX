@@ -3037,7 +3037,7 @@
             }[checkState["dcd-rel-motif-pl"]];
             vars["dcd-anv-texte"] = pl
               ? casPl || "… (choisir le cas ci-dessus)"
-              : ss ? "ANV 13 SS MOTIF " + ss + " COU PAS ACTIF GED DU " + auj : "… (choisir le sous-motif ci-dessus)";
+              : ss ? "ANV 13 SS MOTIF " + ss + (ss === "19" ? " ENQ" : " COU") + " PAS ACTIF GED DU " + auj : "… (choisir le sous-motif ci-dessus)";
             vars["dcd-anv-rappel"] = !pl && ss ? "MOTIF 13 · SOUS-MOTIF " + ss : "MOTIF 13";
             const stade = pl
               ? checkState["dcd-rel-anv-repris"] === true ? "REPRIS" : checkState["dcd-rel-anv-demand"] === true ? "DEMAND" : ""
