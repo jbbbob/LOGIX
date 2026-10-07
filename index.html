@@ -3040,10 +3040,10 @@
               : ss ? "ANV 13 SS MOTIF " + ss + (ss === "19" ? " ENQ" : " COU") + " PAS ACTIF GED DU " + auj : "… (choisir le sous-motif ci-dessus)";
             vars["dcd-anv-rappel"] = !pl && ss ? "MOTIF 13 · SOUS-MOTIF " + ss : "MOTIF 13";
             const stade = pl
-              ? checkState["dcd-rel-anv-repris"] === true ? "REPRIS" : checkState["dcd-rel-anv-demand"] === true ? "DEMAND" : ""
+              ? checkState["dcd-rel-anv-pl"] === true ? "REPRIS ou DEMAND" : ""
               : checkState["dcd-rel-anv-incra"] === true ? "IN CRA" : "";
             vars["dcd-anv-fait"] = relanceDcd && stade ? "oui" : "non";
-            vars["dcd-anv-watt"] = "ANV codifiée au stade " + stade + " : " + vars["dcd-anv-texte"];
+            vars["dcd-anv-watt"] = (pl ? "ANV codifiée : " : "ANV codifiée au stade IN CRA : ") + vars["dcd-anv-texte"];
           }
           vars["traitement-stop"] = vars["reroutage-gcc"] === "oui" || bloque ? "oui" : "non";
 

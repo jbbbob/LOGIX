@@ -2370,7 +2370,7 @@ const dcd1ereEnqueteInconnusLeaf = {
 //   - justificatif : seulement la page SNGI en PDF (plus de question GED, plus
 //     de relevé n° d'acte / lieu, plus de demande d'acte à la mairie) ;
 //   - codifications : d'abord l'ANV motif 13 (A/C : sous-motif 18 ou 19, stade
-//     IN CRA + post-it ; PL : 3 cas, stade REPRIS / DEMAND + ESDC code ANV),
+//     IN CRA + post-it ; PL : 3 cas, stade REPRIS ou DEMAND + ESDC code ANV),
 //     à la place de l'ADM NV SUSPEN ; puis ESDC « RECHERCHE HERITIERS :
 //     RELANCE », ENQ R DIV au stade NFRUCT ; WATT avec le même titre.
 //     Textes de l'ANV calculés dans index.html ({{dcd-anv-texte}}…).
@@ -2458,9 +2458,7 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
     },
     { type: "check", id: "dcd-rel-anv-incra", if: { statut: ["A/C"] }, label: "CODIFIER L'ANV AU STADE IN CRA", rappel: "{{dcd-anv-rappel}}" },
     { type: "check", id: "dcd-rel-anv-postit", if: { statut: ["A/C"] }, label: "AJOUTER LE POST-IT", copie: [{ label: "POST-IT", texte: "{{dcd-anv-texte}}" }] },
-    { type: "question", id: "dcd-rel-tc08", if: { statut: ["PL"] }, label: "ANV CRÉÉE PAR TC08 OU RC08 ?" },
-    { type: "check", id: "dcd-rel-anv-repris", if: { statut: ["PL"], "dcd-rel-tc08": ["oui"] }, label: "CODIFIER L'ANV AU STADE REPRIS", rappel: "{{dcd-anv-rappel}}" },
-    { type: "check", id: "dcd-rel-anv-demand", if: { statut: ["PL"], "dcd-rel-tc08": ["non"] }, label: "CODIFIER L'ANV AU STADE DEMAND", rappel: "{{dcd-anv-rappel}}" },
+    { type: "check", id: "dcd-rel-anv-pl", if: { statut: ["PL"] }, label: "CODIFIER L'ANV AU STADE REPRIS OU DEMAND", rappel: "{{dcd-anv-rappel}}" },
     { type: "check", id: "dcd-rel-anv-esdc", if: { statut: ["PL"] }, label: "RENSEIGNÉ EN ESDC AVEC LE CODE ANV", copie: [{ label: "ESDC", texte: "{{dcd-anv-texte}}" }] },
   ];
   codif.items = anvRelance.concat(codif.items.filter((it) => it.id !== "dcd-adm-nv"));
