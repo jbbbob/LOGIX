@@ -2524,6 +2524,9 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   });
   leaf.resultats.forEach((r) => {
     if (r.id === "dcd-watt-titre") r.texte = "RECHERCHE HERITIERS : RELANCE";
+    if (r.id === "dcd-watt-heritiers") {
+      r.texte = "Courrier de relance envoyé à l'attention des héritiers, non connus de nos services, à la dernière adresse connue du défunt";
+    }
     if (r.id === "dcd-watt-esdc") r.texte = "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : RELANCE";
     if (r.id === "dcd-watt-enq") {
       r.texte = "ENQ R DIV codifiée au stade NFRUCT";
