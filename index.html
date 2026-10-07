@@ -4638,6 +4638,26 @@
           a.target = "_blank";
           a.rel = "noopener noreferrer";
           a.textContent = (lien.label || "OUVRIR") + " ↗";
+          // Un onglet par site, réutilisé d'un dossier à l'autre : si l'onglet
+          // ouvert par LOGIX existe encore, on bascule dessus SANS le recharger ;
+          // sinon on l'ouvre. (Clic molette / Ctrl+clic : nouvel onglet comme avant.)
+          a.addEventListener("click", (e) => {
+            if (e.button !== 0 || e.ctrlKey || e.shiftKey || e.metaKey || e.altKey) return;
+            const nom = "logix-" + lien.url.replace(/#.*$/, "").replace(/[^a-z0-9]+/gi, "_");
+            const w = window.open("", nom); // onglet existant, sinon nouvel onglet vide
+            if (!w) return; // ouverture bloquée : le lien normal prend le relais
+            e.preventDefault();
+            let vide = false;
+            try {
+              vide = w.location.href === "about:blank"; // lisible = encore vide
+            } catch (err) {
+              vide = false; // illisible = déjà sur le site
+            }
+            if (vide) {
+              w.location.href = lien.url;
+            }
+            w.focus();
+          });
           return a;
         }
 
