@@ -2462,6 +2462,24 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
     { type: "check", id: "dcd-rel-anv-esdc", if: { statut: ["PL"] }, label: "RENSEIGNÉ EN ESDC AVEC LE CODE ANV", copie: [{ label: "ESDC", texte: "{{dcd-anv-texte}}" }] },
   ];
   codif.items = anvRelance.concat(codif.items.filter((it) => it.id !== "dcd-adm-nv"));
+  // Fin (après la double vérification), même règle que l'onglet ANV :
+  // A/C : > 25 000 € → manager, sinon clôture. PL : parcours initial ouvert
+  // par RC08 / TC08 ? OUI → même règle des 25 000 € ; NON → manager quoi qu'il arrive.
+  codif.items.push(
+    { type: "question", id: "dcd-rel-25k-ac", if: { statut: ["A/C"] }, label: "ANV SUPÉRIEURE À 25 000 € ?" },
+    { type: "check", id: "dcd-rel-manager-ac", if: { statut: ["A/C"], "dcd-rel-25k-ac": ["oui"] }, label: "SOUMETTRE AU MANAGER" },
+    { type: "check", id: "dcd-rel-cloture-ac", if: { statut: ["A/C"], "dcd-rel-25k-ac": ["non"] }, label: "CLÔTURER L'AFFAIRE" },
+    { type: "question", id: "dcd-rel-tc08", if: { statut: ["PL"] }, label: "PARCOURS INITIAL OUVERT PAR RC08 OU TC08 ?" },
+    { type: "question", id: "dcd-rel-25k-pl", if: { statut: ["PL"], "dcd-rel-tc08": ["oui"] }, label: "ANV SUPÉRIEURE À 25 000 € ?" },
+    { type: "check", id: "dcd-rel-manager-pl", if: { statut: ["PL"], "dcd-rel-tc08": ["oui"], "dcd-rel-25k-pl": ["oui"] }, label: "SOUMETTRE AU MANAGER" },
+    { type: "check", id: "dcd-rel-cloture-pl", if: { statut: ["PL"], "dcd-rel-tc08": ["oui"], "dcd-rel-25k-pl": ["non"] }, label: "CLÔTURER L'AFFAIRE" },
+    {
+      type: "check",
+      id: "dcd-rel-manager-pl-demand",
+      if: { statut: ["PL"], "dcd-rel-tc08": ["non"] },
+      label: "SOUMETTRE AU MANAGER (PARCOURS NON OUVERT PAR RC08 / TC08 : TOUJOURS, QUEL QUE SOIT LE MONTANT)",
+    }
+  );
   codif.items.forEach((it) => {
     if (it.id === "dcd-esdc") it.copie = [{ texte: "RECHERCHE HERITIERS : RELANCE" }];
     if (it.id === "dcd-enq") it.label = "ENQ R DIV CODIFIÉE AU STADE NFRUCT";
