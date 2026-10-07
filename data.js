@@ -2386,7 +2386,7 @@ const dcdRetourPositifLeaf = {
           {
             type: "check",
             id: "dcd-rp-coordonnees",
-            label: "SAISIR LES COORDONNÉES DU NOTAIRE EN ENLEVANT LE COMPTE DESTINATAIRE",
+            label: "ENLEVER LE COMPTE DESTINATAIRE, SAISIR LES COORDONNÉES DU NOTAIRE PUIS COMPLÉTER LE COURRIER",
           },
           { type: "check", id: "dcd-rp-envoye", label: "COURRIER ENVOYÉ" },
         ],
