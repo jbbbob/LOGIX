@@ -3134,44 +3134,6 @@
           else delete checkState["@t:" + id];
         }
 
-        // Étape par étape : modifier une étape déjà faite (changer une réponse,
-        // décocher, changer de motif…) remet à zéro, après confirmation, les
-        // étapes faites APRÈS elle dans la page. Renvoie une remise à zéro par
-        // étape faite trouvée sous « anchor ».
-        function etapesFaitesApres(anchor) {
-          const out = [];
-          if (!anchor) return out;
-          const suit = (el) => el !== anchor && !anchor.contains(el) && !el.contains(anchor) &&
-            !!(anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
-          document.querySelectorAll("[id^='chk-row-'], [data-top], [data-sous-id], #cascadeFlow").forEach((el) => {
-            if (!suit(el)) return;
-            if (el === cascadeFlow) {
-              if (inlineChain.length) out.push(() => { inlineChain = []; leafAnswers = {}; leafInputs = {}; });
-              return;
-            }
-            const cle = el.dataset.top ? null : el.dataset.sousId || (el.dataset.contexte ? null : el.id.slice(8));
-            if (el.dataset.top) {
-              if (topAnswers[el.dataset.top]) {
-                out.push(() => { delete topAnswers[el.dataset.top]; noterHeure("top-" + el.dataset.top, false); });
-              }
-            } else if (cle && checkState[cle]) {
-              out.push(() => { delete checkState[cle]; noterHeure(cle, false); });
-            }
-          });
-          return out;
-        }
-
-        function confirmerRetourArriere(anchor) {
-          const apres = etapesFaitesApres(anchor);
-          if (!apres.length) return true;
-          const n = apres.length;
-          const ok = window.confirm("Tu modifies une étape déjà passée.\n\n" +
-            (n > 1 ? "Les " + n + " étapes faites après vont être remises à zéro" : "L'étape faite après va être remise à zéro") +
-            " pour tout refaire dans l'ordre.\n\nContinuer ?");
-          if (ok) apres.forEach((f) => f());
-          return ok;
-        }
-
         function choisirContexte(groupId, value) {
           if (globalSelections[groupId] === value) return;
           globalSelections[groupId] = value;
@@ -3549,7 +3511,7 @@
           const card = document.createElement("section");
           // Répondue : fond vert (dans le bloc ANV), comme les autres choix faits.
           card.className = "card-row" + (topAnswers[q.id] ? " is-done" : "");
-          card.dataset.top = q.id;
+          card.dataset.top = q.id; // pour « → ÉTAPE MANQUANTE »
           const content = document.createElement("div");
           content.className = "card-row-content";
 
@@ -3566,7 +3528,6 @@
             btn.className = `context-option pill-btn ${currentAnswer === val ? "is-selected" : ""}`;
             btn.setAttribute("aria-pressed", currentAnswer === val ? "true" : "false");
             btn.addEventListener("click", () => {
-              if (topAnswers[q.id] && !confirmerRetourArriere(card)) return;
               if (topAnswers[q.id] === val) {
                 delete topAnswers[q.id];
               } else {
@@ -3819,8 +3780,6 @@
               applyDefaultInputs(option);
 
               if (isInline) {
-                const avant = inlineChain[levelIdx];
-                if (avant && avant.id !== option.id && !confirmerRetourArriere(card)) return;
                 noterHeure("choix-" + (levelNode.choicesTitle || levelIdx), true);
                 const nextNode = option.suite && typeof option.suite === "object" ? option.suite : null;
                 inlineChain = inlineChain.slice(0, levelIdx).concat([{ id: option.id, label: option.label, option: option, node: nextNode }]);
@@ -4845,7 +4804,6 @@
             const row = document.createElement("div");
             row.className = "chk-row chk-question" + (checkState[item.id] ? " is-checked" : "");
             row.id = "chk-row-" + item.id;
-            if (item.contexte) row.dataset.contexte = item.contexte;
             const body = document.createElement("div");
             body.className = "chk-body";
             const line = document.createElement("div");
@@ -4870,7 +4828,6 @@
               btn.className = `context-option pill-btn ${current === val ? "is-selected" : ""}`;
               btn.setAttribute("aria-pressed", current === val ? "true" : "false");
               btn.addEventListener("click", () => {
-                if (current && !(groupeCtx && current === val) && !confirmerRetourArriere(row)) return;
                 if (groupeCtx) { choisirContexte(item.contexte, val); return; }
                 // Re-cliquer sur la réponse choisie l'efface (comme les topQuestions).
                 if (checkState[item.id] === val) delete checkState[item.id];
@@ -4914,7 +4871,6 @@
             box.id = "chk-" + item.id;
             box.checked = checked;
             box.addEventListener("change", () => {
-              if (!box.checked && !confirmerRetourArriere(row)) { box.checked = true; return; }
               // Champs obligatoires (ex : DATE DU JUSTIFICATIF) : pas de coche sans eux.
               if (box.checked && item.champsObligatoires && !champsRemplis(item)) {
                 box.checked = false;
@@ -4991,7 +4947,6 @@
                 const cb = document.createElement("input");
                 cb.type = "checkbox";
                 cb.checked = checkState[sc.id] === true;
-                cb.dataset.sousId = sc.id;
                 cb.addEventListener("change", () => {
                   checkState[sc.id] = cb.checked;
                   noterHeure(sc.id, cb.checked);

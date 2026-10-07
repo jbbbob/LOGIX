@@ -161,11 +161,11 @@
           vide.dispatchEvent(new Event("change", { bubbles: true }));
           return "champ " + id + " = " + vide.value;
         }
-        const cle = "case:" + (el.id || el.dataset.sousId);
+        const cle = "case:" + (el.id || el.closest("label").textContent);
         etat.essais[cle] = (etat.essais[cle] || 0) + 1;
         if (etat.essais[cle] > 2) continue; // refusée (champ obligatoire vide)
         el.click();
-        return "coche " + (el.id || el.dataset.sousId);
+        return "coche " + (el.id || el.closest("label").textContent.trim());
       }
     }
     // Plus rien d'autre : bouton « FAIRE RELDET → » (une fois sur deux) puis récap.
