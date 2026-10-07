@@ -2414,6 +2414,7 @@ const dcdRetourPositifLeaf = {
           {
             type: "check",
             id: "dcd-rp-postit",
+            if: { statut: ["A/C"] }, // PL : pas de post-it
             label: "AJOUTER LE POST-IT",
             copie: [{ label: "POST-IT", texte: "SUSPEN décalé au M+1 car retour du notaire" }],
           },
@@ -2436,7 +2437,7 @@ const dcdRetourPositifLeaf = {
               { id: "dc-dcd-rp-oppdcp", label: "OPPDCP codifiée au stade OPP", if: { statut: ["PL"] } },
               { id: "dc-dcd-rp-enq", label: "ENQ R DIV au stade FRUCT" },
               { id: "dc-dcd-rp-adm", label: "ADM NV SUSPEN recodifiée au M+1" },
-              { id: "dc-dcd-rp-postit", label: "Post-it renseigné" },
+              { id: "dc-dcd-rp-postit", label: "Post-it renseigné", if: { statut: ["A/C"] } },
               { id: "dc-dcd-rp-watt", label: "Commentaire affaire WATT renseigné" },
             ],
           },
