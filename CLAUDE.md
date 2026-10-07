@@ -17,6 +17,13 @@ Je suis **contrôleur de recouvrement**. Je construis ce projet **seul**, pour *
 - **Si je te demande un truc qui a une meilleure alternative plus simple, dis-le AVANT de coder.** Challenge-moi, ne me flatte pas.
 - **Pousse-moi à faire mieux.** À la fin de chaque tâche non-triviale, signale 1 à 3 pistes auxquelles je n'ai probablement pas pensé (sans partir les faire — juste les mentionner).
 - **Une modif à la fois.** Jamais d'enchaînement sans que j'aie testé dans le navigateur entre deux.
+- **Explique ce que tu as codé avec un tableau dès que c'est possible.** Quand une modif change l'affichage selon les cas (A/C / PL, ACTIF / RADIÉ, motif…), résume-la dans un tableau markdown : une ligne par étape ou par cas, une colonne par situation, le texte exact affiché entre `backticks`, « — » quand rien ne s'affiche, et une courte précision entre parenthèses si besoin. Exemple :
+
+  | Étape | A/C | PL |
+  |---|---|---|
+  | Codifier l'ANV au stade IN CRA | `MOTIF 12 · SOUS-MOTIF 25` | — |
+  | Codifier l'ANV au stade REPRIS / DEMAND | — | `MOTIF 12` (pas de sous-motif) |
+  | Codifier l'ANV SUSPEN | `MOTIF 12` | `MOTIF 12` |
 
 ---
 
