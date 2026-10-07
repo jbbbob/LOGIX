@@ -2462,6 +2462,24 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
     { type: "check", id: "dcd-rel-anv-esdc", if: { statut: ["PL"] }, label: "RENSEIGNÉ EN ESDC AVEC LE CODE ANV", copie: [{ label: "ESDC", texte: "{{dcd-anv-texte}}" }] },
   ];
   codif.items = anvRelance.concat(codif.items.filter((it) => it.id !== "dcd-adm-nv"));
+  // Après l'ENQ : parcours OPP DCD présent sur le compte → stade FIN
+  // (A/C : de DEBUT à FIN ; PL : de OPP à FIN).
+  const iEnq = codif.items.findIndex((it) => it.id === "dcd-enq");
+  codif.items.splice(iEnq + 1, 0,
+    { type: "question", id: "dcd-rel-opp-present", label: "PARCOURS OPP DCD PRÉSENT SUR LE COMPTE ?" },
+    {
+      type: "check",
+      id: "dcd-rel-opp-fin-ac",
+      if: { statut: ["A/C"], "dcd-rel-opp-present": ["oui"] },
+      label: "METTRE À JOUR LE PARCOURS OPP DCD AU STADE FIN (DE DEBUT À FIN)",
+    },
+    {
+      type: "check",
+      id: "dcd-rel-opp-fin-pl",
+      if: { statut: ["PL"], "dcd-rel-opp-present": ["oui"] },
+      label: "METTRE À JOUR LE PARCOURS OPP DCD AU STADE FIN (DE OPP À FIN)",
+    }
+  );
   // Fin (après la double vérification), même règle que l'onglet ANV :
   // A/C : > 25 000 € → manager, sinon clôture. PL : parcours initial ouvert
   // par RC08 / TC08 ? OUI → même règle des 25 000 € ; NON → manager quoi qu'il arrive.
@@ -2487,6 +2505,12 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   // Commentaire WATT : texte de l'ANV tout en haut (puis ligne vide) à la place de l'ADM NV, plus de mairie.
   leaf.resultats = leaf.resultats.filter((r) => r.id !== "dcd-watt-mairie" && r.id !== "dcd-watt-adm");
   leaf.resultats.unshift({ id: "dcd-watt-anv", type: "fragment", if: { "dcd-anv-fait": ["oui"] }, texte: "{{dcd-anv-watt}}" });
+  leaf.resultats.unshift({
+    id: "dcd-watt-opp",
+    type: "fragment",
+    if: { "dcd-rel-opp-present": ["oui"], "dcd-opp-fait": ["oui"] },
+    texte: "Parcours OPP DCD mis à jour au stade FIN",
+  });
   leaf.resultats.forEach((r) => {
     if (r.id === "dcd-watt-titre") r.texte = "RECHERCHE HERITIERS : RELANCE";
     if (r.id === "dcd-watt-esdc") r.texte = "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : RELANCE";
@@ -2494,6 +2518,7 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
     if (r.id === "dcd-watt") {
       r.combine = r.combine.filter((c) => c !== "dcd-watt-mairie" && c !== "dcd-watt-adm");
       r.combine.unshift("dcd-watt-anv"); // tout en haut, avant le titre
+      r.combine.splice(r.combine.indexOf("dcd-watt-enq") + 1, 0, "dcd-watt-opp"); // après l'ENQ
     }
   });
 })(dcdRelanceInconnusLeaf);
