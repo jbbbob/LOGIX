@@ -2464,8 +2464,11 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   codif.items = anvRelance.concat(codif.items.filter((it) => it.id !== "dcd-adm-nv"));
   // Après l'ENQ : parcours OPP DCD présent sur le compte → stade FIN
   // (A/C : de DEBUT à FIN ; PL : de OPP à FIN).
+  // ENQ R DIV : seulement si elle est présente sur le compte (question OUI / NON).
   const iEnq = codif.items.findIndex((it) => it.id === "dcd-enq");
-  codif.items.splice(iEnq + 1, 0,
+  codif.items[iEnq].if = { "dcd-rel-enq-present": ["oui"] };
+  codif.items.splice(iEnq, 0, { type: "question", id: "dcd-rel-enq-present", label: "ENQ R DIV PRÉSENTE SUR LE COMPTE ?" });
+  codif.items.splice(iEnq + 2, 0,
     { type: "question", id: "dcd-rel-opp-present", label: "PARCOURS OPP DCD PRÉSENT SUR LE COMPTE ?" },
     {
       type: "check",
@@ -2514,7 +2517,10 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   leaf.resultats.forEach((r) => {
     if (r.id === "dcd-watt-titre") r.texte = "RECHERCHE HERITIERS : RELANCE";
     if (r.id === "dcd-watt-esdc") r.texte = "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : RELANCE";
-    if (r.id === "dcd-watt-enq") r.texte = "ENQ R DIV codifiée au stade NFRUCT";
+    if (r.id === "dcd-watt-enq") {
+      r.texte = "ENQ R DIV codifiée au stade NFRUCT";
+      r.if = { "dcd-enq": ["oui"], "dcd-rel-enq-present": ["oui"] };
+    }
     if (r.id === "dcd-watt") {
       r.combine = r.combine.filter((c) => c !== "dcd-watt-mairie" && c !== "dcd-watt-adm");
       r.combine.unshift("dcd-watt-anv"); // tout en haut, avant le titre

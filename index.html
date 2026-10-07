@@ -3120,8 +3120,8 @@
             if (relanceDcd) {
               L.push({ k: "anv", l: "ANV motif 13 codifiée" },
                 vars.statut === "PL" ? { k: "anv-esdc", l: "ESDC code ANV renseigné" } : { k: "anv-postit", l: "Post-it ANV renseigné" },
-                { k: "esdc-dcd", l: "ESDC renseigné (code DCD)" },
-                { k: "enq", l: "ENQ R DIV au stade NFRUCT" });
+                { k: "esdc-dcd", l: "ESDC renseigné (code DCD)" });
+              if (checkState["dcd-rel-enq-present"] === "oui") L.push({ k: "enq", l: "ENQ R DIV au stade NFRUCT" });
               if (checkState["dcd-rel-opp-present"] === "oui") L.push({ k: "opp-fin", l: "Parcours OPP DCD au stade FIN" });
             } else {
               L.push({ k: "codifs", l: "ESDC, ENQ et ADM NV codifiés" });
