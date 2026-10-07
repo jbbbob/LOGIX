@@ -3014,10 +3014,15 @@
           // 4. Reroutage GCC : seulement si (pas radié DCD OU affaire GCC en cours)
           //    ET que la DLP n'est pas proche.
           //    (RELANCE : pas de question DLP, une ancienne réponse est ignorée.)
+          //    RELANCE : DLP proche = ANV quoi qu'il arrive, pas de reroutage ni
+          //    d'arrêt ; si le dossier devrait partir au GCC, bandeau orange
+          //    « signaler au GCC et passer l'ANV en parallèle » (gcc-parallele).
           const relanceDcd = !!(leaf && leaf.checklist && leaf.checklist.relance);
-          const bloque = !relanceDcd && vars["dcd-dlp-proche"] === "oui";
+          const dlpProche = vars["dcd-dlp-proche"] === "oui";
+          const bloque = !relanceDcd && dlpProche;
           const motifReroutage = vars["dcd-radie-dcd"] === "non" || vars["dcd-affaire-gcc"] === "oui";
-          vars["reroutage-gcc"] = motifReroutage && !bloque ? "oui" : "non";
+          vars["reroutage-gcc"] = motifReroutage && !dlpProche ? "oui" : "non";
+          vars["gcc-parallele"] = relanceDcd && dlpProche && motifReroutage ? "oui" : "non";
           vars["traitement-stop"] = vars["reroutage-gcc"] === "oui" || bloque ? "oui" : "non";
 
           // 5 ter. Relevés SNGI rappelés (en lecture seule) sous la demande à la
@@ -4902,6 +4907,28 @@
             });
             // Bouton d'action (ex : FAIRE L'AMIABLE RELDET) qui active un toggle.
             const act = item.action;
+            // action.vers : bouton qui ouvre un autre choix de la cascade (liste
+            // d'ids depuis la racine de la catégorie), réponses gardées.
+            if (act && Array.isArray(act.vers) && inlineRootNode && (!act.if || contextMatches(act.if, vars))) {
+              const ab = document.createElement("button");
+              ab.type = "button";
+              ab.className = "chk-action";
+              ab.textContent = act.label;
+              ab.addEventListener("click", () => {
+                const chaine = [];
+                let noeud = inlineRootNode;
+                for (const id of act.vers) {
+                  const opt = noeud && (noeud.choix || []).find((o) => o.id === id);
+                  if (!opt) break;
+                  chaine.push({ id: opt.id, label: opt.label, option: opt, node: opt.suite || null });
+                  noeud = opt.suite;
+                }
+                inlineChain = chaine;
+                window.scrollTo(0, 0);
+                render();
+              });
+              line.appendChild(ab);
+            }
             const actToggle = act && inlineRootNode && (inlineRootNode.toggles || []).find((t) => t.id === act.toggle);
             if (actToggle && (!act.if || contextMatches(act.if, vars))) {
               const ab = document.createElement("button");

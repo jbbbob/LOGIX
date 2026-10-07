@@ -1999,7 +1999,14 @@ const dcd1ereEnqueteInconnusLeaf = {
         id: "dcd-controles",
         titre: "0. CONTRÔLES PRÉALABLES",
         items: [
-          { type: "question", id: "dcd-dlp-proche", label: "DLP PROCHE (MOINS DE 6 MOIS) ?" },
+          {
+            type: "question",
+            id: "dcd-dlp-proche",
+            label: "DLP PROCHE (MOINS DE 6 MOIS) ?",
+            // OUI : bouton qui ouvre ÉTAPE RELANCE → HÉRITIERS ET NOTAIRE
+            // INCONNUS (la réponse OUI y est déjà, même identifiant).
+            action: { label: "ALLER À LA RELANCE →", vers: ["dcd-relance", "dcd-relance-inconnus"], if: { "dcd-dlp-proche": ["oui"] } },
+          },
           {
             type: "alerte",
             niveau: "danger",
@@ -2354,14 +2361,16 @@ const dcd1ereEnqueteInconnusLeaf = {
 // ============================================================================
 // DCD — RELANCE (héritiers et notaire inconnus)
 // Même mode opératoire que la 1ÈRE ENQUÊTE (copie), avec ces différences :
-//   - pas de question « DLP proche ? » ;
+//   - « DLP proche ? » = OUI ne bloque pas : on passe l'ANV quoi qu'il arrive,
+//     et si le dossier devrait partir au GCC (pas radié DCD / affaire GCC),
+//     bandeau orange : signaler au GCC et passer l'ANV en parallèle ;
 //   - blocage : A/C « passer l'ARRÊT DEBUT au stade FIN » ; PL « voir avec
 //     l'ATC (transaction TOP 06 si présente) » (à confirmer) ;
 //   - justificatif : seulement la page SNGI en PDF (plus de question GED, plus
 //     de relevé n° d'acte / lieu, plus de demande d'acte à la mairie) ;
 //   - codifications : ESDC « RECHERCHE HERITIERS : RELANCE », ENQ R DIV au
 //     stade NFRUCT ; WATT avec le même titre.
-// checklist.relance = true : lu dans index.html (double vérification, DLP).
+// checklist.relance = true : lu dans index.html (double vérification, DLP / GCC).
 // ============================================================================
 const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusLeaf));
 (function adapterRelance(leaf) {
@@ -2369,11 +2378,32 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   cl.relance = true;
   cl.recapDocument = { titre: "Mode opératoire DCD relance complété" };
   const sec = (id) => cl.sections.find((x) => x.id === id);
-  // 0. Pas de « DLP proche ? » (ni son bandeau).
+  // 0. DLP proche = OUI : bandeau orange (ANV quoi qu'il arrive) au lieu du
+  //    rouge, pas de bouton « aller à la relance », et les autres contrôles
+  //    restent affichés (ils ne dépendent plus de la DLP).
   const ctrl = sec("dcd-controles");
-  ctrl.items = ctrl.items.filter((it) => it.id !== "dcd-dlp-proche" && !(it.if && it.if["dcd-dlp-proche"] && it.type === "alerte"));
-  // … et les autres contrôles ne dépendent plus de sa réponse.
-  ctrl.items.forEach((it) => { if (it.if) delete it.if["dcd-dlp-proche"]; });
+  ctrl.items = ctrl.items.map((it) => {
+    if (it.id === "dcd-dlp-proche") { delete it.action; return it; }
+    if (it.type === "alerte" && it.if && it.if["dcd-dlp-proche"]) {
+      return {
+        type: "alerte",
+        niveau: "warning",
+        if: { "dcd-dlp-proche": ["oui"] },
+        texte: "DLP PROCHE : PASSER L'ANV QUOI QU'IL ARRIVE, EN PLUS DE LA RELANCE (ÉTAPES DE L'ANV À COMPLÉTER).",
+      };
+    }
+    if (it.if) delete it.if["dcd-dlp-proche"];
+    return it;
+  });
+  // Dossier qui devrait partir au GCC alors que la DLP est proche : on ne
+  // reroute pas, on prévient le GCC et on passe l'ANV en parallèle.
+  const iGcc = ctrl.items.findIndex((it) => it.id === "dcd-affaire-gcc");
+  ctrl.items.splice(iGcc + 1, 0, {
+    type: "alerte",
+    niveau: "warning",
+    if: { "gcc-parallele": ["oui"] },
+    texte: "SIGNALER LE SOUCI AU GCC ET PASSER L'ANV EN PARALLÈLE.",
+  });
   // 1. Blocage.
   const bl = sec("dcd-blocage");
   bl.items = bl.items.map((it) => {
