@@ -3013,11 +3013,12 @@
 
           // 4. Reroutage GCC : seulement si (pas radié DCD OU affaire GCC en cours)
           //    ET que la DLP n'est pas proche.
-          const bloque = vars["dcd-dlp-proche"] === "oui";
+          //    (RELANCE : pas de question DLP, une ancienne réponse est ignorée.)
+          const relanceDcd = !!(leaf && leaf.checklist && leaf.checklist.relance);
+          const bloque = !relanceDcd && vars["dcd-dlp-proche"] === "oui";
           const motifReroutage = vars["dcd-radie-dcd"] === "non" || vars["dcd-affaire-gcc"] === "oui";
           vars["reroutage-gcc"] = motifReroutage && !bloque ? "oui" : "non";
-          vars["traitement-stop"] =
-            vars["reroutage-gcc"] === "oui" || vars["dcd-dlp-proche"] === "oui" ? "oui" : "non";
+          vars["traitement-stop"] = vars["reroutage-gcc"] === "oui" || bloque ? "oui" : "non";
 
           // 5 ter. Relevés SNGI rappelés (en lecture seule) sous la demande à la
           //        mairie : en MAJUSCULES, repère entre crochets si vide.
@@ -3078,10 +3079,11 @@
           // Phrase de la DOUBLE VÉRIFICATION DCD, selon les étapes affichées.
           {
             const L = [];
-            if (vars.statut === "A/C") L.push({ k: "arret", l: "Arrêt début motif 25 positionné" });
-            if (vars.statut === "PL") L.push({ k: "top06", l: "Transaction CPTS TOP 06 faite" });
+            if (vars.statut === "A/C") L.push(relanceDcd ? { k: "arret-fin", l: "Arrêt début passé au stade FIN" } : { k: "arret", l: "Arrêt début motif 25 positionné" });
+            if (vars.statut === "PL") L.push(relanceDcd ? { k: "atc", l: "Point TOP 06 vu avec l'ATC" } : { k: "top06", l: "Transaction CPTS TOP 06 faite" });
             L.push({ k: "heritiers", l: "Courrier aux héritiers envoyé" });
-            if (vars["dcd-acte-ged"] !== "oui") L.push({ k: "mairie", l: "Demande d'acte à la mairie envoyée" });
+            // RELANCE : plus de demande d'acte à la mairie.
+            if (!relanceDcd && vars["dcd-acte-ged"] !== "oui") L.push({ k: "mairie", l: "Demande d'acte à la mairie envoyée" });
             if (nbChambres) L.push({ k: "chambres", l: nbChambres > 1 ? "Demandes aux " + nbChambres + " chambres des notaires envoyées" : "Demande à la chambre des notaires envoyée" });
             L.push({ k: "doc-sngi", l: "Page SNGI (PDF) rattachée à l'affaire" });
             if (nbChambresForm) L.push({ k: "doc-chambres", l: nbChambresForm > 1 ? "PDF des formulaires des chambres rattachés" : "PDF du formulaire de la chambre rattaché" });

@@ -2092,6 +2092,8 @@ const dcd1ereEnqueteInconnusLeaf = {
             id: "dcd-sngi-releve",
             if: { "dcd-acte-ged": ["non", ""] },
             label: "SNGI : N° D'ACTE ET LIEU DU DÉCÈS RELEVÉS",
+            lien: { label: "OUVRIR SNGI", url: "https://www.eopps.fr/#/tableau-de-bord" }, // même site qu'EOPPS
+            lienAvant: true,
             // Champs remplis directement ici (rien n'est enregistré : tout
             // part au F5). Le lieu sert à la phrase "mairie de …" du WATT.
             champs: [
@@ -2103,6 +2105,8 @@ const dcd1ereEnqueteInconnusLeaf = {
             type: "check",
             id: "dcd-sngi-pdf",
             label: "PAGE SNGI IMPRIMÉE EN PDF ET RATTACHÉE À L'AFFAIRE",
+            lien: { label: "OUVRIR SNGI", url: "https://www.eopps.fr/#/tableau-de-bord" }, // même site qu'EOPPS
+            lienAvant: true,
           },
         ],
       },
@@ -2348,6 +2352,67 @@ const dcd1ereEnqueteInconnusLeaf = {
 };
 
 // ============================================================================
+// DCD — RELANCE (héritiers et notaire inconnus)
+// Même mode opératoire que la 1ÈRE ENQUÊTE (copie), avec ces différences :
+//   - pas de question « DLP proche ? » ;
+//   - blocage : A/C « passer l'ARRÊT DEBUT au stade FIN » ; PL « voir avec
+//     l'ATC (transaction TOP 06 si présente) » (à confirmer) ;
+//   - justificatif : seulement la page SNGI en PDF (plus de question GED, plus
+//     de relevé n° d'acte / lieu, plus de demande d'acte à la mairie) ;
+//   - codifications : ESDC « RECHERCHE HERITIERS : RELANCE », ENQ R DIV au
+//     stade NFRUCT ; WATT avec le même titre.
+// checklist.relance = true : lu dans index.html (double vérification, DLP).
+// ============================================================================
+const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusLeaf));
+(function adapterRelance(leaf) {
+  const cl = leaf.checklist;
+  cl.relance = true;
+  cl.recapDocument = { titre: "Mode opératoire DCD relance complété" };
+  const sec = (id) => cl.sections.find((x) => x.id === id);
+  // 0. Pas de « DLP proche ? » (ni son bandeau).
+  const ctrl = sec("dcd-controles");
+  ctrl.items = ctrl.items.filter((it) => it.id !== "dcd-dlp-proche" && !(it.if && it.if["dcd-dlp-proche"] && it.type === "alerte"));
+  // … et les autres contrôles ne dépendent plus de sa réponse.
+  ctrl.items.forEach((it) => { if (it.if) delete it.if["dcd-dlp-proche"]; });
+  // 1. Blocage.
+  const bl = sec("dcd-blocage");
+  bl.items = bl.items.map((it) => {
+    if (it.id === "dcd-arret-25") {
+      return { type: "check", id: "dcd-rel-arret-fin", if: { statut: ["A/C"] }, label: "PASSER L'ARRÊT DEBUT AU STADE FIN" };
+    }
+    if (it.id === "dcd-cpts-top06") {
+      return {
+        type: "check",
+        id: "dcd-rel-atc",
+        if: { statut: ["PL"] },
+        label: "VOIR AVEC L'ATC (TRANSACTION TOP 06 SI PRÉSENTE)",
+        tag: "À CONFIRMER", // TODO : procédure PL à préciser
+      };
+    }
+    return it;
+  });
+  // 2. Justificatif : seulement la page SNGI en PDF.
+  const js = sec("dcd-justif-deces");
+  js.items = js.items.filter((it) => it.id === "dcd-sngi-pdf");
+  // 3. Courriers : plus de demande d'acte à la mairie.
+  const sc = sec("dcd-scribe");
+  sc.items = sc.items.filter((it) => !(it.type === "groupe" && /MAIRIE/.test(it.label)));
+  // 6. Codifications.
+  sec("dcd-codifications").items.forEach((it) => {
+    if (it.id === "dcd-esdc") it.copie = [{ texte: "RECHERCHE HERITIERS : RELANCE" }];
+    if (it.id === "dcd-enq") it.label = "ENQ R DIV CODIFIÉE AU STADE NFRUCT";
+  });
+  // Commentaire WATT.
+  leaf.resultats = leaf.resultats.filter((r) => r.id !== "dcd-watt-mairie");
+  leaf.resultats.forEach((r) => {
+    if (r.id === "dcd-watt-titre") r.texte = "RECHERCHE HERITIERS : RELANCE";
+    if (r.id === "dcd-watt-esdc") r.texte = "ESDC renseigné avec le code DCD : RECHERCHE HERITIERS : RELANCE";
+    if (r.id === "dcd-watt-enq") r.texte = "ENQ R DIV codifiée au stade NFRUCT";
+    if (r.id === "dcd-watt") r.combine = r.combine.filter((c) => c !== "dcd-watt-mairie");
+  });
+})(dcdRelanceInconnusLeaf);
+
+// ============================================================================
 // DCD — RETOUR POSITIF (RÉPONSE DU NOTAIRE)
 // Le notaire a répondu : opposition sur l'actif de la succession par SCRIBE,
 // codifications (OPPDCD / OPPDCP selon le statut, ENQ, ADM NV SUSPEN au M+1).
@@ -2536,8 +2601,25 @@ const dcdBranch = {
         description: "",
         suite: dcdRetourPositifLeaf,
       },
-      // TODO: à coder — étape RELANCE (dont la codification ANV si DLP proche)
-      { id: "dcd-relance", label: "RELANCE", description: "" },
+      {
+        id: "dcd-relance",
+        label: "RELANCE",
+        description: "",
+        suite: {
+          choicesTitle: "SITUATION",
+          choix: [
+            {
+              id: "dcd-relance-inconnus",
+              label: "HÉRITIERS ET NOTAIRE INCONNUS",
+              description: "",
+              suite: dcdRelanceInconnusLeaf,
+            },
+            // TODO: à coder — autres situations
+            { id: "dcd-relance-notaire-connu", label: "NOTAIRE CONNU", description: "" },
+            { id: "dcd-relance-heritiers-connus", label: "HÉRITIERS CONNUS", description: "" },
+          ],
+        },
+      },
     ],
   },
 };
