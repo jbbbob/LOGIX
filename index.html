@@ -3043,7 +3043,8 @@
               ? checkState["dcd-rel-anv-pl"] === true ? "REPRIS ou DEMAND" : ""
               : checkState["dcd-rel-anv-incra"] === true ? "IN CRA" : "";
             vars["dcd-anv-fait"] = relanceDcd && stade ? "oui" : "non";
-            vars["dcd-anv-watt"] = (pl ? "ANV codifiée : " : "ANV codifiée au stade IN CRA : ") + vars["dcd-anv-texte"];
+            // Tout en haut du WATT : le texte de l'ANV seul, puis une ligne vide.
+            vars["dcd-anv-watt"] = vars["dcd-anv-texte"] + "\n";
           }
           vars["traitement-stop"] = vars["reroutage-gcc"] === "oui" || bloque ? "oui" : "non";
 

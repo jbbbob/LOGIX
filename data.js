@@ -2484,7 +2484,7 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
     if (it.id === "dcd-esdc") it.copie = [{ texte: "RECHERCHE HERITIERS : RELANCE" }];
     if (it.id === "dcd-enq") it.label = "ENQ R DIV CODIFIÉE AU STADE NFRUCT";
   });
-  // Commentaire WATT : ligne ANV à la place de l'ADM NV, plus de mairie.
+  // Commentaire WATT : texte de l'ANV tout en haut (puis ligne vide) à la place de l'ADM NV, plus de mairie.
   leaf.resultats = leaf.resultats.filter((r) => r.id !== "dcd-watt-mairie" && r.id !== "dcd-watt-adm");
   leaf.resultats.unshift({ id: "dcd-watt-anv", type: "fragment", if: { "dcd-anv-fait": ["oui"] }, texte: "{{dcd-anv-watt}}" });
   leaf.resultats.forEach((r) => {
@@ -2493,7 +2493,7 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
     if (r.id === "dcd-watt-enq") r.texte = "ENQ R DIV codifiée au stade NFRUCT";
     if (r.id === "dcd-watt") {
       r.combine = r.combine.filter((c) => c !== "dcd-watt-mairie" && c !== "dcd-watt-adm");
-      r.combine.splice(1, 0, "dcd-watt-anv"); // juste après le titre
+      r.combine.unshift("dcd-watt-anv"); // tout en haut, avant le titre
     }
   });
 })(dcdRelanceInconnusLeaf);
