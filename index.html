@@ -2859,13 +2859,7 @@
             const suspenOui = radie && checkState.suspen === "oui";
             const nbCo = checkState.dretaf === "oui" ? Math.max(1, parseInt(checkState["co-nb"], 10) || 1) : 0;
             const pl = vars.statut === "PL";
-            // Documents à rattacher : justificatif (sauf motif 16), pages EOPPS / FICOBA.
-            const motif12 = vars["motif-id"] === "motif-12-psa";
-            const docs = [];
-            if (vars["motif-id"] !== "motif-16-creance-seuil") docs.push("justificatif");
-            if (motif12 && checkState["psa-eopps-adresse"] === "non") docs.push("page EOPPS");
-            if (motif12 && checkState.ficoba === "oui" && checkState["psa-ficoba-adresse"] === "non") docs.push("page FICOBA");
-            const nbDocs = docs.length;
+            // (Les PDF à rattacher ont leurs propres étapes après le WATT.)
             // Liste des points (une ligne par point) de la double vérification.
             const L = [{ k: "anv", l: "ANV codifiée" }];
             if (suspenOui) L.push({ k: "suspen", l: "ANV SUSPEN codifiée" });
@@ -2877,9 +2871,6 @@
               const nbPostits = 1 + (suspenOui ? 1 : 0) + nbCo;
               L.push({ k: "postit", l: nbPostits > 1 ? nbPostits + " post-its renseignés" : "Post-it renseigné" });
             }
-            if (docs.includes("justificatif")) L.push({ k: "doc-justif", l: "Justificatif (PDF) rattaché à l'affaire" });
-            if (docs.includes("page EOPPS")) L.push({ k: "doc-eopps", l: "Page EOPPS (PDF) rattachée à l'affaire" });
-            if (docs.includes("page FICOBA")) L.push({ k: "doc-ficoba", l: "Page FICOBA (PDF) rattachée à l'affaire" });
             L.push({ k: "watt", l: "Commentaire affaire WATT renseigné" });
             vars["dc-liste-anv"] = L;
           }

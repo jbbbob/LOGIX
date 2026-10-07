@@ -720,7 +720,7 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-justificatif-pdf",
           sauf: { "motif-id": ["motif-16-creance-seuil"] },
-          label: "Imprimer le justificatif en PDF et le rattacher à l'affaire",
+          label: "Imprimer le justificatif en PDF",
         },
       ],
     },
@@ -769,7 +769,7 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "psa-eopps-pdf",
           if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] },
-          label: "Page EOPPS imprimée en PDF et rattachée à l'affaire",
+          label: "Imprimer la page EOPPS en PDF",
         },
         {
           // Motif 12 (tous sous-motifs) : change les textes ({{phrase-eopps}}).
@@ -802,7 +802,7 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "psa-ficoba-pdf",
           if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] },
-          label: "Page FICOBA imprimée en PDF et rattachée à l'affaire",
+          label: "Imprimer la page FICOBA en PDF",
         },
         {
           type: "question",
@@ -993,6 +993,32 @@ anvBranch.suite.checklist = {
           id: "anv-watt",
           montre: "anv-watt",
           label: "Mettre le commentaire affaire WATT",
+        },
+        // Après le WATT : rattacher d'un coup à l'affaire les PDF imprimés plus
+        // haut (justificatif sauf motif 16, pages EOPPS / FICOBA du motif 12).
+        {
+          type: "groupe",
+          label: "Rattacher à l'affaire",
+          sauf: { "motif-id": ["motif-16-creance-seuil"] },
+          items: [
+            {
+              type: "check",
+              id: "anv-rattacher-justificatif",
+              label: "Le justificatif (PDF)",
+            },
+            {
+              type: "check",
+              id: "anv-rattacher-eopps",
+              if: { "motif-id": ["motif-12-psa"], "psa-eopps-adresse": ["non"] },
+              label: "La page EOPPS (PDF)",
+            },
+            {
+              type: "check",
+              id: "anv-rattacher-ficoba",
+              if: { "motif-id": ["motif-12-psa"], ficoba: ["oui"], "psa-ficoba-adresse": ["non"] },
+              label: "La page FICOBA (PDF)",
+            },
+          ],
         },
       ],
     },
