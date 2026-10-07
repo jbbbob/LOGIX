@@ -2559,8 +2559,10 @@ const dcdRelanceNotaireLeaf = JSON.parse(JSON.stringify(dcdRelanceInconnusLeaf))
       {
         type: "check",
         id: "dcd-reln-modele",
-        label: "CHOISIR LE MODÈLE",
-        copie: [{ label: "MODÈLE", texte: "Succession - Notaire ou Tribunal (Relance suite à opposition) - réf. bnc « 1 | 1109 | 365 »" }],
+        // Même principe que le relevé de dette (VERSEMENT RÉCENT) : modèle à
+        // rechercher, puis sous-modèle à sélectionner.
+        label: "RECHERCHER LE MODÈLE PUIS CHOISIR LE SOUS-MODÈLE RELANCE SUITE À OPPOSITION",
+        copie: [{ label: "MODÈLE À RECHERCHER", texte: "SUCCESSION - NOTAIRE OU TRIBUNAL" }],
       },
       {
         type: "check",
