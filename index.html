@@ -4970,6 +4970,12 @@
                 cb.addEventListener("change", () => {
                   checkState[sc.id] = cb.checked;
                   noterHeure(sc.id, cb.checked);
+                  // Toutes les petites cases cochées : l'étape (ex. double
+                  // vérification) se coche toute seule.
+                  if (cb.checked && checkState[item.id] !== true && sous.every((x) => checkState[x.id] === true)) {
+                    checkState[item.id] = true;
+                    noterHeure(item.id, true);
+                  }
                   render();
                 });
                 lab.appendChild(cb);
