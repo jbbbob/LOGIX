@@ -2881,6 +2881,12 @@
           vars["date-anv-suspen"] = dernierVersement
             ? formatDateLong(addMonths(dernierVersement, 7))
             : "… (saisir la date du dernier versement)";
+          // ANV SUSPEN (hors versement récent) : 1 an après la date d'effet de
+          // la période (ex. 2610 exigible le 05/02/2026 → 05/02/2027).
+          const dateEffetSuspen = parseDateFr(nodeInputs["date-effet-suspen"]);
+          vars["date-anv-suspen-effet"] = dateEffetSuspen
+            ? formatDateLong(addMonths(dateEffetSuspen, 12))
+            : "… (saisir la date d'effet de la période)";
 
           // 1 quinquies. ANV : phrase de la double vérification selon les choix
           //   (ANV SUSPEN, DRETAF, A/C = post-it / PL = ESDC), avec les accords.

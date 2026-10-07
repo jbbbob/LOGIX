@@ -623,7 +623,6 @@ amiableReldetToggle.whenOn.etapes = [
       {
         type: "check",
         id: "vr-suspen-codif",
-        champsObligatoires: true,
         label: "Codifier l'ANV SUSPEN au {{date-anv-suspen}}",
         aide: "7 mois après la date du dernier versement.",
         champs: [{ id: "date-dernier-versement", label: "DATE DU DERNIER VERSEMENT", placeholder: "JJ/MM/AA" }],
@@ -974,7 +973,10 @@ anvBranch.suite.checklist = {
           type: "check",
           id: "anv-suspen-codif",
           if: { compte: ["RADIÉ"], suspen: ["oui"] },
-          label: "Codifier l'ANV SUSPEN",
+          // Date conseillée (pas obligatoire) : date d'effet + 1 an.
+          label: "Codifier l'ANV SUSPEN au {{date-anv-suspen-effet}}",
+          aide: "1 an après la date d'effet de la période (ex. période 2610 exigible le 05/02/2026 → ANV SUSPEN au 05/02/2027).",
+          champs: [{ id: "date-effet-suspen", label: "DATE D'EFFET DE LA PÉRIODE", placeholder: "JJ/MM/AA" }],
           rappel: "{{rappel-motif-seul}}", // motif seul, sans sous-motif
         },
         {
@@ -1227,7 +1229,13 @@ detteNonExigibleToggle.whenOn.etapes = [
     label: "ANV SUSPEN (COMPTE RADIÉ)",
     if: { compte: ["RADIÉ"], "dne-suspen": ["oui"] },
     items: [
-      { type: "check", id: "dne-suspen-codif", label: "Codifier l'ANV SUSPEN" },
+      {
+        type: "check",
+        id: "dne-suspen-codif",
+        label: "Codifier l'ANV SUSPEN au {{date-anv-suspen-effet}}",
+        aide: "1 an après la date d'effet de la période (ex. période 2610 exigible le 05/02/2026 → ANV SUSPEN au 05/02/2027).",
+        champs: [{ id: "date-effet-suspen", label: "DATE D'EFFET DE LA PÉRIODE", placeholder: "JJ/MM/AA" }],
+      },
       {
         type: "check",
         id: "dne-suspen-postit",
