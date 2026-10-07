@@ -2538,7 +2538,7 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
 })(dcdRelanceInconnusLeaf);
 
 // ============================================================================
-// DCD — RELANCE → NOTAIRE CONNU
+// DCD — RELANCE → HÉRITIERS INCONNUS ET NOTAIRE CONNU
 // Copie de la RELANCE (héritiers et notaire inconnus) : la section « 4. CHAMBRE(S)
 // DES NOTAIRES » est remplacée par le courrier de relance au notaire (SCRIBE),
 // le reste (succession vacante, ANV motif 13, codifications, 25 000 €) est pareil.
@@ -2783,7 +2783,7 @@ const dcdBranch = {
             // TODO: à coder — autres situations
             {
               id: "dcd-relance-notaire-connu",
-              label: "NOTAIRE CONNU",
+              label: "HÉRITIERS INCONNUS ET NOTAIRE CONNU",
               description: "",
               suite: dcdRelanceNotaireLeaf,
             },
