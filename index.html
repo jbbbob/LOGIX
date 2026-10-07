@@ -1453,6 +1453,16 @@
         cursor: pointer;
       }
 
+      /* Dans le bloc du mode opératoire, les libellés des lignes de choix
+         (MOTIF, RAISON, TYPE, ÉCRITURES, COMPTE EN LIGNE OU MAIL ?…) ont le
+         même style que les questions des étapes. */
+      #processBloc .card-row-label,
+      #processBloc .card-row-content > .leaf-input-label {
+        font-size: var(--fs-label);
+        letter-spacing: var(--ls-mid);
+        color: var(--muted-strong);
+      }
+
       .chk-question .chk-label {
         cursor: default;
         margin-right: 4px;
