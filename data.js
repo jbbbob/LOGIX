@@ -2276,6 +2276,14 @@ const dcd1ereEnqueteInconnusLeaf = {
             copie: [{ texte: "RECHERCHE HERITIERS : 1ÈRE ENQUÊTE" }],
           },
           {
+            // A/C : le même commentaire en post-it sur le portail TI.
+            type: "check",
+            id: "dcd-postit-ti",
+            if: { statut: ["A/C"] },
+            label: "AJOUTER LE POST-IT SUR LE PORTAIL TI",
+            copie: [{ label: "POST-IT", texte: "RECHERCHE HERITIERS : 1ÈRE ENQUÊTE" }],
+          },
+          {
             type: "check",
             id: "dcd-enq",
             label: "ENQ CODIFIÉE AU STADE DEMAND PUIS R DIV",
@@ -2533,6 +2541,7 @@ const dcdRelanceInconnusLeaf = JSON.parse(JSON.stringify(dcd1ereEnqueteInconnusL
   );
   codif.items.forEach((it) => {
     if (it.id === "dcd-esdc") it.copie = [{ texte: "RECHERCHE HERITIERS : RELANCE" }];
+    if (it.id === "dcd-postit-ti") it.copie = [{ label: "POST-IT", texte: "RECHERCHE HERITIERS : RELANCE" }];
     if (it.id === "dcd-enq") it.label = "ENQ R DIV CODIFIÉE AU STADE NFRUCT";
   });
   // Commentaire WATT : texte de l'ANV tout en haut (puis ligne vide) à la place de l'ADM NV, plus de mairie.
@@ -2653,6 +2662,14 @@ const dcdRetourPositifLeaf = {
             label: "RENSEIGNÉ EN ESDC AVEC LE CODE DCD",
             copie: [{ label: "ESDC", texte: "Opposition à succession faite auprès du notaire" }],
           },
+          {
+            // A/C : le même commentaire en post-it sur le portail TI.
+            type: "check",
+            id: "dcd-rp-postit-ti",
+            if: { statut: ["A/C"] },
+            label: "AJOUTER LE POST-IT SUR LE PORTAIL TI",
+            copie: [{ label: "POST-IT", texte: "Opposition à succession faite auprès du notaire" }],
+          },
         ],
       },
       {
@@ -2691,6 +2708,7 @@ const dcdRetourPositifLeaf = {
             sousCoches: [
               { id: "dc-dcd-rp-courrier", label: "Courrier d'opposition envoyé au notaire" },
               { id: "dc-dcd-rp-esdc", label: "ESDC renseigné (code DCD)" },
+              { id: "dc-dcd-rp-postit-ti", label: "Post-it portail TI renseigné", if: { statut: ["A/C"] } },
               { id: "dc-dcd-rp-oppdcd", label: "OPPDCD codifiée au stade DEBUT", if: { statut: ["A/C"] } },
               { id: "dc-dcd-rp-oppdcp", label: "OPPDCP codifiée au stade OPP", if: { statut: ["PL"] } },
               { id: "dc-dcd-rp-enq", label: "ENQ R DIV au stade FRUCT" },
