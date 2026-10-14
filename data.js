@@ -2685,14 +2685,6 @@ const dcdRetourPositifLeaf = {
             label: "RENSEIGNÉ EN ESDC AVEC LE CODE DCD",
             copie: [{ label: "ESDC", texte: "Opposition à succession faite auprès du notaire" }],
           },
-          {
-            // A/C : le même commentaire en post-it sur le portail TI.
-            type: "check",
-            id: "dcd-rp-postit-ti",
-            if: { statut: ["A/C"] },
-            label: "AJOUTER LE POST-IT SUR LE PORTAIL TI",
-            copie: [{ label: "POST-IT", texte: "Opposition à succession faite auprès du notaire" }],
-          },
         ],
       },
       {
@@ -2708,6 +2700,15 @@ const dcdRetourPositifLeaf = {
             label: "RECODIFIER L'ADM NV SUSPEN, DATE D'EFFET AU {{date-effet-m1}}",
             aide: "Date du jour + 1 mois.",
             copie: [{ label: "DATE", texte: "{{date-effet-m1}}" }],
+          },
+          {
+            // A/C : post-it « opposition » sur le portail TI, juste après l'ADM NV
+            // SUSPEN (avant le post-it du SUSPEN décalé).
+            type: "check",
+            id: "dcd-rp-postit-ti",
+            if: { statut: ["A/C"] },
+            label: "AJOUTER LE POST-IT SUR LE PORTAIL TI",
+            copie: [{ label: "POST-IT", texte: "Opposition à succession faite auprès du notaire" }],
           },
           {
             type: "check",
