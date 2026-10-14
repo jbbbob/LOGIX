@@ -2702,15 +2702,6 @@ const dcdRetourPositifLeaf = {
             copie: [{ label: "DATE", texte: "{{date-effet-m1}}" }],
           },
           {
-            // A/C : post-it « opposition » sur le portail TI, juste après l'ADM NV
-            // SUSPEN (avant le post-it du SUSPEN décalé).
-            type: "check",
-            id: "dcd-rp-postit-ti",
-            if: { statut: ["A/C"] },
-            label: "AJOUTER LE POST-IT SUR LE PORTAIL TI",
-            copie: [{ label: "POST-IT", texte: "Opposition à succession faite auprès du notaire" }],
-          },
-          {
             type: "check",
             id: "dcd-rp-postit",
             if: { statut: ["A/C"] }, // PL : pas de post-it
@@ -2732,7 +2723,6 @@ const dcdRetourPositifLeaf = {
             sousCoches: [
               { id: "dc-dcd-rp-courrier", label: "Courrier d'opposition envoyé au notaire" },
               { id: "dc-dcd-rp-esdc", label: "ESDC renseigné (code DCD)" },
-              { id: "dc-dcd-rp-postit-ti", label: "Post-it portail TI renseigné", if: { statut: ["A/C"] } },
               { id: "dc-dcd-rp-oppdcd", label: "OPPDCD codifiée au stade DEBUT", if: { statut: ["A/C"] } },
               { id: "dc-dcd-rp-oppdcp", label: "OPPDCP codifiée au stade OPP", if: { statut: ["PL"] } },
               { id: "dc-dcd-rp-enq", label: "ENQ R DIV au stade FRUCT" },
