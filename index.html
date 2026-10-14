@@ -2856,7 +2856,9 @@
           // ANV SUSPEN : motif seul.
           vars["rappel-motif-seul"] = vars["motif-code"] ? "MOTIF " + vars["motif-code"] : "";
           vars["rappel-motif"] = vars["rappel-motif-seul"] +
-            (vars["rappel-motif-seul"] && vars.statut !== "PL" && vars["sous-motif-code"] ? " · SOUS-MOTIF " + vars["sous-motif-code"] : "");
+            (vars["rappel-motif-seul"] && vars.statut !== "PL" && vars["sous-motif-code"] ? " · SOUS-MOTIF " + vars["sous-motif-code"] : "") +
+            // Motif 16 : pas de choix de sous-motif, c'est toujours le 32 en A/C.
+            (vars["motif-code"] === "16" && vars.statut !== "PL" && !vars["sous-motif-code"] ? " · SOUS-MOTIF 32" : "");
 
           // 1. Cases cochées / questions : utilisables dans les "if" par leur id.
           //    Une question pas encore répondue vaut "" (ex : if ["non", ""] =
