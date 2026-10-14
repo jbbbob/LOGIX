@@ -4484,11 +4484,17 @@
               } else if (!vide(filtrer(item))) {
                 items.push(filtrer(item));
               }
-              if (item.type === "alerte" && item.stop) stopped = true;
+              if (item.type === "alerte" && item.stop) {
+                stopped = true;
+                // Arrêt dans une section AU-DESSUS des motifs (checklist « haut »,
+                // ni bas ni fin) : les motifs ne servent plus, on les cache.
+                if (cl.position === "haut" && !section.bas && !section.fin) sections.stoppedAvantCascade = true;
+              }
             });
             if (items.length > 0) sections.push({ id: section.id, titre: section.titre, bas: !!section.bas, fin: !!section.fin, items });
           });
           sections.stopped = stopped;
+          sections.stoppedAvantCascade = !!sections.stoppedAvantCascade;
           return sections;
         }
 
@@ -5857,6 +5863,11 @@
           renderResults(deepestNode);
           const stop = checklistStops();
           resultsContainer.classList.toggle("hidden", stop);
+          // Arrêt au-dessus des motifs (ex. EI avec dette > 10 000 €) : motifs cachés.
+          const nStop = getChecklistNode();
+          const avant = !!(nStop && buildChecklistModel(nStop, buildTemplateVars()).stoppedAvantCascade);
+          cascadeFlow.classList.toggle("hidden", avant);
+          leafQuestionsContainer.classList.toggle("hidden", avant);
 
           if (backBtn) backBtn.disabled = !canGoBack();
           // Plus de scroll auto ni de focus auto : l'utilisateur navigue à son rythme.

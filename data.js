@@ -692,32 +692,33 @@ anvBranch.suite.checklist = {
           contexte: "statut",
           label: "Statut",
         },
-        // Gérant ou entrepreneur individuel : gérant → simple rappel (pas
-        // d'assignation possible) ; EI avec une dette > 10 000 € → arrêt,
-        // proposition d'assignation à la place de l'ANV.
+        // Compte ACTIF seulement — gérant ou entrepreneur individuel : gérant →
+        // simple rappel (pas d'assignation possible) ; EI avec une dette
+        // > 10 000 € → arrêt, proposition d'assignation à la place de l'ANV.
         {
           type: "question",
           id: "anv-gerant-ei",
+          if: { compte: ["ACTIF"] },
           label: "Gérant ou entrepreneur individuel ?",
           choix: [{ val: "gerant", label: "GÉRANT" }, { val: "ei", label: "ENTREPRENEUR INDIVIDUEL" }],
         },
         {
           type: "alerte",
           niveau: "warning",
-          if: { "anv-gerant-ei": ["gerant"] },
+          if: { compte: ["ACTIF"], "anv-gerant-ei": ["gerant"] },
           texte: "ASSIGNATION IMPOSSIBLE : USAGER GÉRANT, CONTINUER L'ANV.",
         },
         {
           type: "question",
           id: "anv-ei-10k",
-          if: { "anv-gerant-ei": ["ei"] },
+          if: { compte: ["ACTIF"], "anv-gerant-ei": ["ei"] },
           label: "Dette supérieure à 10 000 € ?",
         },
         {
           type: "alerte",
           niveau: "danger",
           stop: true,
-          if: { "anv-gerant-ei": ["ei"], "anv-ei-10k": ["oui"] },
+          if: { compte: ["ACTIF"], "anv-gerant-ei": ["ei"], "anv-ei-10k": ["oui"] },
           texte: "PAS D'ANV : REROUTER LE DOSSIER POUR PROPOSITION D'ASSIGNATION (OU FAIRE LA PROPOSITION D'ASSIGNATION).",
         },
         {
