@@ -28,7 +28,8 @@ const globalContextOptions = [
 // Gère les 2 formats de post-it selon STATUT :
 // - A/C → POST-IT PORTAIL TI avec format "ANV [PARTIELLE] 11 SS MOTIF 01 PV DE CARENCE GED DU ..."
 // - PL  → POST-IT ESDC avec format "ANV [PARTIELLE] 11: CARENCE-CONSTAT DU ... - PV DE CARENCE"
-// A/C : si DRETAF=OUI → ligne DRETAF (PL : pas de DRETAF, retour demandé au CJ).
+// A/C : si DRETAF=OUI → ligne DRETAF ; PL : pas de DRETAF, ligne WATT « Retour des
+// contraintes demandé au CJ pour passer ANV ».
 // Si SUSPEN=OUI (RADIÉ uniquement) → ligne SUSPEN.
 // Si tout à NON → post-it réduit à 1 ligne, fusionné avec COMMENTAIRE AFFAIRE WATT.
 // Variables templatées utilisées :
@@ -96,6 +97,13 @@ const anvLeafConfig = {
           if: { suspen: ["oui"] },
           texte: "ANV SUSPEN pour exigibilité inférieure à un an",
         },
+        {
+          // PL : pas de DRETAF, le retour des contraintes est demandé au CJ
+          // (ligne du WATT seulement : hors étape ESDC, comme les lignes DRETAF A/C).
+          id: "dretaf-line-pl",
+          if: { dretaf: ["oui"] },
+          texte: "Retour des contraintes demandé au CJ pour passer ANV",
+        },
       ],
     },
     {
@@ -103,7 +111,7 @@ const anvLeafConfig = {
       label: "COMMENTAIRE AFFAIRE WATT",
       type: "composite",
       if: { statut: ["PL"] },
-      combine: ["carence-pl", "suspen-line-pl"],
+      combine: ["carence-pl", "suspen-line-pl", "dretaf-line-pl"],
       separator: "<br>+<br>",
     },
   ],
@@ -174,6 +182,13 @@ const anv12LeafConfig = {
           if: { suspen: ["oui"] },
           texte: "ANV SUSPEN pour exigibilité inférieure à un an",
         },
+        {
+          // PL : pas de DRETAF, le retour des contraintes est demandé au CJ
+          // (ligne du WATT seulement : hors étape ESDC, comme les lignes DRETAF A/C).
+          id: "dretaf-line-pl-12",
+          if: { dretaf: ["oui"] },
+          texte: "Retour des contraintes demandé au CJ pour passer ANV",
+        },
       ],
     },
     {
@@ -181,7 +196,7 @@ const anv12LeafConfig = {
       label: "COMMENTAIRE AFFAIRE WATT",
       type: "composite",
       if: { statut: ["PL"] },
-      combine: ["carence-pl-12", "suspen-line-pl-12"],
+      combine: ["carence-pl-12", "suspen-line-pl-12", "dretaf-line-pl-12"],
       separator: "<br>+<br>",
       // FICOBA ajouté en suffixe avec un saut de ligne vide (pas de "+")
       appendFragments: ["ficoba-line-12"],
@@ -300,6 +315,13 @@ const anv16LeafConfig = {
           if: { suspen: ["oui"] },
           texte: "ANV SUSPEN pour exigibilité inférieure à un an",
         },
+        {
+          // PL : pas de DRETAF, le retour des contraintes est demandé au CJ
+          // (ligne du WATT seulement : hors étape ESDC, comme les lignes DRETAF A/C).
+          id: "dretaf-line-pl-16",
+          if: { dretaf: ["oui"] },
+          texte: "Retour des contraintes demandé au CJ pour passer ANV",
+        },
       ],
     },
     {
@@ -307,7 +329,7 @@ const anv16LeafConfig = {
       label: "COMMENTAIRE AFFAIRE WATT",
       type: "composite",
       if: { statut: ["PL"] },
-      combine: ["carence-pl-16", "suspen-line-pl-16"],
+      combine: ["carence-pl-16", "suspen-line-pl-16", "dretaf-line-pl-16"],
       separator: "<br>+<br>",
     },
   ],
