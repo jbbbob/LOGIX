@@ -28,7 +28,8 @@ const globalContextOptions = [
 // Gère les 2 formats de post-it selon STATUT :
 // - A/C → POST-IT PORTAIL TI avec format "ANV [PARTIELLE] 11 SS MOTIF 01 PV DE CARENCE GED DU ..."
 // - PL  → POST-IT ESDC avec format "ANV [PARTIELLE] 11: CARENCE-CONSTAT DU ... - PV DE CARENCE"
-// Dans les 2 formats, si DRETAF=OUI → ligne DRETAF. Si SUSPEN=OUI (RADIÉ uniquement) → ligne SUSPEN.
+// A/C : si DRETAF=OUI → ligne DRETAF (PL : pas de DRETAF, retour demandé au CJ).
+// Si SUSPEN=OUI (RADIÉ uniquement) → ligne SUSPEN.
 // Si tout à NON → post-it réduit à 1 ligne, fusionné avec COMMENTAIRE AFFAIRE WATT.
 // Variables templatées utilisées :
 //   {{motif-prefix}}      = "ANV PARTIELLE" (si ACTIF) ou "ANV" (si RADIÉ)
@@ -91,11 +92,6 @@ const anvLeafConfig = {
           texte: "{{motif-prefix}}{{motif-code}}: CARENCE-CONSTAT DU {{date}} - {{sous-motif-abbrev}}",
         },
         {
-          id: "dretaf-line-pl",
-          if: { dretaf: ["oui"] },
-          texte: "{{dretaf-postits}}",
-        },
-        {
           id: "suspen-line-pl",
           if: { suspen: ["oui"] },
           texte: "ANV SUSPEN pour exigibilité inférieure à un an",
@@ -107,7 +103,7 @@ const anvLeafConfig = {
       label: "COMMENTAIRE AFFAIRE WATT",
       type: "composite",
       if: { statut: ["PL"] },
-      combine: ["carence-pl", "suspen-line-pl", "dretaf-line-pl"],
+      combine: ["carence-pl", "suspen-line-pl"],
       separator: "<br>+<br>",
     },
   ],
@@ -174,11 +170,6 @@ const anv12LeafConfig = {
           texte: "{{motif-prefix}}{{motif-code}} : RECHERCHES NEGATIVES - CONSTAT DU {{date}} - {{sous-motif-abbrev}}{{phrase-eopps}}",
         },
         {
-          id: "dretaf-line-pl-12",
-          if: { dretaf: ["oui"] },
-          texte: "{{dretaf-postits}}",
-        },
-        {
           id: "suspen-line-pl-12",
           if: { suspen: ["oui"] },
           texte: "ANV SUSPEN pour exigibilité inférieure à un an",
@@ -190,7 +181,7 @@ const anv12LeafConfig = {
       label: "COMMENTAIRE AFFAIRE WATT",
       type: "composite",
       if: { statut: ["PL"] },
-      combine: ["carence-pl-12", "suspen-line-pl-12", "dretaf-line-pl-12"],
+      combine: ["carence-pl-12", "suspen-line-pl-12"],
       separator: "<br>+<br>",
       // FICOBA ajouté en suffixe avec un saut de ligne vide (pas de "+")
       appendFragments: ["ficoba-line-12"],
@@ -305,11 +296,6 @@ const anv16LeafConfig = {
           texte: "{{motif-prefix}}{{motif-code}} : CREANCE &lt; AU SEUIL - CONSTAT DU {{date}}",
         },
         {
-          id: "dretaf-line-pl-16",
-          if: { dretaf: ["oui"] },
-          texte: "{{dretaf-postits}}",
-        },
-        {
           id: "suspen-line-pl-16",
           if: { suspen: ["oui"] },
           texte: "ANV SUSPEN pour exigibilité inférieure à un an",
@@ -321,7 +307,7 @@ const anv16LeafConfig = {
       label: "COMMENTAIRE AFFAIRE WATT",
       type: "composite",
       if: { statut: ["PL"] },
-      combine: ["carence-pl-16", "suspen-line-pl-16", "dretaf-line-pl-16"],
+      combine: ["carence-pl-16", "suspen-line-pl-16"],
       separator: "<br>+<br>",
     },
   ],
@@ -915,7 +901,7 @@ anvBranch.suite.checklist = {
         {
           type: "alerte",
           niveau: "warning",
-          if: { dretaf: ["oui"] },
+          if: { dretaf: ["oui"], statut: ["A/C", ""] },
           texte: "DRETAF à faire pour chaque contrainte.",
         },
         {
@@ -924,7 +910,7 @@ anvBranch.suite.checklist = {
           // reprennent toutes les contraintes ({{dretaf-postits}}).
           type: "liste",
           id: "co",
-          if: { dretaf: ["oui"] },
+          if: { dretaf: ["oui"], statut: ["A/C", ""] }, // PL : pas de DRETAF possible
           titre: "CONTRAINTE {n}",
           ajout: "+ AJOUTER UNE CONTRAINTE",
           fini: "✓ PAS D'AUTRE CONTRAINTE",
@@ -943,6 +929,14 @@ anvBranch.suite.checklist = {
               copie: [{ label: "POST-IT", texte: "DRETAF CO {{co-{n}}} POUR PASSER ANV" }],
             },
           ],
+        },
+
+        {
+          // PL : pas de DRETAF possible, on demande le retour au CJ par SCRIBE.
+          type: "check",
+          id: "co-retour-cj-pl",
+          if: { dretaf: ["oui"], statut: ["PL"] },
+          label: "Demander le retour du / des dossier(s) au CJ par SCRIBE",
         },
 
         // ---------- Codification + textes (A/C) ----------

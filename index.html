@@ -2893,8 +2893,9 @@
           {
             const radie = vars.compte === "RADIÉ";
             const suspenOui = radie && checkState.suspen === "oui";
-            const nbCo = checkState.dretaf === "oui" ? Math.max(1, parseInt(checkState["co-nb"], 10) || 1) : 0;
             const pl = vars.statut === "PL";
+            // PL : pas de DRETAF (retour demandé au CJ par SCRIBE).
+            const nbCo = !pl && checkState.dretaf === "oui" ? Math.max(1, parseInt(checkState["co-nb"], 10) || 1) : 0;
             // (Les PDF à rattacher ont leurs propres étapes après le WATT.)
             // Liste des points (une ligne par point) de la double vérification.
             const L = [{ k: "anv", l: "ANV codifiée" }];
@@ -2902,7 +2903,7 @@
             if (nbCo) L.push({ k: "dretaf", l: nbCo > 1 ? nbCo + " DRETAF codifiés" : "DRETAF codifié" });
             if (pl) {
               L.push({ k: "esdc", l: suspenOui ? "ESDC renseignés (codes ANV et INCX)" : "ESDC renseigné (code ANV)" });
-              if (nbCo) L.push({ k: "postit-dretaf", l: nbCo > 1 ? nbCo + " post-its DRETAF renseignés" : "Post-it DRETAF renseigné" });
+              if (checkState.dretaf === "oui") L.push({ k: "retour-cj", l: "Retour du / des dossier(s) demandé au CJ par SCRIBE" });
             } else {
               const nbPostits = 1 + (suspenOui ? 1 : 0) + nbCo;
               L.push({ k: "postit", l: nbPostits > 1 ? nbPostits + " post-its renseignés" : "Post-it renseigné" });
