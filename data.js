@@ -2156,7 +2156,7 @@ const dcd1ereEnqueteInconnusLeaf = {
                 type: "check",
                 id: "dcd-scribe-modele",
                 label: "CHOISIR LE MODÈLE",
-                copie: [{ label: "MODÈLE", texte: "SUCCESSION - HERITIERS" }],
+                copie: [{ label: "MODÈLE", texte: "SUCCESSION - HERITIER" }],
               },
               {
                 type: "check",
